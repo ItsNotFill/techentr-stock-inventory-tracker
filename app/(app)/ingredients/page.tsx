@@ -9,6 +9,7 @@ import { requireRole } from "@/lib/auth/membership";
 import { MANAGER_ROLES } from "@/lib/auth/roles";
 import { withUser } from "@/lib/db/client";
 import { listIngredients } from "@/lib/ingredients";
+import { stockNow, stockOf } from "@/lib/ledger";
 
 export const metadata: Metadata = { title: "Ingredients" };
 
@@ -31,7 +32,11 @@ async function IngredientsContent({ searchParams }: { searchParams: PageProps<"/
   const membership = await requireRole(MANAGER_ROLES);
   const { archived } = await searchParams;
   const includeArchived = archived === "1";
-  const ingredients = await withUser((tx) => listIngredients(tx, membership.locationId, { includeArchived }));
+  const { ingredients, stock } = await withUser(async (tx) => ({
+    ingredients: await listIngredients(tx, membership.locationId, { includeArchived }),
+    stock: await stockNow(tx, membership.locationId),
+  }));
+  const stockById = Object.fromEntries(ingredients.map((ingredient) => [ingredient.id, stockOf(stock, ingredient.id)]));
 
   return (
     <div className="flex flex-col gap-4">
@@ -53,7 +58,7 @@ async function IngredientsContent({ searchParams }: { searchParams: PageProps<"/
           </Button>
         </div>
       ) : (
-        <IngredientList ingredients={ingredients} />
+        <IngredientList ingredients={ingredients} stock={stockById} />
       )}
     </div>
   );
