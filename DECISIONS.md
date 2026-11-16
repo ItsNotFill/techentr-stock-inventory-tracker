@@ -42,6 +42,17 @@ A short log of design decisions, so later sessions do not undo earlier choices. 
 | 29 | **One agent works sequentially by default.** Sub-agents are only for independent UI tasks, at most two at a time, and two tasks that touch the schema or migrations never run at the same time. | Most tasks build on the one before; parallel schema changes produce conflicting migrations, and every sub-agent starts cold and costs extra usage. |
 | 30 | **`AI_MODEL` defaults to `claude-sonnet-5-5`.** Replaces the default in entry 7. | Reading a photo into JSON is routine extraction, so the cheaper, faster model is the right starting point; the env var can raise it if readings turn out poor. |
 
+## Decided before stage 0 (2026-11-16)
+
+| # | Decision | Reasoning |
+| --- | --- | --- |
+| 31 | **Supabase keys are the new publishable and secret keys:** `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_SECRET_KEY`. Replaces the `anon` and `service_role` names used in earlier entries and docs. | These are the keys the Supabase project issues; the old names would point at keys that are not in `.env.local`. |
+| 32 | **Two database URLs.** `DATABASE_URL` is the transaction pooler (port 6543) and is used by the app, with the Drizzle client created with `prepare: false`. `DATABASE_URL_MIGRATIONS` is the session pooler (port 5432) and is used by `drizzle-kit` migrations and the seed script. | Serverless functions need the transaction pooler, which does not support prepared statements; migrations and seeding need a session. |
+| 33 | **Operating mode: the main agent orchestrates.** It does the schema, migrations, ledger, depletion, variance, import logic and `lib/ai` itself. Screens, forms, styling and small fixes go to the `ui-builder` sub-agent. The `reviewer` sub-agent checks every stage before the merge. Work is sequential; never two schema or migration tasks at once. Extends entry 29. | The parts that must never be wrong stay with the strongest model; screens are cheaper to delegate; a second pair of eyes checks each stage. |
+| 34 | **The main agent does not stop for questions it can answer reasonably.** It picks the option most consistent with `SPEC.md` and `DECISIONS.md`, records it here, and continues. It stops only for: a secret or key missing from `.env.local`; an action that needs Filippo's accounts (Vercel, Supabase dashboard, Anthropic console); anything destructive to the database or the `main` branch. Replaces the "stop and ask" rule. | The build runs unattended; a wrong small choice is cheap to change later because it is written down, while a stalled session costs a whole usage window. |
+| 35 | **Checkpoints.** `PROGRESS.md` has a "Now working on" line naming the task, branch and worktree. Long tasks get pushed WIP commits. Every session starts by checking `git status`, `git worktree list` and that line, and finishes or cleans up half-done work first. | A usage limit can end a session at any moment; the next session must be able to continue from the repository alone. |
+| 36 | **`NEXT_STEPS_FOR_FILIPPO.md` is the hand-off file.** It lists what only Filippo can do (Vercel clicks, keys) and gets a five-line summary after each stage. | One place to look after an unattended run. |
+
 ## Open questions (from SPEC.md, still open)
 
 - Which restaurant will pilot it, and which POS do they use?

@@ -6,10 +6,19 @@
     "sessionUrl": false
   },
   "permissions": {
+    "defaultMode": "acceptEdits",
     "allow": [
-      "Bash(git add *)",
-      "Bash(git commit *)",
-      "Bash(git push *)"
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(node *)",
+      "Bash(git *)",
+      "Bash(ls *)",
+      "Bash(mkdir *)"
+    ],
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(rm -rf *)"
     ]
   }
 }

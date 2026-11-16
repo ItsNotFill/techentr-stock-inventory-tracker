@@ -37,5 +37,6 @@ yarn-error.log*
 # Local certificates
 *.pem
 
-# Claude Code local settings
+# Claude Code local settings and sub-agent worktrees
 .claude/settings.local.json
+.claude/worktrees/

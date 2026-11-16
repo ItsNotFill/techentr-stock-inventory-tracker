@@ -13,8 +13,14 @@ Rules:
 - When the stage's tasks are ticked and its done check passes, the main agent reviews the whole stage (tests, type check, lint, done check, `CLAUDE.md` rules, code quality), then merges the branch into `main` and pushes.
 - The main agent then says the stage is finished and updates "Current stage" below. No agent starts the next stage, or picks up a task it was not given, before that.
 - Then start the next stage on a new branch.
+- Screens, forms, styling and small fixes go to the `ui-builder` sub-agent; the `reviewer` sub-agent checks every stage before the merge.
+- Checkpoints: before a task starts it is written under "Now working on" below, with its branch and worktree. Long tasks get pushed `WIP:` commits. After a task: tick it, clear the line, commit, push.
+- Every session starts with `git status`, `git worktree list` and the "Now working on" line; half-done work and leftover worktrees are finished or cleaned up first.
+- Things only Filippo can do are listed in `NEXT_STEPS_FOR_FILIPPO.md`.
 
 **Current stage: 0**
+
+**Now working on:** nothing
 
 ## Stage 0: Setup
 

@@ -96,11 +96,17 @@ Environment variables live in `.env.local` (never committed) and are documented 
 | Variable | Where it may be read |
 | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | browser and server |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | browser and server |
-| `SUPABASE_SERVICE_ROLE_KEY` | server only |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | browser and server |
+| `SUPABASE_SECRET_KEY` | server only |
 | `DATABASE_URL` | server only |
+| `DATABASE_URL_MIGRATIONS` | server only: drizzle-kit and the seed script |
 | `ANTHROPIC_API_KEY` | server only |
 | `AI_MODEL` | server only |
+
+- The Supabase keys are the new publishable and secret keys, not the old `anon` and `service_role` keys.
+- `DATABASE_URL` is the transaction pooler (port 6543). The app's Drizzle client must be created with `prepare: false`, because that pooler does not support prepared statements.
+- `DATABASE_URL_MIGRATIONS` is the session pooler (port 5432). `drizzle-kit` migrations and the seed script use it.
+- `.env.local` holds real values. Never print it, commit it or overwrite it.
 
 ## Rules
 
@@ -109,7 +115,7 @@ Environment variables live in `.env.local` (never committed) and are documented 
 - stock_movements is append-only. Stock = SUM(qty_delta). Never add a current_stock column.
 - Quantities in base units (g, ml, unit) as numeric. Never floats.
 - Imports are idempotent (unique pos_order_id per location) and undoable.
-- Never disable RLS. Never expose the Supabase service key or AI API key to the browser.
+- Never disable RLS. Never expose the Supabase secret key or AI API key to the browser.
 - Schema changes only via Drizzle migrations.
 - Write tests for depletion, variance and unit conversion. Run them before saying a task is done.
 - Keep a seed script with the pizzeria example data from SPEC.md.
@@ -118,9 +124,11 @@ Environment variables live in `.env.local` (never committed) and are documented 
 
 Agents (standard practice for every stage):
 
-- Default: one agent, the main agent, works through the stage's tasks in order. It is the only one that pushes.
-- Sub-agents are used only for independent UI tasks: screens and components that do not depend on each other or on unfinished work.
-- At most two sub-agents run at the same time, on tasks that do not touch the same files.
+- The main agent orchestrates and works through the stage's tasks in order. It is the only one that pushes.
+- The main agent does these itself: schema, migrations, ledger, depletion, variance, import logic and `lib/ai`.
+- Screens, forms, styling and small fixes are delegated to the `ui-builder` sub-agent (`.claude/agents/ui-builder.md`), one task at a time.
+- The `reviewer` sub-agent (`.claude/agents/reviewer.md`) reviews every stage before it is merged. It is read-only and returns OK or a list of fixes.
+- Work is sequential. Two `ui-builder` agents may run at the same time only on screens that do not depend on each other or on unfinished work and do not touch the same files. Never more than two.
 - Never run two tasks that touch the schema or migrations at the same time. This counts the main agent's own task. Schema and migration work is done by one agent, in sequence.
 - Each sub-agent works in its own git worktree, commits there, and never pushes.
 - After handing out work, the main agent waits until a sub-agent comes back with something to show. It does not do that sub-agent's task in the meantime.
@@ -129,6 +137,25 @@ Agents (standard practice for every stage):
 - OK: the main agent puts the work on the stage branch, ticks the task in PROGRESS.md, and pushes.
 - A sub-agent does only the task it was given. It does not pick up the next task on its own.
 - No agent starts work on the next stage until the main agent has said the current stage is finished. The main agent says so only after the whole-stage review has passed, the branch is merged into `main`, and "Current stage" in PROGRESS.md is updated.
+
+Autonomy (the main agent runs without waiting for approval):
+
+- Do not stop for a question you can answer reasonably. Pick the option most consistent with `SPEC.md` and `DECISIONS.md`, record it in `DECISIONS.md`, and continue.
+- Stop only for:
+  - a secret or key missing from `.env.local`;
+  - an action that needs Filippo's accounts (Vercel, the Supabase dashboard, the Anthropic console);
+  - anything destructive to the database or to the `main` branch.
+- When blocked on one of these, write what is needed in `NEXT_STEPS_FOR_FILIPPO.md`, push it, and continue with every task that does not depend on it.
+- After each finished stage, append a five-line summary to `NEXT_STEPS_FOR_FILIPPO.md`, with the preview URL if there is one.
+
+Checkpoints (a usage limit can stop a session at any moment):
+
+- Before starting a task, write it under "Now working on" in `PROGRESS.md`, with the branch and, if a sub-agent has it, the worktree.
+- During a task longer than about 20 minutes, make WIP commits (`WIP: <task>`) on the stage branch and push them.
+- After every finished task: tick it, clear "Now working on", commit, push.
+- At the start of every session: run `git status` and `git worktree list`, read "Now working on" in `PROGRESS.md`, finish or clean up any half-done work and leftover worktrees first, then continue.
+- Keep `PROGRESS.md` accurate at all times, so a new session can continue from it alone.
+
 Git:
 
 - Each stage is built on its own branch, named `stage-<n>-<short-name>` (e.g. `stage-3-sales-import`), created from an up-to-date `main`.
@@ -146,4 +173,5 @@ Git:
 - **AI.** `lib/ai` uses `client.messages.parse()` with `zodOutputFormat()` so every result is validated against a Zod schema. Check `stop_reason` and a null `parsed_output` before using a result. Every result is saved as a draft in `ai_extractions`; nothing reaches the ledger until a user confirms. Use the `claude-api` skill when building this module.
 - **Counts.** A count changes the ledger only when a manager or owner approves it.
 - **Stages.** Work one stage at a time from `PROGRESS.md`. Do not start a stage until the previous one passes its done check.
-- **Open design questions.** If something is not answered in `SPEC.md`, `SCHEMA.md` or `DECISIONS.md`, stop and ask. Record the answer in `DECISIONS.md`.
+- **Database connections.** `lib/db/client.ts` and `lib/db/admin.ts` connect through `DATABASE_URL` with `prepare: false`. `drizzle.config.ts` and `scripts/seed.ts` use `DATABASE_URL_MIGRATIONS`.
+- **Open design questions.** If something is not answered in `SPEC.md`, `SCHEMA.md` or `DECISIONS.md`, choose the option most consistent with them, record it in `DECISIONS.md`, and continue. See "Autonomy" for the few cases where the main agent stops.
