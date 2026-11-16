@@ -273,7 +273,9 @@ export async function saveRecipe(
   for (const row of rows) {
     await tx
       .insert(recipeLines)
-      .values({ ...row, source: "manual", confirmedAt: new Date(), confirmedBy: userId })
+      // clock_timestamp(), not now(): now() is the same for every line saved in one
+      // transaction, and the editor shows lines in the order they were added.
+      .values({ ...row, source: "manual", confirmedAt: new Date(), confirmedBy: userId, createdAt: sql`clock_timestamp()` })
       .onConflictDoUpdate({
         target: [recipeLines.menuItemId, recipeLines.ingredientId],
         // A line that came from AI keeps its source; it is confirmed now if it was not before.
