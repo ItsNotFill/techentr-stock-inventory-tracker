@@ -8,6 +8,7 @@ import { getAdminDb } from "@/lib/db/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { loginSchema, onboardingSchema, signUpSchema } from "@/lib/validation/auth";
 import { formError, invalidForm, type FormState } from "@/lib/validation/form";
+import { passwordSchema } from "@/lib/validation/team";
 
 export async function login(_previous: FormState, formData: FormData): Promise<FormState> {
   const parsed = loginSchema.safeParse({
@@ -79,5 +80,23 @@ export async function completeOnboarding(_previous: FormState, formData: FormDat
   // The sign-up bootstrap is the one place the app uses the admin connection:
   // RLS lets nobody insert organizations or locations.
   await createRestaurantForUser(getAdminDb(), { userId: user.id, ...parsed.data });
+  redirect("/dashboard");
+}
+
+/** After an invite or new-password link: the signed-in user chooses a password. */
+export async function setPassword(_previous: FormState, formData: FormData): Promise<FormState> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const parsed = passwordSchema.safeParse({ password: formData.get("password") });
+  if (!parsed.success) return invalidForm(parsed.error);
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
+  if (error) {
+    if (error.code === "weak_password") return formError("Choose a stronger password.");
+    if (error.code === "same_password") return formError("Choose a password you have not used here before.");
+    return formError("Could not save the password. Open the link again and retry.");
+  }
   redirect("/dashboard");
 }

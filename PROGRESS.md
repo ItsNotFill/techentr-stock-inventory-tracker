@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 1** (stage 0 is merged; its Vercel task waits on Filippo, see `NEXT_STEPS_FOR_FILIPPO.md`)
 
-**Now working on:** Stage 1, server side for tasks 10 to 13 (ingredient and team queries, validation, Server Actions) before the screens go to ui-builder. Branch `stage-1-auth-ingredients`, main agent, no worktree.
+**Now working on:** Stage 1, tasks 10 to 12 (ingredients screen, form, pack sizes editor) with one ui-builder, and task 13 (settings and team screen) with a second ui-builder. Each works in its own worktree under `.claude/worktrees/`, branched from `stage-1-auth-ingredients`. The server side for both (queries, validation, Server Actions) is already on the stage branch. Main agent waits, then reviews.
 
 ## Stage 0: Setup
 
@@ -50,7 +50,7 @@ Rules:
 - [ ] Pack sizes editor inside the ingredient form
 - [ ] Settings and team screen: restaurant details, invite a user, set roles
 - [ ] Seed script v1: pizzeria organization, location, three test users, ingredients and pack sizes
-- [ ] Isolation test: a second restaurant's account cannot read or write the first one's ingredients
+- [x] Isolation test: a second restaurant's account cannot read or write the first one's ingredients
 
 **Done when:** two test accounts in different restaurants cannot see each other's ingredients.
 
