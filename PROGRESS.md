@@ -18,19 +18,19 @@ Rules:
 - Every session starts with `git status`, `git worktree list` and the "Now working on" line; half-done work and leftover worktrees are finished or cleaned up first.
 - Things only Filippo can do are listed in `NEXT_STEPS_FOR_FILIPPO.md`.
 
-**Current stage: 0**
+**Current stage: 1** (stage 0 is merged; its Vercel task waits on Filippo, see `NEXT_STEPS_FOR_FILIPPO.md`)
 
 **Now working on:** nothing
 
 ## Stage 0: Setup
 
-- [ ] Scaffold Next.js (App Router) with TypeScript strict, Tailwind and ESLint; add the `typecheck` script
-- [ ] Add shadcn/ui and the base components (button, input, table, dialog, form)
-- [ ] Add Vitest with one passing sample test; add the `test` script
-- [ ] Create the Supabase project; add `.env.example`, `.env.local` and the server and browser Supabase clients
-- [ ] Connect Drizzle: config, `db:generate` and `db:migrate` scripts, a test table migration applied to the database
-- [ ] Check the Drizzle RLS API names used in `SCHEMA.md` against the current docs; note any change in `DECISIONS.md`
-- [ ] Create the Vercel project, set the environment variables, deploy `main`
+- [x] Scaffold Next.js (App Router) with TypeScript strict, Tailwind and ESLint; add the `typecheck` script
+- [x] Add shadcn/ui and the base components (button, input, table, dialog, form)
+- [x] Add Vitest with one passing sample test; add the `test` script
+- [x] Create the Supabase project; add `.env.example`, `.env.local` and the server and browser Supabase clients
+- [x] Connect Drizzle: config, `db:generate` and `db:migrate` scripts, a test table migration applied to the database
+- [x] Check the Drizzle RLS API names used in `SCHEMA.md` against the current docs; note any change in `DECISIONS.md`
+- [ ] Create the Vercel project, set the environment variables, deploy `main` — **waiting on Filippo**: the clicks are in `NEXT_STEPS_FOR_FILIPPO.md`. Everything else in this stage is done; work continues with stage 1 meanwhile (DECISIONS.md, entry 42)
 
 **Done when:** a blank page is live at a public URL and a test table exists in the DB.
 
@@ -39,7 +39,7 @@ Rules:
 - [ ] Migration: enums, `organizations`, `locations`, `memberships`
 - [ ] Migration: `is_member()` and `has_role()` functions; RLS policies for the three tenancy tables
 - [ ] `lib/db/client.ts` (runs as the signed-in user) and `lib/db/admin.ts` (server only)
-- [ ] Sign-up and login pages with email; session handling in middleware
+- [ ] Sign-up and login pages with email; session handling in `proxy.ts` (the Next.js 16 name for middleware)
 - [ ] First-login onboarding: create organization, first location and owner membership
 - [ ] Role helpers and route guards for owner, manager, staff
 - [ ] Signed-in app shell with navigation, usable on a phone
