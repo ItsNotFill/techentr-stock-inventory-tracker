@@ -77,6 +77,15 @@ A short log of design decisions, so later sessions do not undo earlier choices. 
 | 49 | **Team invites are one-time links, not e-mails.** Inviting someone creates their account and shows the owner a link to pass on (by chat or e-mail). The link signs the person in once and takes them to "choose a password". An owner can make a fresh link for anyone on the team, which also covers a forgotten password. Someone who already has an account is added to the team directly. Refines "Supabase Auth invites" in `SCHEMA.md`. | Supabase's built-in e-mail sender only delivers to the project team's own addresses and a few messages per hour, so e-mailed invites would fail for real staff until SMTP is set up. A link works today and needs no configuration. |
 | 50 | **Ingredient forms use readable units.** Cost is typed per kg, per l or per unit, and reorder point and par level in g/kg or ml/cl/l; the server converts to base units with `lib/units`. An ingredient's unit is fixed while it has pack sizes (and, from stage 3, movements). Archived ingredients keep their name reserved. | Nobody thinks of mozzarella as EUR 0.008 per gram; storage stays in base units as decision 2 requires. |
 
+## Decided in stage 2 (2026-11-16)
+
+| # | Decision | Reasoning |
+| --- | --- | --- |
+| 51 | **A menu item is mapped, ignored or unmapped, never mapped and ignored at once** (database check). An item with a recipe cannot be ignored until its lines are removed; giving an ignored item a recipe makes it mapped. | Entry 22 says ignored items use no stock; allowing both flags would leave it unclear whether a sale depletes. |
+| 52 | **A recipe is saved as a whole.** The lines in the editor replace the stored ones, every saved line is confirmed, and `is_mapped` follows from whether any line is left. Amounts are typed in a readable unit and stored in the ingredient's base unit. Archived ingredients cannot be put in a recipe. | One save keeps `is_mapped` and the lines in step inside one transaction; entry 17 needs that flag to be exact. |
+| 53 | **Uniqueness of menu items:** the POS id when the item has one, otherwise the POS name without regard to case. Two items may share a name if the POS gives them different ids. | This is how sales rows will be matched in stage 3 (`SCHEMA.md`, `menu_items`). |
+| 54 | **`menu_items.ai_extraction_id` has no foreign key yet.** It is added in the migration that creates `ai_extractions`. | The AI tasks come after the stage's done check, and the table does not exist before them. |
+
 ## Open questions (from SPEC.md, still open)
 
 - Which restaurant will pilot it, and which POS do they use?

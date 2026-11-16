@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 2** (stages 0 and 1 are merged; the stage 0 Vercel task waits on Filippo, see `NEXT_STEPS_FOR_FILIPPO.md`)
 
-**Now working on:** Stage 2, server side for the menu screens (lib/menu, validation, Server Actions, tests), including the rule "confirming a recipe sets is_mapped; removing every line clears it". Branch `stage-2-menu-recipes`, main agent, no worktree.
+**Now working on:** Stage 2, tasks 2 to 4 (menu screen, menu item add and edit, recipe editor) with one ui-builder in its own worktree under `.claude/worktrees/`, branched from `stage-2-menu-recipes`; the server side is already on the stage branch. Meanwhile the main agent does seed script v2 on the stage branch.
 
 ## Stage 0: Setup
 
@@ -60,7 +60,7 @@ Rules:
 - [ ] Menu screen: list of POS items with mapped, unmapped and ignored status
 - [ ] Menu item add and edit, including modifiers as their own items
 - [ ] Recipe editor: add ingredient and amount per item, in base units
-- [ ] Confirming a recipe sets `is_mapped`; removing every line clears it
+- [x] Confirming a recipe sets `is_mapped`; removing every line clears it
 - [ ] Seed script v2: the pizzeria menu with recipes (Margherita 120 g mozzarella, Quattro Formaggi 80 g)
 - [ ] Run the done check by hand with a full pizzeria menu
 
