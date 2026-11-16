@@ -88,7 +88,8 @@ These scripts are created in stage 0. Keep the names.
 | Generate a migration from schema changes | `npm run db:generate` |
 | Apply migrations | `npm run db:migrate` |
 | Seed the pizzeria data | `npm run db:seed` |
-| Deploy | `git push origin main` (Vercel deploys `main`; every other branch gets a preview URL) |
+| Preview a stage | `git push origin stage-<n>-<short-name>` (Vercel gives every branch a preview URL) |
+| Deploy | merge the reviewed stage branch into `main` and `git push origin main` (Vercel deploys `main`) |
 
 Environment variables live in `.env.local` (never committed) and are documented in `.env.example`:
 
@@ -117,7 +118,12 @@ Environment variables live in `.env.local` (never committed) and are documented 
 
 Git:
 
-- After each task: update PROGRESS.md, commit with a clear message, and push to origin main. Never add Co-Authored-By, "Generated with Claude Code" or any other AI attribution to commits or PR descriptions.
+- Each stage is built on its own branch, named `stage-<n>-<short-name>` (e.g. `stage-3-sales-import`), created from an up-to-date `main`.
+- After each task: update PROGRESS.md, commit with a clear message, and push to the stage branch. A stage has many pushes. Never push stage work straight to `main`.
+- When every task in the stage is ticked and its done check passes on the branch, hand the stage back to the main agent.
+- The main agent reviews the whole stage before it reaches `main`: tests, type check, lint, the done check, the rules in this file, and code quality. Anything it finds is fixed on the stage branch.
+- Only after that review passes does the main agent merge the stage branch into `main` and push. The next stage then starts on a new branch from the updated `main`.
+- Never add Co-Authored-By, "Generated with Claude Code" or any other AI attribution to commits or PR descriptions.
 
 ## How the rules apply in code
 
