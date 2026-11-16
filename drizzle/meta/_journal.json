@@ -29,6 +29,13 @@
       "when": 1794850759501,
       "tag": "0003_tenancy_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794851189658,
+      "tag": "0004_ingredients_and_pack_sizes",
+      "breakpoints": true
     }
   ]
 }

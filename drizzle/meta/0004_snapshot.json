@@ -1,0 +1,833 @@
+{
+  "id": "bef457f2-6d7b-4278-94e3-16b54a5c4a37",
+  "prevId": "15fba62d-7089-498c-b25f-948474ed468c",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.ingredients": {
+      "name": "ingredients",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "base_unit": {
+          "name": "base_unit",
+          "type": "base_unit",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cost_per_base_unit": {
+          "name": "cost_per_base_unit",
+          "type": "numeric(12, 6)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "par_level": {
+          "name": "par_level",
+          "type": "numeric(14, 3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reorder_point": {
+          "name": "reorder_point",
+          "type": "numeric(14, 3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "storage_area": {
+          "name": "storage_area",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "ingredients_location_id_lower_name_key": {
+          "name": "ingredients_location_id_lower_name_key",
+          "columns": [
+            {
+              "expression": "location_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "lower(\"name\")",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "ingredients_location_id_storage_area_idx": {
+          "name": "ingredients_location_id_storage_area_idx",
+          "columns": [
+            {
+              "expression": "location_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "storage_area",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "ingredients_location_id_locations_id_fk": {
+          "name": "ingredients_location_id_locations_id_fk",
+          "tableFrom": "ingredients",
+          "tableTo": "locations",
+          "columnsFrom": [
+            "location_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "ingredients_id_location_id_key": {
+          "name": "ingredients_id_location_id_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "location_id"
+          ]
+        }
+      },
+      "policies": {
+        "ingredients_select_member": {
+          "name": "ingredients_select_member",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.is_member(location_id)"
+        },
+        "ingredients_insert_role": {
+          "name": "ingredients_insert_role",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "app_user"
+          ],
+          "withCheck": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "ingredients_update_role": {
+          "name": "ingredients_update_role",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])",
+          "withCheck": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "ingredients_delete_role": {
+          "name": "ingredients_delete_role",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        }
+      },
+      "checkConstraints": {
+        "ingredients_cost_not_negative": {
+          "name": "ingredients_cost_not_negative",
+          "value": "\"ingredients\".\"cost_per_base_unit\" >= 0"
+        },
+        "ingredients_par_level_not_negative": {
+          "name": "ingredients_par_level_not_negative",
+          "value": "\"ingredients\".\"par_level\" is null or \"ingredients\".\"par_level\" >= 0"
+        },
+        "ingredients_reorder_point_not_negative": {
+          "name": "ingredients_reorder_point_not_negative",
+          "value": "\"ingredients\".\"reorder_point\" is null or \"ingredients\".\"reorder_point\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.pack_sizes": {
+      "name": "pack_sizes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ingredient_id": {
+          "name": "ingredient_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "qty_in_base_unit": {
+          "name": "qty_in_base_unit",
+          "type": "numeric(14, 3)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_default": {
+          "name": "is_default",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "pack_sizes_one_default_per_ingredient": {
+          "name": "pack_sizes_one_default_per_ingredient",
+          "columns": [
+            {
+              "expression": "ingredient_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"pack_sizes\".\"is_default\"",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "pack_sizes_location_id_locations_id_fk": {
+          "name": "pack_sizes_location_id_locations_id_fk",
+          "tableFrom": "pack_sizes",
+          "tableTo": "locations",
+          "columnsFrom": [
+            "location_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pack_sizes_ingredient_fk": {
+          "name": "pack_sizes_ingredient_fk",
+          "tableFrom": "pack_sizes",
+          "tableTo": "ingredients",
+          "columnsFrom": [
+            "ingredient_id",
+            "location_id"
+          ],
+          "columnsTo": [
+            "id",
+            "location_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "pack_sizes_id_location_id_key": {
+          "name": "pack_sizes_id_location_id_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "location_id"
+          ]
+        },
+        "pack_sizes_ingredient_id_label_key": {
+          "name": "pack_sizes_ingredient_id_label_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "ingredient_id",
+            "label"
+          ]
+        }
+      },
+      "policies": {
+        "pack_sizes_select_member": {
+          "name": "pack_sizes_select_member",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.is_member(location_id)"
+        },
+        "pack_sizes_insert_role": {
+          "name": "pack_sizes_insert_role",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "app_user"
+          ],
+          "withCheck": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "pack_sizes_update_role": {
+          "name": "pack_sizes_update_role",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])",
+          "withCheck": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "pack_sizes_delete_role": {
+          "name": "pack_sizes_delete_role",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        }
+      },
+      "checkConstraints": {
+        "pack_sizes_qty_positive": {
+          "name": "pack_sizes_qty_positive",
+          "value": "\"pack_sizes\".\"qty_in_base_unit\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.setup_check": {
+      "name": "setup_check",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.locations": {
+      "name": "locations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pos_provider": {
+          "name": "pos_provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "timezone": {
+          "name": "timezone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "locations_org_id_idx": {
+          "name": "locations_org_id_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "locations_org_id_organizations_id_fk": {
+          "name": "locations_org_id_organizations_id_fk",
+          "tableFrom": "locations",
+          "tableTo": "organizations",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "locations_select_member": {
+          "name": "locations_select_member",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.is_member(id)"
+        },
+        "locations_update_owner": {
+          "name": "locations_update_owner",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(id, array['owner']::public.member_role[])",
+          "withCheck": "public.has_role(id, array['owner']::public.member_role[])"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.memberships": {
+      "name": "memberships",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "member_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "memberships_location_id_idx": {
+          "name": "memberships_location_id_idx",
+          "columns": [
+            {
+              "expression": "location_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "memberships_user_id_users_id_fk": {
+          "name": "memberships_user_id_users_id_fk",
+          "tableFrom": "memberships",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "memberships_location_id_locations_id_fk": {
+          "name": "memberships_location_id_locations_id_fk",
+          "tableFrom": "memberships",
+          "tableTo": "locations",
+          "columnsFrom": [
+            "location_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "memberships_user_id_location_id_pk": {
+          "name": "memberships_user_id_location_id_pk",
+          "columns": [
+            "user_id",
+            "location_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {
+        "memberships_select_member": {
+          "name": "memberships_select_member",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.is_member(location_id)"
+        },
+        "memberships_insert_owner": {
+          "name": "memberships_insert_owner",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "app_user"
+          ],
+          "withCheck": "public.has_role(location_id, array['owner']::public.member_role[])"
+        },
+        "memberships_update_owner": {
+          "name": "memberships_update_owner",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner']::public.member_role[])",
+          "withCheck": "public.has_role(location_id, array['owner']::public.member_role[])"
+        },
+        "memberships_delete_owner": {
+          "name": "memberships_delete_owner",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner']::public.member_role[])"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.organizations": {
+      "name": "organizations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "plan": {
+          "name": "plan",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pilot'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "organizations_select_member": {
+          "name": "organizations_select_member",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "app_user"
+          ],
+          "using": "exists (select 1 from public.locations l where l.org_id = organizations.id and public.is_member(l.id))"
+        },
+        "organizations_update_owner": {
+          "name": "organizations_update_owner",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "app_user"
+          ],
+          "using": "exists (select 1 from public.locations l where l.org_id = organizations.id and public.has_role(l.id, array['owner']::public.member_role[]))",
+          "withCheck": "exists (select 1 from public.locations l where l.org_id = organizations.id and public.has_role(l.id, array['owner']::public.member_role[]))"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.ai_extraction_kind": {
+      "name": "ai_extraction_kind",
+      "schema": "public",
+      "values": [
+        "menu_screenshot",
+        "recipe_draft",
+        "eod_report",
+        "supplier_invoice"
+      ]
+    },
+    "public.ai_extraction_status": {
+      "name": "ai_extraction_status",
+      "schema": "public",
+      "values": [
+        "draft",
+        "confirmed",
+        "discarded",
+        "failed"
+      ]
+    },
+    "public.base_unit": {
+      "name": "base_unit",
+      "schema": "public",
+      "values": [
+        "g",
+        "ml",
+        "unit"
+      ]
+    },
+    "public.count_status": {
+      "name": "count_status",
+      "schema": "public",
+      "values": [
+        "draft",
+        "submitted",
+        "approved",
+        "rejected"
+      ]
+    },
+    "public.delivery_source": {
+      "name": "delivery_source",
+      "schema": "public",
+      "values": [
+        "manual",
+        "invoice_photo"
+      ]
+    },
+    "public.delivery_status": {
+      "name": "delivery_status",
+      "schema": "public",
+      "values": [
+        "draft",
+        "confirmed",
+        "discarded"
+      ]
+    },
+    "public.import_source": {
+      "name": "import_source",
+      "schema": "public",
+      "values": [
+        "csv",
+        "photo"
+      ]
+    },
+    "public.import_status": {
+      "name": "import_status",
+      "schema": "public",
+      "values": [
+        "draft",
+        "confirmed",
+        "undone"
+      ]
+    },
+    "public.member_role": {
+      "name": "member_role",
+      "schema": "public",
+      "values": [
+        "owner",
+        "manager",
+        "staff"
+      ]
+    },
+    "public.menu_item_kind": {
+      "name": "menu_item_kind",
+      "schema": "public",
+      "values": [
+        "item",
+        "modifier"
+      ]
+    },
+    "public.movement_type": {
+      "name": "movement_type",
+      "schema": "public",
+      "values": [
+        "sale",
+        "delivery",
+        "waste",
+        "count_adjust"
+      ]
+    },
+    "public.recipe_line_source": {
+      "name": "recipe_line_source",
+      "schema": "public",
+      "values": [
+        "manual",
+        "ai"
+      ]
+    },
+    "public.waste_reason": {
+      "name": "waste_reason",
+      "schema": "public",
+      "values": [
+        "expired",
+        "dropped",
+        "burnt",
+        "other"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

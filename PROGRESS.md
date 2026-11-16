@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 1** (stage 0 is merged; its Vercel task waits on Filippo, see `NEXT_STEPS_FOR_FILIPPO.md`)
 
-**Now working on:** Stage 1, tasks 8 and 9 (migration: ingredients and pack_sizes with RLS; lib/units). Branch `stage-1-auth-ingredients`, main agent, no worktree.
+**Now working on:** Stage 1, server side for tasks 10 to 13 (ingredient and team queries, validation, Server Actions) before the screens go to ui-builder. Branch `stage-1-auth-ingredients`, main agent, no worktree.
 
 ## Stage 0: Setup
 
@@ -43,8 +43,8 @@ Rules:
 - [x] First-login onboarding: create organization, first location and owner membership
 - [x] Role helpers and route guards for owner, manager, staff
 - [x] Signed-in app shell with navigation, usable on a phone
-- [ ] Migration: `ingredients` and `pack_sizes` with RLS
-- [ ] `lib/units`: base-unit and pack conversion with `decimal.js`, plus tests
+- [x] Migration: `ingredients` and `pack_sizes` with RLS
+- [x] `lib/units`: base-unit and pack conversion with `decimal.js`, plus tests
 - [ ] Ingredients screen: table with name, unit, reorder point, cost
 - [ ] Ingredient add and edit form with Zod validation
 - [ ] Pack sizes editor inside the ingredient form
@@ -82,6 +82,7 @@ AI onboarding (after the done check):
 - [ ] Migration: `pos_import_mappings`, `sales_imports`, `sales`, `sale_lines` with RLS and `UNIQUE(location_id, pos_order_id)`
 - [ ] Migration: `stock_movements` with RLS, revoked update and delete, and the blocking triggers
 - [ ] `lib/ledger`: append movements, stock now, stock at a time; tests
+- [ ] Lock an ingredient's base unit once it has movements (extend `baseUnitLocked` in `lib/ingredients`)
 - [ ] Depletion function (sale lines × confirmed recipe lines → movements); tests including the 2,600 g example
 - [ ] CSV upload and parsing with Papa Parse
 - [ ] Column-mapping step, saved per POS in `pos_import_mappings`
