@@ -62,6 +62,7 @@ A short log of design decisions, so later sessions do not undo earlier choices. 
 | 39 | **shadcn/ui uses the Radix base with the Nova preset.** Forms use the `field` components; the old `form` component no longer exists in the registry. | Radix is the long-standing base with the most examples; `field` is what shadcn now ships for forms. |
 | 40 | **Postgres is version 17**, so `ON DELETE SET NULL (pack_size_id)` in `delivery_lines` can be used as planned in `SCHEMA.md`. | The column-list form needs Postgres 15 or later. |
 | 41 | **The stage 0 test table is `setup_check`**, with RLS on and no policies. `scripts/check-db.ts` checks both database URLs and that the table exists. | Proves migrations reach the database without exposing anything: with no policies only the admin connection can read it. |
+| 42 | **Stage 0 is merged and stage 1 starts before the Vercel deploy exists.** The Vercel task stays unticked in `PROGRESS.md` until Filippo has created the project. | Vercel deploys `main`, so the app has to be on `main` before the project can be created, and creating it needs Filippo's account. Filippo asked for work to continue meanwhile. The other half of the done check, the test table, passes. |
 
 ## Open questions (from SPEC.md, still open)
 

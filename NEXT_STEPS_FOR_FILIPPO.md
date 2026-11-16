@@ -1,0 +1,42 @@
+# Next steps for Filippo
+
+Things only you can do, newest need first. Stage summaries are at the bottom.
+
+## Waiting on you
+
+### 1. Create the Vercel project (about 5 minutes)
+
+Stage 0 is finished except for this. The app is on `main` and builds.
+
+1. Go to <https://vercel.com> and log in with the GitHub account that owns the repository.
+2. Click **Add New…** (top right), then **Project**.
+3. Under **Import Git Repository**, find `ItsNotFill/techentr-stock-inventory-tracker` and click **Import**.
+   - If it is not in the list, click **Adjust GitHub App Permissions**, give Vercel access to that repository, and come back.
+4. Leave everything as detected: **Framework Preset** Next.js, **Root Directory** `./`, build and output settings untouched.
+5. Open **Environment Variables** and add the names below. Copy each value from your `.env.local`. Leave the environment selector on all three (Production, Preview, Development).
+   - Shortcut: copy the whole content of `.env.local` and paste it into the first **Key** box. Vercel fills in every row. Then delete the `DATABASE_URL_MIGRATIONS` row and the empty `ANTHROPIC_API_KEY` row.
+6. Click **Deploy** and wait for it to finish (one to two minutes).
+7. Click the screenshot of the site. You should see a page that says "Restaurant Inventory". That is the stage 0 done check.
+8. Paste the public URL under "Answers" at the bottom of this section, commit and push, or tell me the URL in the next session.
+
+Environment variables to add in Vercel:
+
+| Name | Add now? |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | yes |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | yes |
+| `SUPABASE_SECRET_KEY` | yes |
+| `DATABASE_URL` | yes (the port 6543 one) |
+| `AI_MODEL` | yes (`claude-sonnet-5-5`) |
+| `ANTHROPIC_API_KEY` | later, when you have the key (see below) |
+| `DATABASE_URL_MIGRATIONS` | no. Migrations and the seed run from your computer, not from Vercel |
+
+After this, every push to a branch gets its own preview URL. You find it in Vercel under **Deployments**, or on GitHub next to the commit (the green tick, then **Details**).
+
+**Answers**
+
+- Public URL: _(paste here)_
+
+## Stage summaries
+
+_(none yet)_

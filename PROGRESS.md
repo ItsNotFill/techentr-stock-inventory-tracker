@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 0**
 
-**Now working on:** Stage 0, task 7 (Vercel hand-off notes). Branch `stage-0-setup`, main agent, no worktree.
+**Now working on:** Stage 0 whole-stage review (reviewer sub-agent, read-only, no worktree). Branch `stage-0-setup`.
 
 ## Stage 0: Setup
 
@@ -30,7 +30,7 @@ Rules:
 - [x] Create the Supabase project; add `.env.example`, `.env.local` and the server and browser Supabase clients
 - [x] Connect Drizzle: config, `db:generate` and `db:migrate` scripts, a test table migration applied to the database
 - [x] Check the Drizzle RLS API names used in `SCHEMA.md` against the current docs; note any change in `DECISIONS.md`
-- [ ] Create the Vercel project, set the environment variables, deploy `main`
+- [ ] Create the Vercel project, set the environment variables, deploy `main` — **waiting on Filippo**: the clicks are in `NEXT_STEPS_FOR_FILIPPO.md`. Everything else in this stage is done; work continues with stage 1 meanwhile (DECISIONS.md, entry 42)
 
 **Done when:** a blank page is live at a public URL and a test table exists in the DB.
 
