@@ -1,22 +1,17 @@
 /**
  * Where to send someone after an e-mail link, given the `next` value from the
- * URL. Only paths on this site are accepted; anything else becomes `fallback`.
+ * URL. `next` is attacker-controlled, and "is this a path on our site" is
+ * surprisingly hard to answer by parsing: browsers drop tabs and newlines
+ * ("/\t/evil.com"), and dot segments normalise into "//evil.com".
  *
- * `next` is attacker-controlled. Checking for a leading "/" is not enough:
- * browsers drop tabs and newlines and read "/\t/evil.com" as "//evil.com".
- * So the value must be made of plain path characters AND still resolve to
- * this origin.
+ * So nothing is parsed. The links this app creates only ever lead to the
+ * screens below; `next` must be exactly one of them, or it is ignored.
  */
-const SAFE_PATH = /^\/[A-Za-z0-9\-._~/?=&%]*$/;
+export const REDIRECT_TARGETS = ["/dashboard", "/onboarding", "/set-password"] as const;
 
-export function safeRedirectPath(next: string | null | undefined, origin: string, fallback = "/dashboard"): string {
-  if (!next || !SAFE_PATH.test(next) || next.startsWith("//")) return fallback;
-  let resolved: URL;
-  try {
-    resolved = new URL(next, origin);
-  } catch {
-    return fallback;
-  }
-  if (resolved.origin !== new URL(origin).origin) return fallback;
-  return `${resolved.pathname}${resolved.search}`;
+export type RedirectTarget = (typeof REDIRECT_TARGETS)[number];
+
+export function safeRedirectPath(next: string | null | undefined, fallback: RedirectTarget = "/dashboard"): RedirectTarget {
+  const match = REDIRECT_TARGETS.find((target) => target === next);
+  return match ?? fallback;
 }

@@ -12,8 +12,8 @@ const OTP_TYPES: readonly EmailOtpType[] = ["signup", "invite", "magiclink", "re
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
-  // `next` comes from the link, so it is only followed when it stays on this site.
-  const next = safeRedirectPath(searchParams.get("next"), request.nextUrl.origin);
+  // `next` comes from the link, so it is only followed when it is one of the app's own screens.
+  const next = safeRedirectPath(searchParams.get("next"));
   const supabase = await createSupabaseServerClient();
 
   const code = searchParams.get("code");
