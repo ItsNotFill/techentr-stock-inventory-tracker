@@ -180,7 +180,7 @@ This is not the Next.js of older tutorials. `AGENTS.md` says the same: read the 
 ## How the rules apply in code
 
 - **Ledger.** All writes to `stock_movements` go through `lib/ledger`. Nothing else inserts into that table. The only delete is the import-undo database function. See `SCHEMA.md`, "Ledger rules".
-- **RLS.** App queries use `lib/db/client.ts`, which runs as the signed-in user so policies apply. `lib/db/admin.ts` bypasses RLS and is imported only by migrations, the seed script and the sign-up bootstrap.
+- **RLS.** App queries use `lib/db/client.ts`, which runs each transaction as the database role `app_user` with the signed-in user's id set, so policies apply. Policies are written `to: appUser` and use `public.is_member()`, `public.has_role()` and `public.current_user_id()`. Every migration that adds a table ends with hand-written `GRANT`s to `app_user` (Drizzle does not generate grants). `lib/db/admin.ts` bypasses RLS and is imported only by migrations, the seed script and the sign-up bootstrap.
 - **Supabase client.** `supabase-js` is for Auth and Storage only. Never query tables with it: new tables are not exposed to the Data API, and all table access goes through Drizzle on the server.
 - **Tenant keys.** Parents have `UNIQUE(id, location_id)` and children use composite foreign keys, so a row can never reference another location's data. See `SCHEMA.md`, "Composite tenant keys".
 - **AI.** `lib/ai` uses `client.messages.parse()` with `zodOutputFormat()` so every result is validated against a Zod schema. Check `stop_reason` and a null `parsed_output` before using a result. Every result is saved as a draft in `ai_extractions`; nothing reaches the ledger until a user confirms. Use the `claude-api` skill when building this module.

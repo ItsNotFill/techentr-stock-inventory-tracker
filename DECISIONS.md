@@ -64,6 +64,13 @@ A short log of design decisions, so later sessions do not undo earlier choices. 
 | 41 | **The stage 0 test table is `setup_check`**, with RLS on and no policies. `scripts/check-db.ts` checks both database URLs and that the table exists. | Proves migrations reach the database without exposing anything: with no policies only the admin connection can read it. |
 | 42 | **Stage 0 is merged and stage 1 starts before the Vercel deploy exists.** The Vercel task stays unticked in `PROGRESS.md` until Filippo has created the project. | Vercel deploys `main`, so the app has to be on `main` before the project can be created, and creating it needs Filippo's account. Filippo asked for work to continue meanwhile. The other half of the done check, the test table, passes. |
 
+## Decided in stage 1 (2026-11-16)
+
+| # | Decision | Reasoning |
+| --- | --- | --- |
+| 43 | **The app runs its queries as a dedicated database role, `app_user`**, not Supabase's `authenticated`. `lib/db/client.ts` switches to it inside each transaction and sets the user's id in `request.jwt.claims`. Every RLS policy is written `to app_user`, and every table migration ends with hand-written `GRANT`s to `app_user`. Policies read the user through `public.current_user_id()`, because `app_user` cannot use `auth.uid()`. Refines entries 23 and 27; where `SCHEMA.md` says "revoked from `authenticated` and `anon`", read "never granted to `app_user`, `authenticated` or `anon`". | In this Supabase project, tables made by migrations give `authenticated` no rights. Granting them would open every table to the Data API for any signed-in user, which entry 27 rules out. The Data API can only act as `anon`, `authenticated` or `service_role`, so rights given to `app_user` stay reachable from our server only. |
+| 44 | **Two helper functions beyond the plan:** `list_location_members(loc)` returns the team with e-mail addresses to owners and managers; `find_user_id_by_email(loc, email)` lets an owner add someone who already has an account. Both are `SECURITY DEFINER` with an empty search path. | E-mail addresses live in `auth.users`, which the app role cannot read, and the admin connection is reserved for migrations, seed and sign-up bootstrap. |
+
 ## Open questions (from SPEC.md, still open)
 
 - Which restaurant will pilot it, and which POS do they use?

@@ -15,6 +15,20 @@
       "when": 1794850708427,
       "tag": "0001_tenancy_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794850719330,
+      "tag": "0002_app_role_and_membership_functions",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794850759501,
+      "tag": "0003_tenancy_policies",
+      "breakpoints": true
     }
   ]
 }
