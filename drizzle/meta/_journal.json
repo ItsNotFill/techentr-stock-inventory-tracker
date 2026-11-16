@@ -57,6 +57,13 @@
       "when": 1794870082520,
       "tag": "0007_stock_movements",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794870495956,
+      "tag": "0008_undo_sales_import",
+      "breakpoints": true
     }
   ]
 }
