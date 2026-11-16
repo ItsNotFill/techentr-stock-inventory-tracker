@@ -26,7 +26,7 @@ Users are the owner (money and reports), the manager (recipes, imports, approvin
 
 Additions decided in planning (see `DECISIONS.md`):
 
-- AI vision: Claude API through `@anthropic-ai/sdk`, server side only. Model comes from `AI_MODEL` (default `claude-opus-5-5`).
+- AI vision: Claude API through `@anthropic-ai/sdk`, server side only. Model comes from `AI_MODEL` (default `claude-sonnet-5-5`).
 - Tests: Vitest. Package manager: npm.
 - Quantity maths in TypeScript: `decimal.js`. Never use JS `number` for quantities or money.
 - PWA and offline counts: Serwist service worker, IndexedDB for count drafts.
@@ -65,7 +65,7 @@ lib/
   units/                base-unit and pack conversion
   variance/             unexplained-usage maths
   imports/              CSV parsing, column mapping, idempotent import, undo
-  supabase/             server and browser Supabase clients
+  supabase/             server and browser Supabase clients (Auth and Storage only)
   validation/           shared Zod schemas
 drizzle/                generated SQL migrations (never edit the DB by hand)
 scripts/
@@ -116,10 +116,12 @@ Environment variables live in `.env.local` (never committed) and are documented 
 - After each task: update PROGRESS.md and commit with a clear message.
 - Variance is called "unexplained usage" in the UI.
 
-Main agent and sub-agents (standard practice for every stage):
+Agents (standard practice for every stage):
 
-- The main agent controls the project. It plans the stage, hands tasks to sub-agents, reviews their work, and is the only one that pushes.
-- At most two sub-agents run at the same time. Give them tasks that do not touch the same files.
+- Default: one agent, the main agent, works through the stage's tasks in order. It is the only one that pushes.
+- Sub-agents are used only for independent UI tasks: screens and components that do not depend on each other or on unfinished work.
+- At most two sub-agents run at the same time, on tasks that do not touch the same files.
+- Never run two tasks that touch the schema or migrations at the same time. This counts the main agent's own task. Schema and migration work is done by one agent, in sequence.
 - Each sub-agent works in its own git worktree, commits there, and never pushes.
 - After handing out work, the main agent waits until a sub-agent comes back with something to show. It does not do that sub-agent's task in the meantime.
 - The main agent checks what comes back: tests, type check, lint, the rules in this file, and code quality. It then gives the sub-agent an OK or a not-OK.
@@ -127,12 +129,10 @@ Main agent and sub-agents (standard practice for every stage):
 - OK: the main agent puts the work on the stage branch, ticks the task in PROGRESS.md, and pushes.
 - A sub-agent does only the task it was given. It does not pick up the next task on its own.
 - No agent starts work on the next stage until the main agent has said the current stage is finished. The main agent says so only after the whole-stage review has passed, the branch is merged into `main`, and "Current stage" in PROGRESS.md is updated.
-- Pick each sub-agent's model by task: the strongest model for the schema, the import and ledger logic and `lib/ai`; a cheaper model for screens, styling and small fixes.
-
 Git:
 
 - Each stage is built on its own branch, named `stage-<n>-<short-name>` (e.g. `stage-3-sales-import`), created from an up-to-date `main`.
-- A stage has many pushes to its branch, one per approved task. Never push stage work straight to `main`.
+- A stage has many pushes to its branch, one per finished task. Never push stage work straight to `main`.
 - When every task in the stage is ticked and its done check passes on the branch, the main agent reviews the whole stage: tests, type check, lint, the done check, the rules in this file, and code quality. Anything it finds is fixed on the stage branch.
 - Only after that review passes does the main agent merge the stage branch into `main` and push. The next stage then starts on a new branch from the updated `main`.
 - Never add Co-Authored-By, "Generated with Claude Code" or any other AI attribution to commits or PR descriptions.
@@ -141,6 +141,8 @@ Git:
 
 - **Ledger.** All writes to `stock_movements` go through `lib/ledger`. Nothing else inserts into that table. The only delete is the import-undo database function. See `SCHEMA.md`, "Ledger rules".
 - **RLS.** App queries use `lib/db/client.ts`, which runs as the signed-in user so policies apply. `lib/db/admin.ts` bypasses RLS and is imported only by migrations, the seed script and the sign-up bootstrap.
+- **Supabase client.** `supabase-js` is for Auth and Storage only. Never query tables with it: new tables are not exposed to the Data API, and all table access goes through Drizzle on the server.
+- **Tenant keys.** Parents have `UNIQUE(id, location_id)` and children use composite foreign keys, so a row can never reference another location's data. See `SCHEMA.md`, "Composite tenant keys".
 - **AI.** `lib/ai` uses `client.messages.parse()` with `zodOutputFormat()` so every result is validated against a Zod schema. Check `stop_reason` and a null `parsed_output` before using a result. Every result is saved as a draft in `ai_extractions`; nothing reaches the ledger until a user confirms. Use the `claude-api` skill when building this module.
 - **Counts.** A count changes the ledger only when a manager or owner approves it.
 - **Stages.** Work one stage at a time from `PROGRESS.md`. Do not start a stage until the previous one passes its done check.

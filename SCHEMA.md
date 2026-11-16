@@ -15,10 +15,20 @@ Seventeen tables: the fourteen in SPEC.md plus `deliveries`, `delivery_lines` an
 | Money | `numeric({ precision: 12, scale: 2 })`, euros. Called **money** below |
 | Users | `uuid` referencing `auth.users.id` (Supabase Auth). There is no users table of our own |
 | Tenant column | `location_id uuid not null` references `locations.id`, on every table except `organizations` and `locations` |
+| Tenant integrity | Every parent table has `UNIQUE(id, location_id)`. Every child references its parent with a composite foreign key `(parent_id, location_id)`, so a child can never point at another location's parent |
 | Numbers in TypeScript | Drizzle returns `numeric` as a string. Parse with `decimal.js` or do the maths in SQL. Never `Number()` |
 | RLS | Enabled on every table, with policies declared in the Drizzle schema |
 
 Check the exact Drizzle names for RLS (`pgPolicy`, `enableRLS`, the `drizzle-orm/supabase` helpers) against the current Drizzle docs in stage 0. They are the part of this plan most likely to have changed.
+
+### Composite tenant keys
+
+RLS checks only the row being written. Without more, a recipe line in location A could reference an ingredient in location B. The keys below make the database refuse that.
+
+- **Parents** (`ingredients`, `pack_sizes`, `menu_items`, `ai_extractions`, `sales_imports`, `sales`, `count_sessions`, `deliveries`) each carry `UNIQUE(id, location_id)`, in Drizzle `unique().on(t.id, t.locationId)`.
+- **Children** reference them with `foreignKey({ columns: [t.parentId, t.locationId], foreignColumns: [parent.id, parent.locationId] })`. In the tables below this is written "composite FK → `parent`".
+- **Nullable parents.** Where the parent column is nullable, Postgres skips the check while it is null (`MATCH SIMPLE`), so drafts still work.
+- **Not covered.** `locations.org_id`, `memberships` and each table's own `location_id → locations.id` stay single-column. `stock_movements.ref_id` has no foreign key at all, so `lib/ledger` must check that the referenced row has the same `location_id`.
 
 ## Enums
 
@@ -40,7 +50,9 @@ Check the exact Drizzle names for RLS (`pgPolicy`, `enableRLS`, the `drizzle-orm
 
 ## Row Level Security
 
-Two SQL helper functions, `SECURITY DEFINER` and `STABLE`, created in a custom migration in stage 1. They read `memberships` for `auth.uid()`; being definer functions, they avoid a policy on `memberships` calling itself.
+Two SQL helper functions, declared `SECURITY DEFINER`, `STABLE` and `SET search_path = ''`, created in a custom migration in stage 1. They read `public.memberships` for `auth.uid()`; being definer functions, they avoid a policy on `memberships` calling itself.
+
+Because the search path is empty, every name in their bodies is schema-qualified: `public.memberships`, `public.member_role`, `auth.uid()`. This stops a caller from substituting their own objects for the ones the function means. Any later `SECURITY DEFINER` function, such as `undo_sales_import()`, follows the same rule.
 
 | Function | Returns true when |
 | --- | --- |
@@ -124,7 +136,7 @@ Primary key: `(user_id, location_id)`. Index: `(location_id)`. The app refuses t
 | `is_active` | boolean, not null, default true | archive instead of delete, because movements reference it |
 | `created_at`, `updated_at` | timestamptz | |
 
-Unique index: `(location_id, lower(name))`. Index: `(location_id, storage_area)`. There is no stock column; see "Ledger rules".
+Unique: `(id, location_id)`. Unique index: `(location_id, lower(name))`. Index: `(location_id, storage_area)`. There is no stock column; see "Ledger rules".
 
 #### `pack_sizes` (stage 1)
 
@@ -132,13 +144,13 @@ Unique index: `(location_id, lower(name))`. Index: `(location_id, storage_area)`
 | --- | --- | --- |
 | `id` | uuid PK | |
 | `location_id` | uuid, not null | |
-| `ingredient_id` | uuid, not null, FK `ingredients.id` on delete cascade | |
+| `ingredient_id` | uuid, not null | composite FK → `ingredients`, on delete cascade |
 | `label` | text, not null | e.g. "Case 12×1 L" |
 | `qty_in_base_unit` | qty, not null, check `> 0` | e.g. 12000 |
 | `is_default` | boolean, not null, default false | preselected on delivery and count screens |
 | `created_at` | timestamptz | |
 
-Unique: `(ingredient_id, label)`.
+Unique: `(id, location_id)`; `(ingredient_id, label)`.
 
 #### `menu_items` (stage 2)
 
@@ -154,10 +166,10 @@ Unique: `(ingredient_id, label)`.
 | `price` | money, nullable | read by AI when visible; not used in stock maths |
 | `is_mapped` | boolean, not null, default false | true only when the item has a confirmed recipe |
 | `is_ignored` | boolean, not null, default false | uses no stock (service charge); leaves the unmapped queue |
-| `ai_extraction_id` | uuid, nullable, FK `ai_extractions.id` | set when the item came from a menu screenshot |
+| `ai_extraction_id` | uuid, nullable | composite FK → `ai_extractions`; set when the item came from a menu screenshot |
 | `created_at`, `updated_at` | timestamptz | |
 
-Unique indexes: `(location_id, pos_item_id)` where `pos_item_id is not null`; `(location_id, lower(pos_name))` where `pos_item_id is null`. Sales rows match on `pos_item_id` first, then on the normalised name.
+Unique: `(id, location_id)`. Unique indexes: `(location_id, pos_item_id)` where `pos_item_id is not null`; `(location_id, lower(pos_name))` where `pos_item_id is null`. Sales rows match on `pos_item_id` first, then on the normalised name.
 
 Unmapped queue = `is_mapped = false and is_ignored = false`. Items seen in sales but unknown to the app are created here automatically, unmapped.
 
@@ -167,8 +179,8 @@ Unmapped queue = `is_mapped = false and is_ignored = false`. Items seen in sales
 | --- | --- | --- |
 | `id` | uuid PK | |
 | `location_id` | uuid, not null | |
-| `menu_item_id` | uuid, not null, FK `menu_items.id` on delete cascade | |
-| `ingredient_id` | uuid, nullable, FK `ingredients.id` on delete restrict | null only on an AI draft whose ingredient does not exist yet |
+| `menu_item_id` | uuid, not null | composite FK → `menu_items`, on delete cascade |
+| `ingredient_id` | uuid, nullable | composite FK → `ingredients`, on delete restrict; null only on an AI draft whose ingredient does not exist yet |
 | `draft_ingredient_name` | text, nullable | what the AI called the ingredient |
 | `draft_base_unit` | `base_unit`, nullable | the unit the AI proposed |
 | `qty_base_unit` | qty, not null, check `> 0` | amount used by one sale of the item |
@@ -202,7 +214,7 @@ One row per call to the vision model. This is the audit trail for every AI read 
 | `created_at` | timestamptz | |
 | `confirmed_by`, `confirmed_at` | uuid, timestamptz, nullable | |
 
-Index: `(location_id, kind, created_at)`.
+Unique: `(id, location_id)`. Index: `(location_id, kind, created_at)`.
 
 ### Sales (stage 3)
 
@@ -229,7 +241,7 @@ Unique: `(location_id, pos_provider)`.
 | `status` | `import_status`, not null | **AI flag.** CSV imports are created `confirmed` (the preview happens before saving). Photo imports are created `draft` and confirmed on the confirmation screen |
 | `file_name` | text, nullable | CSV |
 | `photo_path` | text, nullable | **AI field:** Storage path of the report photo |
-| `ai_extraction_id` | uuid, nullable, FK `ai_extractions.id` | **AI field:** the raw reading |
+| `ai_extraction_id` | uuid, nullable | **AI field:** the raw reading. Composite FK → `ai_extractions` |
 | `business_date` | date, nullable | the trading day a photo report covers |
 | `imported_by` | uuid, not null | |
 | `row_count` | integer, not null, default 0 | |
@@ -239,7 +251,7 @@ Unique: `(location_id, pos_provider)`.
 | `confirmed_by`, `confirmed_at` | uuid, timestamptz, nullable | |
 | `undone_by`, `undone_at` | uuid, timestamptz, nullable | |
 
-Check: `source <> 'photo' or (photo_path is not null and business_date is not null)`. Index: `(location_id, created_at)`.
+Check: `source <> 'photo' or (photo_path is not null and business_date is not null)`. Unique: `(id, location_id)`. Index: `(location_id, created_at)`.
 
 #### `sales`
 
@@ -247,12 +259,12 @@ Check: `source <> 'photo' or (photo_path is not null and business_date is not nu
 | --- | --- | --- |
 | `id` | uuid PK | |
 | `location_id` | uuid, not null | |
-| `import_id` | uuid, not null, FK `sales_imports.id` on delete cascade | |
+| `import_id` | uuid, not null | composite FK → `sales_imports`, on delete cascade |
 | `pos_order_id` | text, not null | photo imports use `eod:<business_date>` |
 | `sold_at` | timestamptz, not null | photo imports use the end of the business date in the location's timezone |
 | `created_at` | timestamptz | |
 
-**Unique: `(location_id, pos_order_id)`.** This is the idempotency rule. Indexes: `(location_id, sold_at)`, `(import_id)`.
+**Unique: `(location_id, pos_order_id)`.** This is the idempotency rule. Also unique: `(id, location_id)`. Indexes: `(location_id, sold_at)`, `(import_id)`.
 
 #### `sale_lines`
 
@@ -260,8 +272,8 @@ Check: `source <> 'photo' or (photo_path is not null and business_date is not nu
 | --- | --- | --- |
 | `id` | uuid PK | |
 | `location_id` | uuid, not null | |
-| `sale_id` | uuid, not null, FK `sales.id` on delete cascade | |
-| `menu_item_id` | uuid, not null, FK `menu_items.id` on delete restrict | |
+| `sale_id` | uuid, not null | composite FK → `sales`, on delete cascade |
+| `menu_item_id` | uuid, not null | composite FK → `menu_items`, on delete restrict |
 | `qty` | qty, not null, check `<> 0` | negative for a refund |
 | `depleted_at` | timestamptz, nullable | null until its movements are written |
 
@@ -275,11 +287,11 @@ Indexes: `(sale_id)`; `(menu_item_id)` where `depleted_at is null`, which is the
 | --- | --- | --- |
 | `id` | uuid PK | |
 | `location_id` | uuid, not null | |
-| `ingredient_id` | uuid, not null, FK `ingredients.id` on delete restrict | |
+| `ingredient_id` | uuid, not null | composite FK → `ingredients`, on delete restrict |
 | `qty_delta` | qty, not null, check `<> 0` | positive adds stock, negative removes it |
 | `type` | `movement_type`, not null | |
 | `ref_table` | text, nullable | see the reference table below |
-| `ref_id` | uuid, nullable | no foreign key, because it points at different tables |
+| `ref_id` | uuid, nullable | no foreign key, because it points at different tables; `lib/ledger` checks the referenced row has the same `location_id` |
 | `waste_reason` | `waste_reason`, nullable | check: required when `type = 'waste'` |
 | `note` | text, nullable | |
 | `occurred_at` | timestamptz, not null, default now | when it happened |
@@ -318,7 +330,7 @@ Append-only is enforced in the database, not only in code:
 | `review_note` | text, nullable | |
 | `created_at` | timestamptz | |
 
-Indexes: `(location_id, status)`, `(location_id, submitted_at)`. A session may cover only some ingredients; only counted ingredients are adjusted.
+Unique: `(id, location_id)`. Indexes: `(location_id, status)`, `(location_id, submitted_at)`. A session may cover only some ingredients; only counted ingredients are adjusted.
 
 #### `count_lines`
 
@@ -326,8 +338,8 @@ Indexes: `(location_id, status)`, `(location_id, submitted_at)`. A session may c
 | --- | --- | --- |
 | `id` | uuid PK | |
 | `location_id` | uuid, not null | |
-| `session_id` | uuid, not null, FK `count_sessions.id` on delete cascade | |
-| `ingredient_id` | uuid, not null, FK `ingredients.id` on delete restrict | |
+| `session_id` | uuid, not null | composite FK → `count_sessions`, on delete cascade |
+| `ingredient_id` | uuid, not null | composite FK → `ingredients`, on delete restrict |
 | `counted_qty` | qty, not null, check `>= 0` | |
 | `theoretical_qty` | qty, nullable | ledger stock as of `submitted_at`; provisional at submit, fixed at approval |
 | `late_adjust_qty` | qty, not null, default 0 | sum of movements dated before this count but recorded after its approval |
@@ -353,12 +365,12 @@ Unexplained usage for a line = `counted_qty − (theoretical_qty + late_adjust_q
 | `invoice_number` | text, nullable | |
 | `delivered_at` | timestamptz, not null, default now | |
 | `photo_path` | text, nullable | **AI field:** Storage path of the invoice photo |
-| `ai_extraction_id` | uuid, nullable, FK `ai_extractions.id` | **AI field:** the raw reading |
+| `ai_extraction_id` | uuid, nullable | **AI field:** the raw reading. Composite FK → `ai_extractions` |
 | `created_by` | uuid, not null | |
 | `created_at` | timestamptz | |
 | `confirmed_by`, `confirmed_at` | uuid, timestamptz, nullable | |
 
-Check: `source <> 'invoice_photo' or photo_path is not null`. Indexes: `(location_id, delivered_at)`; `(location_id, supplier_name, invoice_number)`, not unique, used to warn about an invoice entered twice.
+Check: `source <> 'invoice_photo' or photo_path is not null`. Unique: `(id, location_id)`. Indexes: `(location_id, delivered_at)`; `(location_id, supplier_name, invoice_number)`, not unique, used to warn about an invoice entered twice.
 
 #### `delivery_lines`
 
@@ -366,9 +378,9 @@ Check: `source <> 'invoice_photo' or photo_path is not null`. Indexes: `(locatio
 | --- | --- | --- |
 | `id` | uuid PK | |
 | `location_id` | uuid, not null | |
-| `delivery_id` | uuid, not null, FK `deliveries.id` on delete cascade | |
-| `ingredient_id` | uuid, nullable, FK `ingredients.id` on delete restrict | null only while a draft invoice line is unmatched |
-| `pack_size_id` | uuid, nullable, FK `pack_sizes.id` on delete set null | |
+| `delivery_id` | uuid, not null | composite FK → `deliveries`, on delete cascade |
+| `ingredient_id` | uuid, nullable | composite FK → `ingredients`, on delete restrict; null only while a draft invoice line is unmatched |
+| `pack_size_id` | uuid, nullable | composite FK → `pack_sizes`, `ON DELETE SET NULL (pack_size_id)` |
 | `pack_count` | qty, nullable | e.g. 2 cases |
 | `qty_base_unit` | qty, nullable | required and `> 0` at confirmation |
 | `line_total` | money, nullable | from the invoice |
@@ -378,6 +390,8 @@ Check: `source <> 'invoice_photo' or photo_path is not null`. Indexes: `(locatio
 | `created_at` | timestamptz | |
 
 Index: `(delivery_id)`. On confirmation, each line writes one `delivery` movement.
+
+The pack size key names its column in the delete action because a plain `SET NULL` on a composite key would also null `location_id`, which is not allowed. This form needs Postgres 15 or later and may have to be hand-written in the migration SQL. If it cannot be used, fall back to `on delete restrict`.
 
 ## Ledger rules
 

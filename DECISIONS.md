@@ -17,7 +17,7 @@ A short log of design decisions, so later sessions do not undo earlier choices. 
 | # | Decision | Reasoning |
 | --- | --- | --- |
 | 6 | **AI and offline tasks are folded into stages 2 to 5**, after each stage's manual path and done check. | The maths is proven by hand before AI is added on top, and the plan stays at eight stages. |
-| 7 | **AI provider is the Claude API**, called only from `lib/ai` on the server, with the model set by `AI_MODEL` (default `claude-opus-5-5`). | One provider keeps the module small; an env var lets us switch to a cheaper model without a code change. |
+| 7 | **AI provider is the Claude API**, called only from `lib/ai` on the server, with the model set by `AI_MODEL` (default: see entry 30). | One provider keeps the module small; an env var lets us switch to a cheaper model without a code change. |
 | 8 | **A count changes the ledger only after a manager or owner approves it.** Statuses: draft, submitted, approved, rejected. A manager or owner who counts can submit and approve in one step. | A typo in a count would otherwise rewrite stock and the euro report immediately. |
 | 9 | **Count time is the moment staff submit.** On approval, theoretical stock is computed as of that moment. | Sales and deliveries recorded between submit and approval must not be swallowed by the count. |
 | 10 | **Late movements are auto-corrected.** A movement dated before an approved count but recorded after it also writes an offsetting `count_adjust` on that count, and the count's unexplained usage is recomputed. | The count already absorbed those sales, so deducting them again would double-count; this keeps stock right whatever order things are entered in. |
@@ -38,6 +38,9 @@ A short log of design decisions, so later sessions do not undo earlier choices. 
 | 25 | **Tooling:** npm, Vitest, `decimal.js` for quantity maths, Serwist and IndexedDB for the PWA and offline counts. | Common, well-documented choices; `decimal.js` because Postgres `numeric` arrives in JS as a string and JS numbers are floats. |
 | 26 | **Refunds are sale lines with a negative quantity**, which write positive movements. | A refunded item was not used, and corrections must be new movements, not edits. |
 | 27 | **Supabase project setup:** automatic RLS is on for new tables, and new tables are not exposed to the Data API. All table access goes through Drizzle on the server; `supabase-js` is used only for Auth and Storage. | With the Data API closed, the browser's anon key cannot reach any table, so a missing or wrong policy cannot leak data; RLS stays on as the second layer behind the server. |
+| 28 | **Tenant integrity is enforced by keys.** Every parent table has `UNIQUE(id, location_id)` and every child uses a composite foreign key `(parent_id, location_id)`. Extends entry 14. | RLS checks only the row being written, so without this a row in one location could reference another location's ingredient or menu item; now the database refuses it. |
+| 29 | **One agent works sequentially by default.** Sub-agents are only for independent UI tasks, at most two at a time, and two tasks that touch the schema or migrations never run at the same time. | Most tasks build on the one before; parallel schema changes produce conflicting migrations, and every sub-agent starts cold and costs extra usage. |
+| 30 | **`AI_MODEL` defaults to `claude-sonnet-5-5`.** Replaces the default in entry 7. | Reading a photo into JSON is routine extraction, so the cheaper, faster model is the right starting point; the env var can raise it if readings turn out poor. |
 
 ## Open questions (from SPEC.md, still open)
 
