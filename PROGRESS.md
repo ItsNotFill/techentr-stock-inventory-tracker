@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 3** (stages 0 to 2 are merged. Open and waiting on Filippo: the stage 0 Vercel task, and the stage 2 AI onboarding tasks, which need `ANTHROPIC_API_KEY`; see `NEXT_STEPS_FOR_FILIPPO.md`)
 
-**Now working on:** Stage 3, import logic in `lib/imports` (CSV parsing, column mapping, row validation, idempotent confirm, unknown items, undo function, history) and its Server Actions, before the import screens go to ui-builder. Branch `stage-3-sales-import`, main agent, no worktree.
+**Now working on:** Stage 3 screens with two ui-builders, each in its own worktree under `.claude/worktrees/`, branched from `stage-3-sales-import`: (A) the import screen: upload, column mapping, preview with row errors, confirm, history with undo; (B) the "Needs recipe" queue screen and the theoretical stock column on the ingredients screen. All server code for both (lib/imports, lib/ledger, Server Actions, tests) is on the stage branch. Meanwhile the main agent does seed script v3 and the sample CSV.
 
 ## Stage 0: Setup
 
