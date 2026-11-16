@@ -1,0 +1,14 @@
+Order ID,Date,Time,Item,Quantity
+2001,17/11/2026,12:10,Margherita,2
+2001,17/11/2026,12:10,Cola 33cl,2
+2002,17/11/2026,12:25,Diavola,1
+2002,17/11/2026,12:25,Extra mozzarella,1
+2002,17/11/2026,12:25,Beer 33cl,1
+2003,17/11/2026,13:00,Capricciosa,2
+2003,17/11/2026,13:00,House red glass,2
+2004,17/11/2026,18:30,Prosciutto e Funghi,1
+2004,17/11/2026,18:30,Panna cotta,1
+2005,17/11/2026,19:15,Margherita,3
+2005,17/11/2026,19:15,Takeaway box,3
+2006,17/11/2026,19:40,Margherita,-1
+2006,17/11/2026,19:40,Service charge,1

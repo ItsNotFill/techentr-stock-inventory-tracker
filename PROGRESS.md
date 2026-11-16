@@ -92,7 +92,7 @@ AI onboarding (after the done check) — **parked: waiting for `ANTHROPIC_API_KE
 - [ ] Unmapped items screen: map to a recipe or ignore; mapping back-fills depletion
 - [ ] `undo_sales_import()` database function and the undo button
 - [ ] Import history list with imported, skipped and unmapped counts
-- [ ] Seed script v3: opening stock and a delivery as movements, plus a sample sales CSV for the worked example
+- [x] Seed script v3: opening stock and a delivery as movements, plus a sample sales CSV for the worked example
 - [ ] Theoretical stock column on the ingredients screen
 - [ ] Integration test: the same CSV twice changes stock once; undo restores it
 

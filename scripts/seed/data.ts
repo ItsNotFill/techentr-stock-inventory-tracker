@@ -219,6 +219,33 @@ export const SEED_INGREDIENTS: SeedIngredient[] = [
   },
 ];
 
+/**
+ * The worked example's day (SPEC.md, "mozzarella over one day"), in the
+ * restaurant's own time. Every ingredient starts the day at its par level,
+ * except mozzarella: opening count 2,000 g, then a delivery of 5 x 1 kg.
+ * The day's sales are in scripts/seed/sample-sales-day1.csv: 30 Margherita and
+ * 10 Quattro Formaggi, which leaves 2,600 g.
+ */
+export const SEED_DAY = {
+  date: { year: 2026, month: 11, day: 16 },
+  openingHour: 8,
+  deliveryHour: 10,
+  mozzarella: { name: "Mozzarella", openingQty: "2000", deliveryQty: "5000" },
+  salesFile: "scripts/seed/sample-sales-day1.csv",
+};
+
+/** How the sample sales files are laid out (the same mapping the import screen would save). */
+export const SEED_COLUMN_MAP = {
+  orderId: "Order ID",
+  itemName: "Item",
+  itemId: null,
+  quantity: "Quantity",
+  soldAt: "Date",
+  soldAtTime: "Time",
+  dateFormat: "dmy",
+  decimalSeparator: ".",
+} as const;
+
 export type SeedMenuItem = {
   /** The name exactly as the POS prints it. Stage 3's sample sales CSV uses these. */
   posName: string;

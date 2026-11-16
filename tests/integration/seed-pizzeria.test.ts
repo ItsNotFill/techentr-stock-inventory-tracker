@@ -1,10 +1,12 @@
 import { sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { runAsUser } from "@/lib/db/rls";
+import { zonedTimeToUtc } from "@/lib/imports/time";
 import { listIngredients } from "@/lib/ingredients";
+import { stockAt, stockOf } from "@/lib/ledger";
 import { getMenuItem, listMenuItems } from "@/lib/menu";
 import { menuItemStatus } from "@/lib/menu/status";
-import { SEED_INGREDIENTS, SEED_LOCATION, SEED_MENU, SEED_USERS } from "../../scripts/seed/data";
+import { SEED_DAY, SEED_INGREDIENTS, SEED_LOCATION, SEED_MENU, SEED_USERS } from "../../scripts/seed/data";
 import { createTestDb, hasDatabase, type TestDb } from "../helpers/db";
 
 /**
@@ -64,6 +66,21 @@ describe.skipIf(!hasDatabase)("seeded pizzeria", () => {
     // Nothing from the seed is left waiting for a recipe.
     const seedNames = new Set(SEED_MENU.map((item) => item.posName));
     expect(menu.filter((item) => seedNames.has(item.posName) && menuItemStatus(item) === "unmapped")).toEqual([]);
+  });
+
+  it("the worked example's day leaves 2,600 g of mozzarella (stage 3 done check)", async (context) => {
+    if (!ownerId) return context.skip();
+    const ingredients = await runAsUser(testDb.db, ownerId, (tx) => listIngredients(tx, SEED_LOCATION.id));
+    const mozzarella = ingredients.find((ingredient) => ingredient.name === SEED_DAY.mozzarella.name)!;
+    const at = (hour: number) => zonedTimeToUtc({ ...SEED_DAY.date, hour, minute: 0, second: 0 }, SEED_LOCATION.timezone);
+    const stockAtHour = async (hour: number) =>
+      stockOf(await runAsUser(testDb.db, ownerId!, (tx) => stockAt(tx, SEED_LOCATION.id, at(hour))), mozzarella.id);
+
+    expect(await stockAtHour(SEED_DAY.openingHour)).toBe("2000.000"); // opening count
+    expect(await stockAtHour(SEED_DAY.deliveryHour)).toBe("7000.000"); // + 5 x 1 kg
+    expect(await stockAtHour(15)).toBe("5000.000"); // after lunch: 14 Margherita (1,680 g), 4 Quattro Formaggi (320 g)
+    // After the last order of the day: 7,000 - 30 x 120 - 10 x 80. Later movements do not change this.
+    expect(await stockAtHour(22)).toBe("2600.000");
   });
 
   it("uses the SPEC amounts: Margherita 120 g and Quattro Formaggi 80 g of mozzarella", async (context) => {

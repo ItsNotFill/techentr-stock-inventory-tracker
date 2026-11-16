@@ -6,6 +6,12 @@
  *
  * Stage 1 (v1): organization, location, three test users, ingredients, pack sizes.
  * Stage 2 (v2): the menu with a confirmed recipe for every item.
+ * Stage 3 (v3): opening stock and a delivery as ledger movements, and the
+ *               worked example's day of sales imported from a sample CSV.
+ *
+ * The ledger is append-only, so stock is seeded once: when the demo restaurant
+ * already has movements, that part is skipped. Sales are imported through the
+ * same code as the import screen, which skips orders that are already there.
  *
  * The three test users share one password. It is read from SEED_USER_PASSWORD
  * in `.env.seed.local` (git-ignored); the first run creates that file with a
@@ -13,15 +19,27 @@
  */
 import { randomBytes } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import { config } from "dotenv";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "../lib/db/schema";
-import { ingredients, locations, memberships, menuItems, organizations, packSizes, recipeLines } from "../lib/db/schema";
+import { ingredients, locations, memberships, menuItems, organizations, packSizes, recipeLines, stockMovements } from "../lib/db/schema";
+import { confirmImport, parseCsv, prepareImport, previewImport } from "../lib/imports";
+import { zonedTimeToUtc } from "../lib/imports/time";
+import { appendMovements, type NewMovement } from "../lib/ledger";
 import { costPerBaseUnit, toDbQty, toDbUnitCost } from "../lib/units";
-import { SEED_INGREDIENTS, SEED_LOCATION, SEED_MENU, SEED_ORGANIZATION, SEED_USERS } from "./seed/data";
+import {
+  SEED_COLUMN_MAP,
+  SEED_DAY,
+  SEED_INGREDIENTS,
+  SEED_LOCATION,
+  SEED_MENU,
+  SEED_ORGANIZATION,
+  SEED_USERS,
+} from "./seed/data";
 
 config({ path: ".env.local", quiet: true });
 
@@ -179,6 +197,62 @@ async function main() {
       }
     }
     console.log(`Menu: ${SEED_MENU.length} items, each with a recipe or ignored`);
+
+    // 5. Stock for the worked example's day. All movements go through lib/ledger.
+    const at = (hour: number) => zonedTimeToUtc({ ...SEED_DAY.date, hour, minute: 0, second: 0 }, SEED_LOCATION.timezone);
+    const [anyMovement] = await db
+      .select({ id: stockMovements.id })
+      .from(stockMovements)
+      .where(sql`${stockMovements.locationId} = ${SEED_LOCATION.id}`)
+      .limit(1);
+    if (anyMovement) {
+      console.log("Stock: the demo restaurant already has movements, so opening stock was not added again");
+    } else {
+      const movements: NewMovement[] = [];
+      for (const item of SEED_INGREDIENTS) {
+        const ingredientId = ingredientIdByName.get(item.name)!;
+        const isMozzarella = item.name === SEED_DAY.mozzarella.name;
+        const opening = isMozzarella ? SEED_DAY.mozzarella.openingQty : item.parLevel;
+        if (opening) {
+          movements.push({
+            ingredientId,
+            qtyDelta: opening,
+            type: "count_adjust",
+            note: "Opening stock (seed)",
+            occurredAt: at(SEED_DAY.openingHour),
+            createdBy: ownerId ?? null,
+          });
+        }
+        if (isMozzarella) {
+          movements.push({
+            ingredientId,
+            qtyDelta: SEED_DAY.mozzarella.deliveryQty,
+            type: "delivery",
+            note: "5 × Bag 1 kg (seed)",
+            occurredAt: at(SEED_DAY.deliveryHour),
+            createdBy: ownerId ?? null,
+          });
+        }
+      }
+      await db.transaction((tx) => appendMovements(tx, SEED_LOCATION.id, movements));
+      console.log(`Stock: opening stock for ${SEED_INGREDIENTS.length} ingredients and the mozzarella delivery`);
+    }
+
+    // 6. The day's sales, through the same import code as the screen.
+    if (!ownerId) throw new Error("The seed owner is missing");
+    const csv = parseCsv(readFileSync(path.resolve(SEED_DAY.salesFile), "utf8"));
+    const prepared = prepareImport(csv, { ...SEED_COLUMN_MAP }, SEED_LOCATION.timezone);
+    if (prepared.invalidRows.length > 0) throw new Error(`The sample sales file has ${prepared.invalidRows.length} invalid rows`);
+    const imported = await db.transaction(async (tx) => {
+      const preview = await previewImport(tx, SEED_LOCATION.id, prepared);
+      if (preview.orders.new === 0) return null;
+      return confirmImport(tx, SEED_LOCATION.id, ownerId!, { fileName: path.basename(SEED_DAY.salesFile), prepared });
+    });
+    console.log(
+      imported
+        ? `Sales: ${imported.ordersImported} orders imported (${imported.linesImported} lines, ${imported.linesWaiting} waiting for a recipe)`
+        : "Sales: the sample day was already imported",
+    );
     console.log(`\nDone. Log in as one of the users above; the password is in ${SEED_ENV_FILE}.`);
   } finally {
     await pool.end();

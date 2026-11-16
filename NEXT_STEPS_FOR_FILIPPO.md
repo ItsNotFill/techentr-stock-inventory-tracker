@@ -74,6 +74,8 @@ The database already holds the demo restaurant "Pizzeria Demo" with 16 ingredien
 
 `npm run db:seed` can be run again at any time. It updates the demo restaurant and never deletes anything.
 
+The demo restaurant already holds the worked example from the spec: opening stock, a mozzarella delivery and one day of sales (16 November 2026). To try the import screen yourself, upload `scripts/seed/sample-sales-day2.csv` under **Import sales**. Upload it a second time to see that nothing is imported twice, and use **Undo** in the history to take it back.
+
 ## Stage summaries
 
 ### Stage 0: Setup (2026-11-16)
