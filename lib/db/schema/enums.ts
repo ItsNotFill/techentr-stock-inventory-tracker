@@ -24,3 +24,5 @@ export const aiExtractionStatus = pgEnum("ai_extraction_status", ["draft", "conf
 
 export type MemberRole = (typeof memberRole.enumValues)[number];
 export type BaseUnit = (typeof baseUnit.enumValues)[number];
+export type MovementType = (typeof movementType.enumValues)[number];
+export type WasteReason = (typeof wasteReason.enumValues)[number];

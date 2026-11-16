@@ -126,7 +126,11 @@ export async function saveRecipe(menuItemId: string, lines: unknown): Promise<Fo
     refresh();
     return {
       ok: true,
-      message: result.isMapped ? "Recipe saved. Sales of this item now use stock." : "Recipe removed. This item needs a recipe again.",
+      message: !result.isMapped
+        ? "Recipe removed. This item needs a recipe again."
+        : result.backfilledLines > 0
+          ? `Recipe saved. ${result.backfilledLines} earlier ${result.backfilledLines === 1 ? "sale line" : "sale lines"} of this item now use stock too.`
+          : "Recipe saved. Sales of this item now use stock.",
     };
   } catch (error) {
     return toFormState(error);

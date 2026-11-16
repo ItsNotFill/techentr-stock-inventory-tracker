@@ -195,7 +195,7 @@ describe.skipIf(!hasDatabase)("ingredients: tenant isolation and roles", () => {
           levelUnit: "l",
         }),
       ),
-    ).rejects.toThrow("unit cannot change");
+    ).rejects.toThrow("unit cannot change once");
   });
 
   it("allows only one default pack size per ingredient", async () => {

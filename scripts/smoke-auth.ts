@@ -11,10 +11,10 @@ import { randomUUID } from "node:crypto";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { config } from "dotenv";
-import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { createRestaurantForUser } from "../lib/auth/bootstrap";
+import { deleteRestaurantData } from "../tests/helpers/db";
 import * as schema from "../lib/db/schema";
 
 config({ path: ".env.local", quiet: true });
@@ -170,11 +170,7 @@ async function main() {
     }
   } finally {
     if (restaurant) {
-      await db.delete(schema.menuItems).where(eq(schema.menuItems.locationId, restaurant.locationId));
-      await db.delete(schema.locations).where(eq(schema.locations.id, restaurant.locationId));
-      if (restaurant.organizationId) {
-        await db.delete(schema.organizations).where(eq(schema.organizations.id, restaurant.organizationId));
-      }
+      await deleteRestaurantData(db, [restaurant.locationId], restaurant.organizationId ? [restaurant.organizationId] : []);
     }
     await admin.auth.admin.deleteUser(userId);
     await pool.end();

@@ -95,6 +95,9 @@ describe("exactness", () => {
     expect(toDbQty("2600")).toBe("2600.000");
     expect(toDbMoney("3.995")).toBe("4.00");
     expect(toDbMoney("-3.995")).toBe("-4.00");
+    // A negative amount that rounds to nothing is zero, not "-0.00".
+    expect(toDbMoney("-0.001")).toBe("0.00");
+    expect(toDbQty("-0.0004")).toBe("0.000");
   });
 });
 

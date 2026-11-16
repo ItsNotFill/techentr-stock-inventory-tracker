@@ -1,6 +1,7 @@
 import { and, asc, eq, sql } from "drizzle-orm";
 import type { Tx } from "@/lib/db/rls";
-import { ingredients, packSizes, type Ingredient, type PackSize } from "@/lib/db/schema";
+import { ingredients, packSizes, recipeLines, type Ingredient, type PackSize } from "@/lib/db/schema";
+import { hasMovements } from "@/lib/ledger";
 import { costPerBaseUnit, toBaseUnits, toDbQty, toDbUnitCost, DISPLAY_UNITS } from "@/lib/units";
 import type { IngredientFormValues, PackSizeFormValues } from "@/lib/validation/ingredients";
 
@@ -106,8 +107,9 @@ export async function createIngredient(tx: Tx, locationId: string, values: Ingre
 }
 
 /**
- * An ingredient's base unit is fixed once something is measured in it.
- * For now that means pack sizes; stage 3 adds stock movements.
+ * An ingredient's base unit is fixed once something is measured in it:
+ * a pack size, a recipe line or a stock movement. Changing g to ml would
+ * silently change what all of those numbers mean.
  */
 export async function baseUnitLocked(tx: Tx, locationId: string, ingredientId: string): Promise<boolean> {
   const [pack] = await tx
@@ -115,7 +117,14 @@ export async function baseUnitLocked(tx: Tx, locationId: string, ingredientId: s
     .from(packSizes)
     .where(and(eq(packSizes.ingredientId, ingredientId), eq(packSizes.locationId, locationId)))
     .limit(1);
-  return Boolean(pack);
+  if (pack) return true;
+  const [line] = await tx
+    .select({ id: recipeLines.id })
+    .from(recipeLines)
+    .where(and(eq(recipeLines.ingredientId, ingredientId), eq(recipeLines.locationId, locationId)))
+    .limit(1);
+  if (line) return true;
+  return hasMovements(tx, locationId, ingredientId);
 }
 
 export async function updateIngredient(
@@ -128,7 +137,7 @@ export async function updateIngredient(
   if (!current) throw new IngredientError("This ingredient no longer exists.");
   if (current.baseUnit !== values.baseUnit && (await baseUnitLocked(tx, locationId, id))) {
     throw new IngredientError(
-      "The unit cannot change while the ingredient has pack sizes. Remove them first.",
+      "The unit cannot change once the ingredient has pack sizes, recipes or stock movements.",
       "baseUnit",
     );
   }

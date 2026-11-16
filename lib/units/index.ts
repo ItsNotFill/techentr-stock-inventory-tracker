@@ -100,19 +100,25 @@ export function valueOf(qtyBase: Quantity, unitCost: Quantity): Decimal {
 
 // Database strings. Rounding is half-up, away from zero for negatives.
 
+function toFixedScale(value: Quantity, scale: number): string {
+  const rounded = toDecimal(value).toDecimalPlaces(scale, Decimal.ROUND_HALF_UP);
+  // Never "-0.00": a negative amount that rounds to nothing is simply zero.
+  return (rounded.isZero() ? new Decimal(0) : rounded).toFixed(scale);
+}
+
 /** numeric(14, 3) string for a quantity. */
 export function toDbQty(value: Quantity): string {
-  return toDecimal(value).toFixed(QTY_SCALE, Decimal.ROUND_HALF_UP);
+  return toFixedScale(value, QTY_SCALE);
 }
 
 /** numeric(12, 6) string for a cost per base unit. */
 export function toDbUnitCost(value: Quantity): string {
-  return toDecimal(value).toFixed(UNIT_COST_SCALE, Decimal.ROUND_HALF_UP);
+  return toFixedScale(value, UNIT_COST_SCALE);
 }
 
 /** numeric(12, 2) string for an amount of money. */
 export function toDbMoney(value: Quantity): string {
-  return toDecimal(value).toFixed(MONEY_SCALE, Decimal.ROUND_HALF_UP);
+  return toFixedScale(value, MONEY_SCALE);
 }
 
 // Formatting for the screen. Digits are grouped by hand so that no JS number

@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 3** (stages 0 to 2 are merged. Open and waiting on Filippo: the stage 0 Vercel task, and the stage 2 AI onboarding tasks, which need `ANTHROPIC_API_KEY`; see `NEXT_STEPS_FOR_FILIPPO.md`)
 
-**Now working on:** Stage 3, tasks 3 to 5 (lib/ledger: append, stock now, stock at a time; base-unit lock; depletion with the 2,600 g example). Branch `stage-3-sales-import`, main agent, no worktree.
+**Now working on:** Stage 3, import logic in `lib/imports` (CSV parsing, column mapping, row validation, idempotent confirm, unknown items, undo function, history) and its Server Actions, before the import screens go to ui-builder. Branch `stage-3-sales-import`, main agent, no worktree.
 
 ## Stage 0: Setup
 
@@ -81,9 +81,9 @@ AI onboarding (after the done check) — **parked: waiting for `ANTHROPIC_API_KE
 
 - [x] Migration: `pos_import_mappings`, `sales_imports`, `sales`, `sale_lines` with RLS and `UNIQUE(location_id, pos_order_id)`
 - [x] Migration: `stock_movements` with RLS, revoked update and delete, and the blocking triggers
-- [ ] `lib/ledger`: append movements, stock now, stock at a time; tests
-- [ ] Lock an ingredient's base unit once it has movements (extend `baseUnitLocked` in `lib/ingredients`)
-- [ ] Depletion function (sale lines × confirmed recipe lines → movements); tests including the 2,600 g example
+- [x] `lib/ledger`: append movements, stock now, stock at a time; tests
+- [x] Lock an ingredient's base unit once it has movements (extend `baseUnitLocked` in `lib/ingredients`)
+- [x] Depletion function (sale lines × confirmed recipe lines → movements); tests including the 2,600 g example
 - [ ] CSV upload and parsing with Papa Parse
 - [ ] Column-mapping step, saved per POS in `pos_import_mappings`
 - [ ] Row validation with Zod and a preview table showing errors

@@ -1,6 +1,7 @@
 import { and, asc, eq, inArray, isNull, ne, notInArray, sql } from "drizzle-orm";
 import type { Tx } from "@/lib/db/rls";
 import { ingredients, menuItems, recipeLines, type BaseUnit, type MenuItem } from "@/lib/db/schema";
+import { depleteSaleLines } from "@/lib/ledger/depletion";
 import { DISPLAY_UNITS, toBaseUnits, toDbMoney, toDbQty, toDecimal } from "@/lib/units";
 import type { MenuItemFormValues, RecipeLineInput } from "@/lib/validation/menu";
 
@@ -212,6 +213,10 @@ export async function deleteMenuItem(tx: Tx, locationId: string, id: string): Pr
  * Saves an item's whole recipe: the lines given replace what was there.
  * Every saved line is confirmed. With at least one line the item becomes
  * mapped (and is no longer ignored); with none it goes back to unmapped.
+ *
+ * Sales of the item that were imported while it had no recipe are depleted
+ * now, dated at their own sale time (the back-fill). Sales that were already
+ * depleted keep the amounts of the recipe they were sold under.
  */
 export async function saveRecipe(
   tx: Tx,
@@ -219,7 +224,7 @@ export async function saveRecipe(
   userId: string,
   menuItemId: string,
   lines: RecipeLineInput[],
-): Promise<{ isMapped: boolean }> {
+): Promise<{ isMapped: boolean; backfilledLines: number }> {
   const [item] = await tx
     .select({ id: menuItems.id })
     .from(menuItems)
@@ -294,5 +299,9 @@ export async function saveRecipe(
     .update(menuItems)
     .set(isMapped ? { isMapped: true, isIgnored: false } : { isMapped: false })
     .where(and(eq(menuItems.id, menuItemId), eq(menuItems.locationId, locationId)));
-  return { isMapped };
+
+  const backfill = isMapped
+    ? await depleteSaleLines(tx, locationId, userId, { menuItemId })
+    : { linesDepleted: 0, movementsWritten: 0 };
+  return { isMapped, backfilledLines: backfill.linesDepleted };
 }

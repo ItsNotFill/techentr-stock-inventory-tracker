@@ -1,10 +1,11 @@
 import { randomUUID } from "node:crypto";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
-import { eq, inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "../lib/db/schema";
+import { deleteRestaurantData } from "../tests/helpers/db";
 
 /**
  * Stages 1 and 2 through the real screens: log in, set up a restaurant, add an
@@ -53,16 +54,11 @@ test.afterAll(async () => {
           .where(eq(schema.memberships.userId, owner.id))
       : [];
     const locationIds = memberships.map((row) => row.locationId);
-    if (locationIds.length > 0) {
-      await db.delete(schema.menuItems).where(inArray(schema.menuItems.locationId, locationIds));
-      await db.delete(schema.locations).where(inArray(schema.locations.id, locationIds));
-      await db.delete(schema.organizations).where(
-        inArray(
-          schema.organizations.id,
-          memberships.map((row) => row.orgId),
-        ),
-      );
-    }
+    await deleteRestaurantData(
+      db,
+      locationIds,
+      memberships.map((row) => row.orgId),
+    );
     const { data } = await admin.auth.admin.listUsers({ perPage: 1000 });
     for (const user of data?.users ?? []) {
       if (user.email === owner.email || user.email === invited.email) await admin.auth.admin.deleteUser(user.id);
@@ -123,7 +119,7 @@ test("an owner sets up a restaurant, ingredients, a menu with recipes, and invit
     await expect(page.getByText("1,000 g")).toBeVisible();
     await expect(page.getByText("Default", { exact: true })).toBeVisible();
     // With a pack size, the unit is locked.
-    await expect(page.getByText("The unit cannot change while this ingredient has pack sizes.")).toBeVisible();
+    await expect(page.getByText("The unit cannot change once the ingredient has pack sizes")).toBeVisible();
   });
 
   await test.step("the ingredient list shows it in readable units", async () => {
