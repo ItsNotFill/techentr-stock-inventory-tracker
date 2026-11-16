@@ -92,7 +92,8 @@ export function RecipeEditor({
   }
 
   function addRow() {
-    setRows((current) => [...current, { key: nextKey.current++, ingredientId: "", amount: "", unit: "", draft: false }]);
+    const key = nextKey.current++;
+    setRows((current) => [...current, { key, ingredientId: "", amount: "", unit: "", draft: false }]);
   }
 
   function removeRow(key: number) {

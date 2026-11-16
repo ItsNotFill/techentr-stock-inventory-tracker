@@ -136,7 +136,7 @@ export async function removeMenuItem(menuItemId: string): Promise<FormState> {
 
   try {
     await withUser((tx) => deleteMenuItem(tx, membership.locationId, id.data));
-    refresh();
+    // No refresh(): it would re-render the page of the item that is gone. The screen goes to /menu instead.
     return { ok: true, message: "Item deleted." };
   } catch (error) {
     return toFormState(error);

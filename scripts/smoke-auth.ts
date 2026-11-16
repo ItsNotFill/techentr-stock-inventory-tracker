@@ -124,12 +124,53 @@ async function main() {
     const malformed = await get("/ingredients/not-a-uuid", cookie);
     check("a malformed ingredient id is not found", malformed.body.includes("404") || malformed.body.includes("not be found"), `${malformed.status}`);
 
+    // A menu item with a recipe: 120 g of the ingredient above.
+    const [menuItem] = await db
+      .insert(schema.menuItems)
+      .values({ locationId: restaurant.locationId, posName: "SMOKE MARGHERITA", displayName: "Smoke Margherita", price: "9.50", isMapped: true })
+      .returning({ id: schema.menuItems.id });
+    await db.insert(schema.recipeLines).values({
+      locationId: restaurant.locationId,
+      menuItemId: menuItem.id,
+      ingredientId: ingredient.id,
+      qtyBaseUnit: "120.000",
+      confirmedAt: new Date(),
+    });
+    await db.insert(schema.menuItems).values({ locationId: restaurant.locationId, posName: "Smoke Tiramisu", displayName: "Smoke Tiramisu" });
+
+    const menu = await get("/menu", cookie);
+    check(
+      "menu list shows items, status counts, price and ingredient cost",
+      menu.status === 200 &&
+        menu.body.includes("Smoke Margherita") &&
+        menu.body.includes("SMOKE MARGHERITA") &&
+        menu.body.includes("€9.50") &&
+        menu.body.includes("€0.96") && // 120 g at EUR 8 per kg
+        /Needs recipe(<!-- -->)? \((<!-- -->)?1(<!-- -->)?\)/.test(menu.body) &&
+        /Has recipe(<!-- -->)? \((<!-- -->)?1(<!-- -->)?\)/.test(menu.body),
+      `${menu.status}`,
+    );
+    const needsRecipe = await get("/menu?status=unmapped", cookie);
+    check(
+      "menu filter shows only items that need a recipe",
+      needsRecipe.body.includes("Smoke Tiramisu") && !needsRecipe.body.includes("SMOKE MARGHERITA"),
+    );
+    const menuItemPage = await get(`/menu/${menuItem.id}`, cookie);
+    check(
+      "menu item page shows the recipe line (120 g) and its cost",
+      menuItemPage.status === 200 && menuItemPage.body.includes('value="120"') && menuItemPage.body.includes("€0.96") && menuItemPage.body.includes("Has recipe"),
+      `${menuItemPage.status}`,
+    );
+    const menuMissing = await get("/menu/not-a-uuid", cookie);
+    check("a malformed menu item id is not found", menuMissing.body.includes("404") || menuMissing.body.includes("not be found"));
+
     for (const path of process.argv.slice(3)) {
       const page = await get(path, cookie);
       check(`${path} renders for the owner`, page.status === 200 && !page.body.includes("Application error"), `${page.status}`);
     }
   } finally {
     if (restaurant) {
+      await db.delete(schema.menuItems).where(eq(schema.menuItems.locationId, restaurant.locationId));
       await db.delete(schema.locations).where(eq(schema.locations.id, restaurant.locationId));
       if (restaurant.organizationId) {
         await db.delete(schema.organizations).where(eq(schema.organizations.id, restaurant.organizationId));
