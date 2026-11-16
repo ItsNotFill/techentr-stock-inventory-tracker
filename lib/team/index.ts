@@ -46,12 +46,13 @@ export async function findUserIdByEmail(tx: Tx, locationId: string, email: strin
 }
 
 export async function addMember(tx: Tx, locationId: string, userId: string, role: MemberRole): Promise<void> {
-  const [existing] = await tx
-    .select({ role: memberships.role })
-    .from(memberships)
-    .where(and(eq(memberships.locationId, locationId), eq(memberships.userId, userId)));
-  if (existing) throw new TeamError("This person is already on the team.", "email");
-  await tx.insert(memberships).values({ locationId, userId, role });
+  // One statement, so two invites at the same moment cannot both pass a check.
+  const added = await tx
+    .insert(memberships)
+    .values({ locationId, userId, role })
+    .onConflictDoNothing()
+    .returning({ userId: memberships.userId });
+  if (added.length === 0) throw new TeamError("This person is already on the team.", "email");
 }
 
 /** A location must always keep at least one owner (SCHEMA.md, memberships). */

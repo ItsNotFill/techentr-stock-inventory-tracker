@@ -141,6 +141,29 @@ describe.skipIf(!hasDatabase)("ingredients: tenant isolation and roles", () => {
     ).rejects.toThrow();
   });
 
+  it("another restaurant and staff cannot write pack sizes", async () => {
+    const [packA] = await as(ownerA, (tx) => tx.select({ id: packSizes.id }).from(packSizes));
+    const newPack = { locationId: restaurantA.locationId, ingredientId: mozzarellaA, qtyInBaseUnit: "500.000" };
+
+    // Owner B: insert into A's location, then update and delete A's row.
+    await expect(as(ownerB, (tx) => tx.insert(packSizes).values({ ...newPack, label: "Planted" }))).rejects.toThrow();
+    expect(
+      await as(ownerB, (tx) => tx.update(packSizes).set({ label: "Hacked" }).where(eq(packSizes.id, packA.id)).returning()),
+    ).toEqual([]);
+    expect(await as(ownerB, (tx) => tx.delete(packSizes).where(eq(packSizes.id, packA.id)).returning())).toEqual([]);
+
+    // Staff of A: may read, may not insert, update or delete.
+    expect(await as(staffA, (tx) => tx.select({ id: packSizes.id }).from(packSizes))).toHaveLength(1);
+    await expect(as(staffA, (tx) => tx.insert(packSizes).values({ ...newPack, label: "Staff pack" }))).rejects.toThrow();
+    expect(
+      await as(staffA, (tx) => tx.update(packSizes).set({ label: "Staff" }).where(eq(packSizes.id, packA.id)).returning()),
+    ).toEqual([]);
+    expect(await as(staffA, (tx) => tx.delete(packSizes).where(eq(packSizes.id, packA.id)).returning())).toEqual([]);
+
+    const [unchanged] = await as(ownerA, (tx) => tx.select({ label: packSizes.label }).from(packSizes));
+    expect(unchanged.label).toBe("Bag 1 kg");
+  });
+
   it("staff can read but not write; managers can write", async () => {
     const seenByStaff = await as(staffA, (tx) => listIngredients(tx, restaurantA.locationId));
     expect(seenByStaff.map((row) => row.id)).toEqual([mozzarellaA]);

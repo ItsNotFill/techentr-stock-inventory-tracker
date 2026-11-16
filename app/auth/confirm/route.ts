@@ -1,16 +1,9 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
+import { safeRedirectPath } from "@/lib/auth/safe-redirect";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const OTP_TYPES: readonly EmailOtpType[] = ["signup", "invite", "magiclink", "recovery", "email_change", "email"];
-
-/** Only same-site paths, so the link cannot be used to send people elsewhere. */
-function safeNext(value: string | null): string {
-  if (value && value.startsWith("/") && !value.startsWith("//") && !value.includes("\\")) {
-    return value;
-  }
-  return "/dashboard";
-}
 
 /**
  * Where the links in Supabase's e-mails land (sign-up confirmation, invite).
@@ -19,7 +12,8 @@ function safeNext(value: string | null): string {
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
-  const next = safeNext(searchParams.get("next"));
+  // `next` comes from the link, so it is only followed when it stays on this site.
+  const next = safeRedirectPath(searchParams.get("next"), request.nextUrl.origin);
   const supabase = await createSupabaseServerClient();
 
   const code = searchParams.get("code");

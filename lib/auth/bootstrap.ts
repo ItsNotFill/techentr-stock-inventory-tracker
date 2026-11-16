@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import type { Database } from "@/lib/db/rls";
 import { locations, memberships, organizations } from "@/lib/db/schema";
 
@@ -20,6 +20,8 @@ export async function createRestaurantForUser(
   input: NewRestaurant,
 ): Promise<{ organizationId: string | null; locationId: string; created: boolean }> {
   return adminDb.transaction(async (tx) => {
+    // One bootstrap per user at a time, so a double submit cannot create two restaurants.
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${input.userId}, 0))`);
     const [existing] = await tx
       .select({ locationId: memberships.locationId })
       .from(memberships)
