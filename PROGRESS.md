@@ -66,7 +66,7 @@ Rules:
 
 **Done when:** you can enter a real pizzeria's menu with recipes for every item.
 
-AI onboarding (after the done check):
+AI onboarding (after the done check) — **parked: waiting for `ANTHROPIC_API_KEY`** (`NEXT_STEPS_FOR_FILIPPO.md`, section 3). Build these on a branch `stage-2-ai-onboarding` from `main` once the key is in `.env.local` (DECISIONS.md, entry 57):
 
 - [ ] Private `photos` Storage bucket with its access policy; migration for `ai_extractions`
 - [ ] `lib/ai`: Claude client, model from `AI_MODEL`, shared error and refusal handling, saving each call to `ai_extractions`
