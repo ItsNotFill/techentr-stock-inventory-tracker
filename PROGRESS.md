@@ -18,7 +18,7 @@ Rules:
 - Every session starts with `git status`, `git worktree list` and the "Now working on" line; half-done work and leftover worktrees are finished or cleaned up first.
 - Things only Filippo can do are listed in `NEXT_STEPS_FOR_FILIPPO.md`.
 
-**Current stage: 1** (stage 0 is merged; its Vercel task waits on Filippo, see `NEXT_STEPS_FOR_FILIPPO.md`)
+**Current stage: 2** (stages 0 and 1 are merged; the stage 0 Vercel task waits on Filippo, see `NEXT_STEPS_FOR_FILIPPO.md`)
 
 **Now working on:** nothing
 
@@ -36,21 +36,21 @@ Rules:
 
 ## Stage 1: Auth and ingredients
 
-- [ ] Migration: enums, `organizations`, `locations`, `memberships`
-- [ ] Migration: `is_member()` and `has_role()` functions; RLS policies for the three tenancy tables
-- [ ] `lib/db/client.ts` (runs as the signed-in user) and `lib/db/admin.ts` (server only)
-- [ ] Sign-up and login pages with email; session handling in `proxy.ts` (the Next.js 16 name for middleware)
-- [ ] First-login onboarding: create organization, first location and owner membership
-- [ ] Role helpers and route guards for owner, manager, staff
-- [ ] Signed-in app shell with navigation, usable on a phone
-- [ ] Migration: `ingredients` and `pack_sizes` with RLS
-- [ ] `lib/units`: base-unit and pack conversion with `decimal.js`, plus tests
-- [ ] Ingredients screen: table with name, unit, reorder point, cost
-- [ ] Ingredient add and edit form with Zod validation
-- [ ] Pack sizes editor inside the ingredient form
-- [ ] Settings and team screen: restaurant details, invite a user, set roles
-- [ ] Seed script v1: pizzeria organization, location, three test users, ingredients and pack sizes
-- [ ] Isolation test: a second restaurant's account cannot read or write the first one's ingredients
+- [x] Migration: enums, `organizations`, `locations`, `memberships`
+- [x] Migration: `is_member()` and `has_role()` functions; RLS policies for the three tenancy tables
+- [x] `lib/db/client.ts` (runs as the signed-in user) and `lib/db/admin.ts` (server only)
+- [x] Sign-up and login pages with email; session handling in `proxy.ts` (the Next.js 16 name for middleware)
+- [x] First-login onboarding: create organization, first location and owner membership
+- [x] Role helpers and route guards for owner, manager, staff
+- [x] Signed-in app shell with navigation, usable on a phone
+- [x] Migration: `ingredients` and `pack_sizes` with RLS
+- [x] `lib/units`: base-unit and pack conversion with `decimal.js`, plus tests
+- [x] Ingredients screen: table with name, unit, reorder point, cost
+- [x] Ingredient add and edit form with Zod validation
+- [x] Pack sizes editor inside the ingredient form
+- [x] Settings and team screen: restaurant details, invite a user, set roles
+- [x] Seed script v1: pizzeria organization, location, three test users, ingredients and pack sizes
+- [x] Isolation test: a second restaurant's account cannot read or write the first one's ingredients
 
 **Done when:** two test accounts in different restaurants cannot see each other's ingredients.
 
@@ -82,6 +82,7 @@ AI onboarding (after the done check):
 - [ ] Migration: `pos_import_mappings`, `sales_imports`, `sales`, `sale_lines` with RLS and `UNIQUE(location_id, pos_order_id)`
 - [ ] Migration: `stock_movements` with RLS, revoked update and delete, and the blocking triggers
 - [ ] `lib/ledger`: append movements, stock now, stock at a time; tests
+- [ ] Lock an ingredient's base unit once it has movements (extend `baseUnitLocked` in `lib/ingredients`)
 - [ ] Depletion function (sale lines × confirmed recipe lines → movements); tests including the 2,600 g example
 - [ ] CSV upload and parsing with Papa Parse
 - [ ] Column-mapping step, saved per POS in `pos_import_mappings`

@@ -1,6 +1,7 @@
 import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import { supabasePublicEnv } from "./public-env";
 
 /**
@@ -9,6 +10,10 @@ import { supabasePublicEnv } from "./public-env";
  * tables are never queried with supabase-js (see CLAUDE.md).
  */
 export async function createSupabaseServerClient() {
+  // The Supabase client reads the clock while it is built. With Cache
+  // Components that must not happen during a prerender, so wait for a real
+  // request first.
+  await connection();
   const { url, publishableKey } = supabasePublicEnv();
   const cookieStore = await cookies();
 

@@ -1,0 +1,11 @@
+ALTER TABLE "locations" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
+ALTER TABLE "memberships" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
+ALTER TABLE "organizations" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
+CREATE POLICY "locations_select_member" ON "locations" AS PERMISSIVE FOR SELECT TO "app_user" USING (public.is_member(id));--> statement-breakpoint
+CREATE POLICY "locations_update_owner" ON "locations" AS PERMISSIVE FOR UPDATE TO "app_user" USING (public.has_role(id, array['owner']::public.member_role[])) WITH CHECK (public.has_role(id, array['owner']::public.member_role[]));--> statement-breakpoint
+CREATE POLICY "memberships_select_member" ON "memberships" AS PERMISSIVE FOR SELECT TO "app_user" USING (public.is_member(location_id));--> statement-breakpoint
+CREATE POLICY "memberships_insert_owner" ON "memberships" AS PERMISSIVE FOR INSERT TO "app_user" WITH CHECK (public.has_role(location_id, array['owner']::public.member_role[]));--> statement-breakpoint
+CREATE POLICY "memberships_update_owner" ON "memberships" AS PERMISSIVE FOR UPDATE TO "app_user" USING (public.has_role(location_id, array['owner']::public.member_role[])) WITH CHECK (public.has_role(location_id, array['owner']::public.member_role[]));--> statement-breakpoint
+CREATE POLICY "memberships_delete_owner" ON "memberships" AS PERMISSIVE FOR DELETE TO "app_user" USING (public.has_role(location_id, array['owner']::public.member_role[]));--> statement-breakpoint
+CREATE POLICY "organizations_select_member" ON "organizations" AS PERMISSIVE FOR SELECT TO "app_user" USING (exists (select 1 from public.locations l where l.org_id = organizations.id and public.is_member(l.id)));--> statement-breakpoint
+CREATE POLICY "organizations_update_owner" ON "organizations" AS PERMISSIVE FOR UPDATE TO "app_user" USING (exists (select 1 from public.locations l where l.org_id = organizations.id and public.has_role(l.id, array['owner']::public.member_role[]))) WITH CHECK (exists (select 1 from public.locations l where l.org_id = organizations.id and public.has_role(l.id, array['owner']::public.member_role[])));

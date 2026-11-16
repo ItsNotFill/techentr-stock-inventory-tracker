@@ -37,6 +37,32 @@ After this, every push to a branch gets its own preview URL. You find it in Verc
 
 - Public URL: _(paste here)_
 
+### 2. Tell Supabase where the app lives (2 minutes, after step 1)
+
+Sign-up sends a confirmation e-mail, and the link in it must point at the app.
+
+1. Open the Supabase dashboard, your project, then **Authentication** in the left menu, then **URL Configuration**.
+2. **Site URL**: put the Vercel URL from step 1, for example `https://your-project.vercel.app`.
+3. **Redirect URLs**: click **Add URL** and add these two, one at a time:
+   - `http://localhost:3000/**`
+   - `https://your-project.vercel.app/**` (your real Vercel URL, with `/**` at the end)
+4. Click **Save**.
+
+Good to know:
+
+- Supabase's built-in e-mail sender allows only a few e-mails per hour. That is enough to try sign-up, not for a pilot. For the pilot, set up your own SMTP sender under **Authentication**, **Emails**, **SMTP Settings**.
+- You can try the app without any of this: the seed data has three ready-made accounts that need no e-mail (see "Try it" below).
+
+## Try it
+
+The database already holds the demo restaurant "Pizzeria Demo" with 16 ingredients.
+
+1. In the project folder run `npm run dev` and open <http://localhost:3000>.
+2. Log in as `owner@pizzeria-demo.example.com`, `manager@pizzeria-demo.example.com` or `staff@pizzeria-demo.example.com`.
+3. The password (one for all three) is in the file `.env.seed.local` in the project folder. That file is not committed.
+
+`npm run db:seed` can be run again at any time. It updates the demo restaurant and never deletes anything.
+
 ## Stage summaries
 
 ### Stage 0: Setup (2026-11-16)
@@ -46,3 +72,11 @@ After this, every push to a branch gets its own preview URL. You find it in Verc
 - Not done: the Vercel project. It needs your account; the steps are in section 1 above. The "live at a public URL" half of the done check waits for it.
 - Good to know: Next.js 16 works differently from older versions (see "Framework notes" in `CLAUDE.md`); decisions 37 to 42 in `DECISIONS.md` record what was chosen.
 - Preview URL: none yet. Once the Vercel project exists, every branch push gets one.
+
+### Stage 1: Auth and ingredients (2026-11-16)
+
+- Built: sign-up, login, first-login onboarding, three roles, the signed-in shell (works on a phone), ingredients with pack sizes, settings and team, and the demo data (`npm run db:seed`).
+- Done check passes: a second restaurant cannot read or change the first one's ingredients (`tests/integration/ingredients-isolation.test.ts`, 44 tests in total, run against the real database).
+- The reviewer agent found an open redirect in the e-mail link route; it is fixed and tested. It returned OK after that.
+- Different from the plan: the app uses its own database role (`app_user`), and team invites are one-time links you pass on, not e-mails. Reasons are in `DECISIONS.md`, entries 43 and 49.
+- Preview URL: none until the Vercel project exists (section 1). Not yet checked by a person in a browser or on a phone: please click through it once (see "Try it").
