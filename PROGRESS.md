@@ -61,7 +61,7 @@ Rules:
 - [ ] Menu item add and edit, including modifiers as their own items
 - [ ] Recipe editor: add ingredient and amount per item, in base units
 - [x] Confirming a recipe sets `is_mapped`; removing every line clears it
-- [ ] Seed script v2: the pizzeria menu with recipes (Margherita 120 g mozzarella, Quattro Formaggi 80 g)
+- [x] Seed script v2: the pizzeria menu with recipes (Margherita 120 g mozzarella, Quattro Formaggi 80 g)
 - [ ] Run the done check by hand with a full pizzeria menu
 
 **Done when:** you can enter a real pizzeria's menu with recipes for every item.

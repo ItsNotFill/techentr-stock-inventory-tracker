@@ -218,3 +218,88 @@ export const SEED_INGREDIENTS: SeedIngredient[] = [
     packs: [{ label: "Bundle 100", qtyInBaseUnit: "100" }],
   },
 ];
+
+export type SeedMenuItem = {
+  /** The name exactly as the POS prints it. Stage 3's sample sales CSV uses these. */
+  posName: string;
+  displayName?: string;
+  kind?: "item" | "modifier";
+  category: string;
+  price?: string;
+  /** Uses no stock (service charge). No recipe. */
+  ignored?: boolean;
+  /** Ingredient name -> amount for one sale, in the ingredient's base unit. */
+  recipe?: Record<string, string>;
+};
+
+const DOUGH = { "Flour tipo 00": "160", "Olive oil": "5" };
+
+export const SEED_MENU: SeedMenuItem[] = [
+  // Pizzas. The worked example in SPEC.md: Margherita 120 g mozzarella, Quattro Formaggi 80 g.
+  {
+    posName: "Margherita",
+    category: "Pizza",
+    price: "9.50",
+    recipe: { ...DOUGH, Mozzarella: "120", "Tomato passata": "80", Basil: "2" },
+  },
+  {
+    posName: "Marinara",
+    category: "Pizza",
+    price: "8.00",
+    recipe: { ...DOUGH, "Tomato passata": "100" },
+  },
+  {
+    posName: "Quattro Formaggi",
+    category: "Pizza",
+    price: "12.50",
+    recipe: { ...DOUGH, Mozzarella: "80", Gorgonzola: "40", Fontina: "40", Parmesan: "20" },
+  },
+  {
+    posName: "Diavola",
+    category: "Pizza",
+    price: "11.50",
+    recipe: { ...DOUGH, Mozzarella: "100", "Tomato passata": "80", "Spicy salami": "50" },
+  },
+  {
+    posName: "Prosciutto e Funghi",
+    category: "Pizza",
+    price: "12.00",
+    recipe: { ...DOUGH, Mozzarella: "100", "Tomato passata": "80", "Cooked ham": "50", Mushrooms: "60" },
+  },
+  {
+    posName: "Capricciosa",
+    category: "Pizza",
+    price: "12.50",
+    recipe: {
+      ...DOUGH,
+      Mozzarella: "100",
+      "Tomato passata": "80",
+      "Cooked ham": "40",
+      Mushrooms: "40",
+      "Black olives": "25",
+    },
+  },
+  // Modifiers are items with their own recipe.
+  { posName: "Extra mozzarella", kind: "modifier", category: "Extras", price: "1.50", recipe: { Mozzarella: "50" } },
+  { posName: "Extra salami", kind: "modifier", category: "Extras", price: "2.00", recipe: { "Spicy salami": "30" } },
+  { posName: "Takeaway box", kind: "modifier", category: "Extras", price: "0.50", recipe: { "Pizza box": "1" } },
+  // Drinks: stocked by the bottle or can, sold by the piece or the glass.
+  { posName: "Cola 33cl", displayName: "Cola", category: "Drinks", price: "3.00", recipe: { "Cola 33 cl can": "1" } },
+  { posName: "Beer 33cl", displayName: "Beer", category: "Drinks", price: "4.50", recipe: { "Beer 33 cl bottle": "1" } },
+  {
+    posName: "House red glass",
+    displayName: "House red, glass",
+    category: "Drinks",
+    price: "5.00",
+    recipe: { "House red wine": "150" },
+  },
+  {
+    posName: "House red bottle",
+    displayName: "House red, bottle",
+    category: "Drinks",
+    price: "22.00",
+    recipe: { "House red wine": "750" },
+  },
+  // Uses no stock.
+  { posName: "Service charge", category: "Other", ignored: true },
+];

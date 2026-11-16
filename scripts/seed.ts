@@ -5,6 +5,7 @@
  *   npm run db:seed
  *
  * Stage 1 (v1): organization, location, three test users, ingredients, pack sizes.
+ * Stage 2 (v2): the menu with a confirmed recipe for every item.
  *
  * The three test users share one password. It is read from SEED_USER_PASSWORD
  * in `.env.seed.local` (git-ignored); the first run creates that file with a
@@ -18,9 +19,9 @@ import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "../lib/db/schema";
-import { ingredients, locations, memberships, organizations, packSizes } from "../lib/db/schema";
+import { ingredients, locations, memberships, menuItems, organizations, packSizes, recipeLines } from "../lib/db/schema";
 import { costPerBaseUnit, toDbQty, toDbUnitCost } from "../lib/units";
-import { SEED_INGREDIENTS, SEED_LOCATION, SEED_ORGANIZATION, SEED_USERS } from "./seed/data";
+import { SEED_INGREDIENTS, SEED_LOCATION, SEED_MENU, SEED_ORGANIZATION, SEED_USERS } from "./seed/data";
 
 config({ path: ".env.local", quiet: true });
 
@@ -72,6 +73,7 @@ async function main() {
 
     // 2. Test users and their roles
     const password = seedPassword();
+    let ownerId: string | undefined;
     for (const user of SEED_USERS) {
       const [existing] = await db.execute<{ id: string }>(
         sql`select id from auth.users where lower(email) = ${user.email} limit 1`,
@@ -93,10 +95,12 @@ async function main() {
         .insert(memberships)
         .values({ userId, locationId: SEED_LOCATION.id, role: user.role })
         .onConflictDoUpdate({ target: [memberships.userId, memberships.locationId], set: { role: user.role } });
+      if (user.role === "owner") ownerId = userId;
       console.log(`User: ${user.email} (${user.role})`);
     }
 
     // 3. Ingredients and pack sizes
+    const ingredientIdByName = new Map<string, string>();
     for (const item of SEED_INGREDIENTS) {
       const columns = {
         baseUnit: item.baseUnit,
@@ -119,6 +123,8 @@ async function main() {
             .values({ locationId: SEED_LOCATION.id, name: item.name, ...columns })
             .returning({ id: ingredients.id });
 
+      ingredientIdByName.set(item.name, saved.id);
+
       // Clear the default first, so the one-default-per-ingredient index never trips.
       await db.execute(
         sql`update public.pack_sizes set is_default = false where ingredient_id = ${saved.id} and is_default`,
@@ -132,6 +138,47 @@ async function main() {
       }
     }
     console.log(`Ingredients: ${SEED_INGREDIENTS.length}, with their pack sizes`);
+
+    // 4. Menu items and their recipes. Lines are confirmed, so the items are mapped.
+    for (const item of SEED_MENU) {
+      const recipe = Object.entries(item.recipe ?? {});
+      const columns = {
+        displayName: item.displayName ?? item.posName,
+        kind: item.kind ?? ("item" as const),
+        category: item.category,
+        price: item.price ?? null,
+        isMapped: recipe.length > 0,
+        isIgnored: item.ignored ?? false,
+      };
+      const [existing] = await db
+        .select({ id: menuItems.id })
+        .from(menuItems)
+        .where(
+          sql`${menuItems.locationId} = ${SEED_LOCATION.id} and ${menuItems.posItemId} is null and lower(${menuItems.posName}) = lower(${item.posName})`,
+        );
+      const [saved] = existing
+        ? await db.update(menuItems).set(columns).where(sql`${menuItems.id} = ${existing.id}`).returning({ id: menuItems.id })
+        : await db
+            .insert(menuItems)
+            .values({ locationId: SEED_LOCATION.id, posName: item.posName, ...columns })
+            .returning({ id: menuItems.id });
+
+      await db.delete(recipeLines).where(sql`${recipeLines.menuItemId} = ${saved.id}`);
+      for (const [ingredientName, qtyBaseUnit] of recipe) {
+        const ingredientId = ingredientIdByName.get(ingredientName);
+        if (!ingredientId) throw new Error(`Recipe of ${item.posName}: unknown ingredient "${ingredientName}"`);
+        await db.insert(recipeLines).values({
+          locationId: SEED_LOCATION.id,
+          menuItemId: saved.id,
+          ingredientId,
+          qtyBaseUnit: toDbQty(qtyBaseUnit),
+          source: "manual",
+          confirmedAt: new Date(),
+          confirmedBy: ownerId ?? null,
+        });
+      }
+    }
+    console.log(`Menu: ${SEED_MENU.length} items, each with a recipe or ignored`);
     console.log(`\nDone. Log in as one of the users above; the password is in ${SEED_ENV_FILE}.`);
   } finally {
     await pool.end();
