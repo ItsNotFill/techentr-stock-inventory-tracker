@@ -89,6 +89,14 @@ A short log of design decisions, so later sessions do not undo earlier choices. 
 | 56 | **Forms keep their fields in state and build field ids with `useId()`; "new item" forms empty themselves after a create.** | React resets uncontrolled fields after every Server Action, and Next.js 16 keeps earlier screens mounted but hidden, so fixed ids collide. See "Framework notes" in `CLAUDE.md`. |
 | 57 | **The AI tasks are parked until `ANTHROPIC_API_KEY` exists; the stages do not wait for them.** A stage is merged when its manual path and done check pass and the reviewer says OK. Each stage's AI block ("AI onboarding", "Sales by photo", "Restock by invoice photo") stays unticked in `PROGRESS.md` and is built later on its own branch (`stage-2-ai-onboarding`, and so on). The `ai_extractions` table, the `photos` bucket and `lib/ai` come with the first of them. | Filippo asked for the non-AI work to continue while the key is missing. Entry 6 already orders each stage as manual path, done check, then AI, so nothing in the manual path depends on the AI block. |
 
+## Decided in stage 3 (2026-11-17)
+
+| # | Decision | Reasoning |
+| --- | --- | --- |
+| 58 | **Supabase's Data API roles (`anon`, `authenticated`) have no privilege on any of our tables**, now and for tables created later (`ALTER DEFAULT PRIVILEGES`). Completes entries 27 and 43. | Tables made by migrations were given TRUNCATE, REFERENCES, TRIGGER and MAINTAIN by default. Nothing uses them, and the ledger must not be truncatable by anyone. |
+| 59 | **Append-only is enforced by triggers for every role.** UPDATE and TRUNCATE on `stock_movements` always fail. DELETE fails unless the transaction has `app.allow_movement_delete = on`, which only `undo_sales_import()` sets. The app role has no UPDATE, DELETE or TRUNCATE privilege on the table in any case. The only other user of that setting is the cleanup of throwaway test restaurants, through the admin connection. | `SCHEMA.md` asks for database-level enforcement. A transaction-local setting is how a trigger can tell the undo function from everything else. |
+| 60 | **The app role cannot delete sales data.** `sales_imports`, `sales` and `sale_lines` have no DELETE grant; a sale is removed only by `undo_sales_import()`, together with its movements. | Deleting a sale on its own would leave its stock movements behind. |
+
 ## Open questions (from SPEC.md, still open)
 
 - Which restaurant will pilot it, and which POS do they use?
