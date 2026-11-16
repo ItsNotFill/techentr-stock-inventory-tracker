@@ -41,7 +41,11 @@ function toFormState(error: unknown): FormState {
 
 /** A link that signs the person in once and takes them to "choose a password". */
 async function accessLink(tokenHash: string, type: "invite" | "recovery"): Promise<string | undefined> {
-  const origin = (await headers()).get("origin");
+  const requestHeaders = await headers();
+  // Browsers send Origin with every Server Action; the host headers are the fallback.
+  const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
+  const origin =
+    requestHeaders.get("origin") ?? (host ? `${requestHeaders.get("x-forwarded-proto") ?? "https"}://${host}` : null);
   if (!origin) return undefined;
   const url = new URL("/auth/confirm", origin);
   url.searchParams.set("token_hash", tokenHash);
@@ -97,11 +101,14 @@ export async function inviteMember(_previous: InviteState, formData: FormData): 
     }
     await withUser((tx) => addMember(tx, membership.locationId, data.user.id, role));
     refresh();
+    const link = await accessLink(data.properties.hashed_token, "invite");
     return {
       ok: true,
       email,
-      link: await accessLink(data.properties.hashed_token, "invite"),
-      message: `${email} is on the team. Send them the link below: it lets them choose a password. It works once and expires after a day.`,
+      link,
+      message: link
+        ? `${email} is on the team. Send them the link below: it lets them choose a password. It works once and expires after a day.`
+        : `${email} is on the team, but the link could not be made. Use "New login link" in the team list.`,
     };
   } catch (error) {
     return toFormState(error);
@@ -123,11 +130,12 @@ export async function createMemberLink(userId: string): Promise<InviteState> {
     type: "recovery",
     email: member.email,
   });
-  if (error) return formError("Could not create a link. Try again.");
+  const link = error ? undefined : await accessLink(data.properties.hashed_token, "recovery");
+  if (!link) return formError("Could not create a link. Try again.");
   return {
     ok: true,
     email: member.email,
-    link: await accessLink(data.properties.hashed_token, "recovery"),
+    link,
     message: `Send this link to ${member.email}. It lets them choose a new password. It works once and expires after a day.`,
   };
 }
