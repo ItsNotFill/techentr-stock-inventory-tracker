@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 0**
 
-**Now working on:** Stage 0, task 5 (Drizzle and test table migration). Branch `stage-0-setup`, main agent, no worktree.
+**Now working on:** Stage 0, task 7 (Vercel hand-off notes). Branch `stage-0-setup`, main agent, no worktree.
 
 ## Stage 0: Setup
 
@@ -28,8 +28,8 @@ Rules:
 - [x] Add shadcn/ui and the base components (button, input, table, dialog, form)
 - [x] Add Vitest with one passing sample test; add the `test` script
 - [x] Create the Supabase project; add `.env.example`, `.env.local` and the server and browser Supabase clients
-- [ ] Connect Drizzle: config, `db:generate` and `db:migrate` scripts, a test table migration applied to the database
-- [ ] Check the Drizzle RLS API names used in `SCHEMA.md` against the current docs; note any change in `DECISIONS.md`
+- [x] Connect Drizzle: config, `db:generate` and `db:migrate` scripts, a test table migration applied to the database
+- [x] Check the Drizzle RLS API names used in `SCHEMA.md` against the current docs; note any change in `DECISIONS.md`
 - [ ] Create the Vercel project, set the environment variables, deploy `main`
 
 **Done when:** a blank page is live at a public URL and a test table exists in the DB.
@@ -39,7 +39,7 @@ Rules:
 - [ ] Migration: enums, `organizations`, `locations`, `memberships`
 - [ ] Migration: `is_member()` and `has_role()` functions; RLS policies for the three tenancy tables
 - [ ] `lib/db/client.ts` (runs as the signed-in user) and `lib/db/admin.ts` (server only)
-- [ ] Sign-up and login pages with email; session handling in middleware
+- [ ] Sign-up and login pages with email; session handling in `proxy.ts` (the Next.js 16 name for middleware)
 - [ ] First-login onboarding: create organization, first location and owner membership
 - [ ] Role helpers and route guards for owner, manager, staff
 - [ ] Signed-in app shell with navigation, usable on a phone

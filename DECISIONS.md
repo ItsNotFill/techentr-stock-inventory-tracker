@@ -53,6 +53,16 @@ A short log of design decisions, so later sessions do not undo earlier choices. 
 | 35 | **Checkpoints.** `PROGRESS.md` has a "Now working on" line naming the task, branch and worktree. Long tasks get pushed WIP commits. Every session starts by checking `git status`, `git worktree list` and that line, and finishes or cleans up half-done work first. | A usage limit can end a session at any moment; the next session must be able to continue from the repository alone. |
 | 36 | **`NEXT_STEPS_FOR_FILIPPO.md` is the hand-off file.** It lists what only Filippo can do (Vercel clicks, keys) and gets a five-line summary after each stage. | One place to look after an unattended run. |
 
+## Decided in stage 0 (2026-11-16)
+
+| # | Decision | Reasoning |
+| --- | --- | --- |
+| 37 | **Drizzle RLS names checked against the installed version** (`drizzle-orm` 0.45, `drizzle-kit` 0.31). The names in `SCHEMA.md` are right: `pgPolicy(name, { as, for, to, using, withCheck })` in the table's third argument, `.enableRLS()` on a table with no policies, and `authenticatedRole`, `anonRole`, `authUsers`, `authUid` from `drizzle-orm/supabase`. One addition: `drizzle.config.ts` sets `entities: { roles: { provider: "supabase" } }`. | Without the `entities` setting drizzle-kit tries to create or drop Supabase's own roles. No change to the schema plan was needed. |
+| 38 | **Next.js 16 with its defaults: Cache Components and Partial Prefetching on.** Middleware is now `proxy.ts`. Anything that reads the session or the database sits behind a `<Suspense>` boundary; pages keep a static shell (title, skeleton) outside it. | These are the `create-next-app` defaults and become the only mode in the next major version; turning them off would mean migrating later. `AGENTS.md` (written by Next.js) tells agents to read the bundled docs in `node_modules/next/dist/docs/` first. |
+| 39 | **shadcn/ui uses the Radix base with the Nova preset.** Forms use the `field` components; the old `form` component no longer exists in the registry. | Radix is the long-standing base with the most examples; `field` is what shadcn now ships for forms. |
+| 40 | **Postgres is version 17**, so `ON DELETE SET NULL (pack_size_id)` in `delivery_lines` can be used as planned in `SCHEMA.md`. | The column-list form needs Postgres 15 or later. |
+| 41 | **The stage 0 test table is `setup_check`**, with RLS on and no policies. `scripts/check-db.ts` checks both database URLs and that the table exists. | Proves migrations reach the database without exposing anything: with no policies only the admin connection can read it. |
+
 ## Open questions (from SPEC.md, still open)
 
 - Which restaurant will pilot it, and which POS do they use?
