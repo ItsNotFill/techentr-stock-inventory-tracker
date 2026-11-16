@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useSyncExternalStore } from "react";
+import { useActionState, useId, useState, useSyncExternalStore } from "react";
 import { FormMessage, fieldErrors } from "@/components/form-message";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -13,7 +13,12 @@ const browserTimezone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 const serverTimezone = () => "UTC";
 
 export function OnboardingForm() {
+  // Unique per form: Next.js keeps earlier screens in the page (hidden), and two
+  // forms with the same field ids would cross their labels.
+  const uid = useId();
   const [state, formAction, pending] = useActionState(completeOnboarding, emptyFormState);
+  // Controlled: React resets uncontrolled fields after every action, failed ones included.
+  const [restaurantName, setRestaurantName] = useState("");
   // The restaurant's timezone is taken from the browser (SCHEMA.md, locations.timezone).
   const timezone = useSyncExternalStore(subscribe, browserTimezone, serverTimezone);
 
@@ -22,8 +27,15 @@ export function OnboardingForm() {
       <FieldGroup>
         <FormMessage state={state} />
         <Field data-invalid={Boolean(state.errors?.restaurantName)}>
-          <FieldLabel htmlFor="restaurantName">Restaurant name</FieldLabel>
-          <Input id="restaurantName" name="restaurantName" autoComplete="organization" required />
+          <FieldLabel htmlFor={`${uid}-restaurantName`}>Restaurant name</FieldLabel>
+          <Input
+            id={`${uid}-restaurantName`}
+            name="restaurantName"
+            autoComplete="organization"
+            required
+            value={restaurantName}
+            onChange={(event) => setRestaurantName(event.target.value)}
+          />
           <FieldError errors={fieldErrors(state, "restaurantName")} />
         </Field>
         <Field data-invalid={Boolean(state.errors?.timezone)}>

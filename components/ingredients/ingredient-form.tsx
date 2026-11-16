@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useActionState, useState } from "react";
+import { useActionState, useId, useState } from "react";
 import { toast } from "sonner";
 import { saveIngredient } from "@/app/(app)/ingredients/actions";
 import { FormMessage, fieldErrors } from "@/components/form-message";
@@ -80,6 +80,9 @@ export function IngredientForm({
   /** The ingredient has pack sizes, so the server refuses a unit change. */
   unitLocked?: boolean;
 }) {
+  // Unique per form: Next.js keeps earlier screens in the page (hidden), and two
+  // forms with the same field ids would cross their labels.
+  const uid = useId();
   const router = useRouter();
   const editing = Boolean(defaults.id);
 
@@ -93,7 +96,11 @@ export function IngredientForm({
       const result = await saveIngredient(previous, formData);
       if (result.ok) {
         toast.success(result.message);
-        if (!editing && result.id) router.push(`/ingredients/${result.id}`);
+        if (!editing && result.id) {
+          // The "new" screen stays in the page while hidden; empty it for the next visit.
+          setValues(defaults);
+          router.push(`/ingredients/${result.id}`);
+        }
       }
       return result;
     },
@@ -116,12 +123,13 @@ export function IngredientForm({
     <form action={formAction} noValidate>
       <FieldGroup>
         {defaults.id ? <input type="hidden" name="id" value={defaults.id} /> : null}
-        <FormMessage state={state} />
+        {/* After a create the screen moves on; a toast says it worked. */}
+        {state.ok && !editing ? null : <FormMessage state={state} />}
 
         <Field data-invalid={invalid("name")}>
-          <FieldLabel htmlFor="name">Name</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-name`}>Name</FieldLabel>
           <Input
-            id="name"
+            id={`${uid}-name`}
             name="name"
             className={CONTROL_HEIGHT}
             value={values.name}
@@ -134,7 +142,7 @@ export function IngredientForm({
         </Field>
 
         <Field data-invalid={invalid("baseUnit")}>
-          <FieldLabel htmlFor="baseUnit">Unit</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-baseUnit`}>Unit</FieldLabel>
           {/* A disabled select is not submitted, so send the current value by hand. */}
           {unitLocked ? <input type="hidden" name="baseUnit" value={values.baseUnit} /> : null}
           <Select
@@ -143,7 +151,7 @@ export function IngredientForm({
             onValueChange={changeBaseUnit}
             disabled={unitLocked}
           >
-            <SelectTrigger id="baseUnit" className={SELECT_HEIGHT} aria-invalid={invalid("baseUnit")}>
+            <SelectTrigger id={`${uid}-baseUnit`} className={SELECT_HEIGHT} aria-invalid={invalid("baseUnit")}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -163,10 +171,10 @@ export function IngredientForm({
         </Field>
 
         <Field data-invalid={invalid("costAmount") || invalid("costUnit")}>
-          <FieldLabel htmlFor="costAmount">Cost (€)</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-costAmount`}>Cost (€)</FieldLabel>
           <div className="flex items-center gap-2">
             <Input
-              id="costAmount"
+              id={`${uid}-costAmount`}
               name="costAmount"
               inputMode="decimal"
               className={CONTROL_HEIGHT}
@@ -179,7 +187,7 @@ export function IngredientForm({
             <div className="w-28 shrink-0">
               <UnitSelect
                 name="costUnit"
-                id="costUnit"
+                id={`${uid}-costUnit`}
                 baseUnit={values.baseUnit}
                 value={values.costUnit}
                 onChange={set("costUnit")}
@@ -192,9 +200,9 @@ export function IngredientForm({
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field data-invalid={invalid("reorderPoint")}>
-            <FieldLabel htmlFor="reorderPoint">Reorder point</FieldLabel>
+            <FieldLabel htmlFor={`${uid}-reorderPoint`}>Reorder point</FieldLabel>
             <Input
-              id="reorderPoint"
+              id={`${uid}-reorderPoint`}
               name="reorderPoint"
               inputMode="decimal"
               className={CONTROL_HEIGHT}
@@ -206,9 +214,9 @@ export function IngredientForm({
             <FieldError errors={fieldErrors(state, "reorderPoint")} />
           </Field>
           <Field data-invalid={invalid("parLevel")}>
-            <FieldLabel htmlFor="parLevel">Par level</FieldLabel>
+            <FieldLabel htmlFor={`${uid}-parLevel`}>Par level</FieldLabel>
             <Input
-              id="parLevel"
+              id={`${uid}-parLevel`}
               name="parLevel"
               inputMode="decimal"
               className={CONTROL_HEIGHT}
@@ -222,11 +230,11 @@ export function IngredientForm({
         </div>
 
         <Field data-invalid={invalid("levelUnit")}>
-          <FieldLabel htmlFor="levelUnit">Unit for reorder point and par level</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-levelUnit`}>Unit for reorder point and par level</FieldLabel>
           <div className="w-28">
             <UnitSelect
               name="levelUnit"
-              id="levelUnit"
+              id={`${uid}-levelUnit`}
               baseUnit={values.baseUnit}
               value={values.levelUnit}
               onChange={set("levelUnit")}
@@ -238,9 +246,9 @@ export function IngredientForm({
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field data-invalid={invalid("category")}>
-            <FieldLabel htmlFor="category">Category</FieldLabel>
+            <FieldLabel htmlFor={`${uid}-category`}>Category</FieldLabel>
             <Input
-              id="category"
+              id={`${uid}-category`}
               name="category"
               className={CONTROL_HEIGHT}
               value={values.category}
@@ -250,9 +258,9 @@ export function IngredientForm({
             <FieldError errors={fieldErrors(state, "category")} />
           </Field>
           <Field data-invalid={invalid("storageArea")}>
-            <FieldLabel htmlFor="storageArea">Storage area</FieldLabel>
+            <FieldLabel htmlFor={`${uid}-storageArea`}>Storage area</FieldLabel>
             <Input
-              id="storageArea"
+              id={`${uid}-storageArea`}
               name="storageArea"
               className={CONTROL_HEIGHT}
               value={values.storageArea}

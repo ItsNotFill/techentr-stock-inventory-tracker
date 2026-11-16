@@ -18,6 +18,8 @@ next-env.d.ts
 
 # Testing
 coverage/
+test-results/
+playwright-report/
 
 # Vercel
 .vercel

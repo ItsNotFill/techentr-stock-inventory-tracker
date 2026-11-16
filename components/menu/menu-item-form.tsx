@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useActionState, useState } from "react";
+import { useActionState, useId, useState } from "react";
 import { toast } from "sonner";
 import { saveMenuItem } from "@/app/(app)/menu/actions";
 import { FormMessage, fieldErrors } from "@/components/form-message";
@@ -41,6 +41,9 @@ const KIND_LABELS: Record<Kind, string> = {
 
 /** Shared by the add and edit screens. */
 export function MenuItemForm({ defaults }: { defaults: MenuItemFormDefaults }) {
+  // Unique per form: Next.js keeps earlier screens in the page (hidden), and two
+  // forms with the same field ids would cross their labels.
+  const uid = useId();
   const router = useRouter();
   const editing = Boolean(defaults.id);
 
@@ -54,7 +57,11 @@ export function MenuItemForm({ defaults }: { defaults: MenuItemFormDefaults }) {
       const result = await saveMenuItem(previous, formData);
       if (result.ok) {
         toast.success(result.message);
-        if (!editing && result.id) router.push(`/menu/${result.id}`);
+        if (!editing && result.id) {
+          // The "new" screen stays in the page while hidden; empty it for the next visit.
+          setValues(defaults);
+          router.push(`/menu/${result.id}`);
+        }
       }
       return result;
     },
@@ -67,12 +74,13 @@ export function MenuItemForm({ defaults }: { defaults: MenuItemFormDefaults }) {
     <form action={formAction} noValidate>
       <FieldGroup>
         {defaults.id ? <input type="hidden" name="id" value={defaults.id} /> : null}
-        <FormMessage state={state} />
+        {/* After a create the screen moves on; a toast says it worked. */}
+        {state.ok && !editing ? null : <FormMessage state={state} />}
 
         <Field data-invalid={invalid("posName")}>
-          <FieldLabel htmlFor="posName">POS name</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-posName`}>POS name</FieldLabel>
           <Input
-            id="posName"
+            id={`${uid}-posName`}
             name="posName"
             className={CONTROL_HEIGHT}
             value={values.posName}
@@ -86,9 +94,9 @@ export function MenuItemForm({ defaults }: { defaults: MenuItemFormDefaults }) {
         </Field>
 
         <Field data-invalid={invalid("displayName")}>
-          <FieldLabel htmlFor="displayName">Display name (optional)</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-displayName`}>Display name (optional)</FieldLabel>
           <Input
-            id="displayName"
+            id={`${uid}-displayName`}
             name="displayName"
             className={CONTROL_HEIGHT}
             value={values.displayName}
@@ -101,9 +109,9 @@ export function MenuItemForm({ defaults }: { defaults: MenuItemFormDefaults }) {
         </Field>
 
         <Field data-invalid={invalid("posItemId")}>
-          <FieldLabel htmlFor="posItemId">POS item id (optional)</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-posItemId`}>POS item id (optional)</FieldLabel>
           <Input
-            id="posItemId"
+            id={`${uid}-posItemId`}
             name="posItemId"
             className={CONTROL_HEIGHT}
             value={values.posItemId}
@@ -116,9 +124,9 @@ export function MenuItemForm({ defaults }: { defaults: MenuItemFormDefaults }) {
         </Field>
 
         <Field data-invalid={invalid("kind")}>
-          <FieldLabel htmlFor="kind">Type</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-kind`}>Type</FieldLabel>
           <Select name="kind" value={values.kind} onValueChange={set("kind")}>
-            <SelectTrigger id="kind" className={SELECT_HEIGHT} aria-invalid={invalid("kind")}>
+            <SelectTrigger id={`${uid}-kind`} className={SELECT_HEIGHT} aria-invalid={invalid("kind")}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -134,9 +142,9 @@ export function MenuItemForm({ defaults }: { defaults: MenuItemFormDefaults }) {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field data-invalid={invalid("category")}>
-            <FieldLabel htmlFor="category">Category</FieldLabel>
+            <FieldLabel htmlFor={`${uid}-category`}>Category</FieldLabel>
             <Input
-              id="category"
+              id={`${uid}-category`}
               name="category"
               className={CONTROL_HEIGHT}
               value={values.category}
@@ -146,9 +154,9 @@ export function MenuItemForm({ defaults }: { defaults: MenuItemFormDefaults }) {
             <FieldError errors={fieldErrors(state, "category")} />
           </Field>
           <Field data-invalid={invalid("price")}>
-            <FieldLabel htmlFor="price">Price (€)</FieldLabel>
+            <FieldLabel htmlFor={`${uid}-price`}>Price (€)</FieldLabel>
             <Input
-              id="price"
+              id={`${uid}-price`}
               name="price"
               inputMode="decimal"
               className={CONTROL_HEIGHT}

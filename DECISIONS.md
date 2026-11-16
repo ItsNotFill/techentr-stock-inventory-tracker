@@ -85,6 +85,8 @@ A short log of design decisions, so later sessions do not undo earlier choices. 
 | 52 | **A recipe is saved as a whole.** The lines in the editor replace the stored ones, every saved line is confirmed, and `is_mapped` follows from whether any line is left. Amounts are typed in a readable unit and stored in the ingredient's base unit. Archived ingredients cannot be put in a recipe. | One save keeps `is_mapped` and the lines in step inside one transaction; entry 17 needs that flag to be exact. |
 | 53 | **Uniqueness of menu items:** the POS id when the item has one, otherwise the POS name without regard to case. Two items may share a name if the POS gives them different ids. | This is how sales rows will be matched in stage 3 (`SCHEMA.md`, `menu_items`). |
 | 54 | **`menu_items.ai_extraction_id` has no foreign key yet.** It is added in the migration that creates `ai_extractions`. | The AI tasks come after the stage's done check, and the table does not exist before them. |
+| 55 | **End-to-end tests run in a headless browser (Playwright, `npm run test:e2e`).** One spec per pair of stages clicks through the real screens against the real database and removes what it creates. | Nobody watches the screens during an unattended build. The first run found two bugs that unit and HTTP tests could not: typed values wiped after a failed submit, and field ids clashing with hidden copies of earlier screens. |
+| 56 | **Forms keep their fields in state and build field ids with `useId()`; "new item" forms empty themselves after a create.** | React resets uncontrolled fields after every Server Action, and Next.js 16 keeps earlier screens mounted but hidden, so fixed ids collide. See "Framework notes" in `CLAUDE.md`. |
 
 ## Open questions (from SPEC.md, still open)
 

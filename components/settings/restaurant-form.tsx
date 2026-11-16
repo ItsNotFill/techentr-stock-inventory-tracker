@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useId, useMemo, useState } from "react";
 import { saveRestaurantDetails } from "@/app/(app)/settings/actions";
 import { FormMessage, fieldErrors } from "@/components/form-message";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,15 @@ import { emptyFormState } from "@/lib/validation/form";
 type Props = { name: string; posProvider: string | null; timezone: string };
 
 export function RestaurantForm({ name, posProvider, timezone }: Props) {
+  // Unique per form: Next.js keeps earlier screens in the page (hidden), and two
+  // forms with the same field ids would cross their labels.
+  const uid = useId();
   const [state, formAction, pending] = useActionState(saveRestaurantDetails, emptyFormState);
   const [zone, setZone] = useState(timezone);
+  // Controlled: React resets uncontrolled fields after every action, which would
+  // undo what was typed when a save fails.
+  const [nameValue, setNameValue] = useState(name);
+  const [posValue, setPosValue] = useState(posProvider ?? "");
 
   // Computed in the browser; the current value is always in the list.
   const zones = useMemo(() => {
@@ -31,16 +38,25 @@ export function RestaurantForm({ name, posProvider, timezone }: Props) {
       <FieldGroup>
         <FormMessage state={state} />
         <Field data-invalid={Boolean(state.errors?.name)}>
-          <FieldLabel htmlFor="restaurant-name">Name</FieldLabel>
-          <Input id="restaurant-name" name="name" defaultValue={name} required maxLength={80} className="h-11" />
+          <FieldLabel htmlFor={`${uid}-restaurant-name`}>Name</FieldLabel>
+          <Input
+            id={`${uid}-restaurant-name`}
+            name="name"
+            value={nameValue}
+            onChange={(event) => setNameValue(event.target.value)}
+            required
+            maxLength={80}
+            className="h-11"
+          />
           <FieldError errors={fieldErrors(state, "name")} />
         </Field>
         <Field data-invalid={Boolean(state.errors?.posProvider)}>
-          <FieldLabel htmlFor="pos-provider">POS system (optional)</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-pos-provider`}>POS system (optional)</FieldLabel>
           <Input
-            id="pos-provider"
+            id={`${uid}-pos-provider`}
             name="posProvider"
-            defaultValue={posProvider ?? ""}
+            value={posValue}
+            onChange={(event) => setPosValue(event.target.value)}
             placeholder="Lightspeed, Square, …"
             maxLength={60}
             className="h-11"
@@ -48,9 +64,9 @@ export function RestaurantForm({ name, posProvider, timezone }: Props) {
           <FieldError errors={fieldErrors(state, "posProvider")} />
         </Field>
         <Field data-invalid={Boolean(state.errors?.timezone)}>
-          <FieldLabel htmlFor="timezone">Timezone</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-timezone`}>Timezone</FieldLabel>
           <Select name="timezone" value={zone} onValueChange={setZone}>
-            <SelectTrigger id="timezone" className="h-11 w-full">
+            <SelectTrigger id={`${uid}-timezone`} className="h-11 w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="max-h-72">

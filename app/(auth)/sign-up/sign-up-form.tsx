@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useId, useState } from "react";
 import { FormMessage, fieldErrors } from "@/components/form-message";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -10,7 +10,12 @@ import { emptyFormState } from "@/lib/validation/form";
 import { signUp } from "../actions";
 
 export function SignUpForm() {
+  // Unique per form: Next.js keeps earlier screens in the page (hidden), and two
+  // forms with the same field ids would cross their labels.
+  const uid = useId();
   const [state, formAction, pending] = useActionState(signUp, emptyFormState);
+  // Controlled: React resets uncontrolled fields after every action, failed ones included.
+  const [email, setEmail] = useState("");
 
   if (state.ok) {
     return (
@@ -28,13 +33,22 @@ export function SignUpForm() {
       <FieldGroup>
         <FormMessage state={state} />
         <Field data-invalid={Boolean(state.errors?.email)}>
-          <FieldLabel htmlFor="email">E-mail</FieldLabel>
-          <Input id="email" name="email" type="email" autoComplete="email" inputMode="email" required />
+          <FieldLabel htmlFor={`${uid}-email`}>E-mail</FieldLabel>
+          <Input
+            id={`${uid}-email`}
+            name="email"
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            required
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+          />
           <FieldError errors={fieldErrors(state, "email")} />
         </Field>
         <Field data-invalid={Boolean(state.errors?.password)}>
-          <FieldLabel htmlFor="password">Password</FieldLabel>
-          <Input id="password" name="password" type="password" autoComplete="new-password" required />
+          <FieldLabel htmlFor={`${uid}-password`}>Password</FieldLabel>
+          <Input id={`${uid}-password`} name="password" type="password" autoComplete="new-password" required />
           <FieldDescription>At least 8 characters.</FieldDescription>
           <FieldError errors={fieldErrors(state, "password")} />
         </Field>
