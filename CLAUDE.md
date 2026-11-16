@@ -89,6 +89,7 @@ These scripts are created in stage 0. Keep the names.
 | Generate a migration from schema changes | `npm run db:generate` |
 | Apply migrations | `npm run db:migrate` |
 | Seed the pizzeria data | `npm run db:seed` |
+| Check both database URLs connect | `npm run db:check` |
 | Preview a stage | `git push origin stage-<n>-<short-name>` (Vercel gives every branch a preview URL) |
 | Deploy | merge the reviewed stage branch into `main` and `git push origin main` (Vercel deploys `main`) |
 

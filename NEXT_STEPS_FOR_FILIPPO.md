@@ -39,4 +39,10 @@ After this, every push to a branch gets its own preview URL. You find it in Verc
 
 ## Stage summaries
 
-_(none yet)_
+### Stage 0: Setup (2026-11-16)
+
+- Built: Next.js 16 app with Tailwind and shadcn/ui, Vitest, Supabase clients, Drizzle with the first migration (`setup_check` test table, RLS on).
+- Checked: typecheck, lint, tests and build pass; both database URLs connect (`npm run db:check`); the reviewer agent returned OK.
+- Not done: the Vercel project. It needs your account; the steps are in section 1 above. The "live at a public URL" half of the done check waits for it.
+- Good to know: Next.js 16 works differently from older versions (see "Framework notes" in `CLAUDE.md`); decisions 37 to 42 in `DECISIONS.md` record what was chosen.
+- Preview URL: none yet. Once the Vercel project exists, every branch push gets one.

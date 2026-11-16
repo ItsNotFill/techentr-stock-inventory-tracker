@@ -18,9 +18,9 @@ Rules:
 - Every session starts with `git status`, `git worktree list` and the "Now working on" line; half-done work and leftover worktrees are finished or cleaned up first.
 - Things only Filippo can do are listed in `NEXT_STEPS_FOR_FILIPPO.md`.
 
-**Current stage: 0**
+**Current stage: 1** (stage 0 is merged; its Vercel task waits on Filippo, see `NEXT_STEPS_FOR_FILIPPO.md`)
 
-**Now working on:** Stage 0 whole-stage review (reviewer sub-agent, read-only, no worktree). Branch `stage-0-setup`.
+**Now working on:** nothing
 
 ## Stage 0: Setup
 
