@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 1** (stage 0 is merged; its Vercel task waits on Filippo, see `NEXT_STEPS_FOR_FILIPPO.md`)
 
-**Now working on:** nothing
+**Now working on:** Stage 1, task 2 (migration: app_user role, is_member/has_role, tenancy RLS policies). Branch `stage-1-auth-ingredients`, main agent, no worktree.
 
 ## Stage 0: Setup
 
@@ -36,7 +36,7 @@ Rules:
 
 ## Stage 1: Auth and ingredients
 
-- [ ] Migration: enums, `organizations`, `locations`, `memberships`
+- [x] Migration: enums, `organizations`, `locations`, `memberships`
 - [ ] Migration: `is_member()` and `has_role()` functions; RLS policies for the three tenancy tables
 - [ ] `lib/db/client.ts` (runs as the signed-in user) and `lib/db/admin.ts` (server only)
 - [ ] Sign-up and login pages with email; session handling in `proxy.ts` (the Next.js 16 name for middleware)
