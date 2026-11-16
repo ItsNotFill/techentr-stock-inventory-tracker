@@ -5,6 +5,7 @@ import { menuItems, recipeLines } from "@/lib/db/schema";
 import { createIngredient, setIngredientActive } from "@/lib/ingredients";
 import {
   createMenuItem,
+  deleteMenuItem,
   getMenuItem,
   listMenuItems,
   MenuError,
@@ -258,6 +259,22 @@ describe.skipIf(!hasDatabase)("menu items and recipes", () => {
     expect(await as(otherOwner, (tx) => listMenuItems(tx, restaurant.locationId))).toEqual([]);
     expect(await as(otherOwner, (tx) => getMenuItem(tx, restaurant.locationId, margherita))).toBeNull();
     expect(await as(otherOwner, (tx) => tx.select({ id: recipeLines.id }).from(recipeLines))).toEqual([]);
+
+    // Acting on this restaurant's item by its id, under either location, finds nothing.
+    for (const locationId of [restaurant.locationId, otherRestaurant.locationId]) {
+      await expect(
+        as(otherOwner, (tx) => saveRecipe(tx, locationId, otherOwner.id, margherita, recipe([]))),
+      ).rejects.toThrow("no longer exists");
+      await expect(as(otherOwner, (tx) => setMenuItemIgnored(tx, locationId, margherita, true))).rejects.toThrow(
+        "no longer exists",
+      );
+      await expect(as(otherOwner, (tx) => deleteMenuItem(tx, locationId, margherita))).rejects.toThrow(
+        "no longer exists",
+      );
+    }
+    const untouched = await as(owner, (tx) => getMenuItem(tx, restaurant.locationId, margherita));
+    expect(untouched?.isMapped).toBe(true);
+    expect(untouched?.lines.map((line) => line.qtyBaseUnit)).toEqual(["120.000"]);
 
     const theirs = await as(otherOwner, (tx) => createMenuItem(tx, otherRestaurant.locationId, item("Margherita")));
     // Through the app: the ingredient is not found in their location.

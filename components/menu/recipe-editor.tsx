@@ -44,8 +44,11 @@ type RowErrors = { ingredientId?: string; amount?: string; unit?: string };
 
 const FIELDS = ["ingredientId", "amount", "unit"] as const;
 
+/** Rows compared by value, so "0,5" and "0.5" or "120" and "120.0" count as the same. */
 function signature(rows: { ingredientId: string; amount: string; unit: string }[]): string {
-  return JSON.stringify(rows.map((row) => [row.ingredientId, row.amount.trim(), row.unit]));
+  return JSON.stringify(
+    rows.map((row) => [row.ingredientId, parseQuantityInput(row.amount)?.toFixed() ?? row.amount.trim(), row.unit]),
+  );
 }
 
 const isBlank = (row: RecipeRow) => row.ingredientId === "" && row.amount.trim() === "";

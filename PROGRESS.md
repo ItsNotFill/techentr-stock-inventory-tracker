@@ -18,9 +18,9 @@ Rules:
 - Every session starts with `git status`, `git worktree list` and the "Now working on" line; half-done work and leftover worktrees are finished or cleaned up first.
 - Things only Filippo can do are listed in `NEXT_STEPS_FOR_FILIPPO.md`.
 
-**Current stage: 2** (stages 0 and 1 are merged; the stage 0 Vercel task waits on Filippo, see `NEXT_STEPS_FOR_FILIPPO.md`)
+**Current stage: 3** (stages 0 to 2 are merged. Open and waiting on Filippo: the stage 0 Vercel task, and the stage 2 AI onboarding tasks, which need `ANTHROPIC_API_KEY`; see `NEXT_STEPS_FOR_FILIPPO.md`)
 
-**Now working on:** Stage 2 manual path: every task before the done check is ticked; next is the reviewer on `stage-2-menu-recipes` (read-only, no worktree). The AI onboarding tasks wait for `ANTHROPIC_API_KEY` (see `NEXT_STEPS_FOR_FILIPPO.md`).
+**Now working on:** nothing
 
 ## Stage 0: Setup
 
