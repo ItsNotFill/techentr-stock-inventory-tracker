@@ -15,6 +15,7 @@ import { MANAGER_ROLES } from "@/lib/auth/roles";
 import { withUser } from "@/lib/db/client";
 import { getIngredient, type IngredientWithPacks } from "@/lib/ingredients";
 import { DISPLAY_UNITS, fromBaseUnits, toDecimal, type Quantity } from "@/lib/units";
+import { idSchema } from "@/lib/validation/ingredients";
 
 export const metadata: Metadata = { title: "Edit ingredient" };
 
@@ -60,8 +61,10 @@ function toDefaults(ingredient: IngredientWithPacks): IngredientFormDefaults {
 async function EditIngredientContent({ params }: { params: PageProps<"/ingredients/[id]">["params"] }) {
   const membership = await requireRole(MANAGER_ROLES);
   const { id } = await params;
-  // A malformed id fails the uuid cast in the query, which is the same as "not found".
-  const ingredient = await withUser((tx) => getIngredient(tx, membership.locationId, id)).catch(() => null);
+  // A malformed id can never match; real database errors still reach the error screen.
+  const parsedId = idSchema.safeParse(id);
+  if (!parsedId.success) notFound();
+  const ingredient = await withUser((tx) => getIngredient(tx, membership.locationId, parsedId.data));
   if (!ingredient) notFound();
 
   return (
@@ -84,6 +87,8 @@ async function EditIngredientContent({ params }: { params: PageProps<"/ingredien
           </CardContent>
         </Card>
         <PackSizesEditor
+          // key: the unit choices start again when the ingredient's unit changes.
+          key={ingredient.baseUnit}
           ingredientId={ingredient.id}
           baseUnit={ingredient.baseUnit}
           packSizes={ingredient.packSizes.map((pack) => ({

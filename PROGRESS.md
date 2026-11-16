@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 1** (stage 0 is merged; its Vercel task waits on Filippo, see `NEXT_STEPS_FOR_FILIPPO.md`)
 
-**Now working on:** Stage 1, tasks 10 to 12 (ingredients screen, form, pack sizes editor): the ui-builder has reported back (branch `worktree-agent-af0bc07a5636efd17`, commit `3222ee9`, worktree `.claude/worktrees/agent-af0bc07a5636efd17`); main agent is reviewing it. Stage branch `stage-1-auth-ingredients`.
+**Now working on:** Stage 1 whole-stage review (reviewer sub-agent, read-only, no worktree). Every task is ticked. Branch `stage-1-auth-ingredients`.
 
 ## Stage 0: Setup
 
@@ -45,9 +45,9 @@ Rules:
 - [x] Signed-in app shell with navigation, usable on a phone
 - [x] Migration: `ingredients` and `pack_sizes` with RLS
 - [x] `lib/units`: base-unit and pack conversion with `decimal.js`, plus tests
-- [ ] Ingredients screen: table with name, unit, reorder point, cost
-- [ ] Ingredient add and edit form with Zod validation
-- [ ] Pack sizes editor inside the ingredient form
+- [x] Ingredients screen: table with name, unit, reorder point, cost
+- [x] Ingredient add and edit form with Zod validation
+- [x] Pack sizes editor inside the ingredient form
 - [x] Settings and team screen: restaurant details, invite a user, set roles
 - [x] Seed script v1: pizzeria organization, location, three test users, ingredients and pack sizes
 - [x] Isolation test: a second restaurant's account cannot read or write the first one's ingredients

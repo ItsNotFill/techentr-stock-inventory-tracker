@@ -1,10 +1,11 @@
 /**
  * Smoke test over HTTP against a running server (default http://localhost:3000):
- * signed-out redirect, sign-in, onboarding redirect, dashboard after bootstrap.
+ * signed-out redirect, sign-in, onboarding redirect, dashboard after bootstrap,
+ * the ingredient screens with data, and any extra paths given as arguments.
  * Creates a throwaway user and restaurant and removes them again.
  *
  *   npm run dev            (in another terminal)
- *   npx tsx scripts/smoke-auth.ts [base-url]
+ *   npx tsx scripts/smoke-auth.ts [base-url] [extra paths...]
  */
 import { randomUUID } from "node:crypto";
 import { createServerClient } from "@supabase/ssr";
@@ -81,6 +82,47 @@ async function main() {
     const dashboard = await get("/dashboard", cookie);
     check("dashboard shows the restaurant", dashboard.status === 200 && dashboard.body.includes(name), `${dashboard.status}`);
     check("dashboard shows the owner role", dashboard.body.includes("Owner"));
+
+    // An ingredient with a pack size, to see the ingredient screens with data.
+    const [ingredient] = await db
+      .insert(schema.ingredients)
+      .values({
+        locationId: restaurant.locationId,
+        name: "Smoke Mozzarella",
+        baseUnit: "g",
+        costPerBaseUnit: "0.008000",
+        reorderPoint: "2000.000",
+        storageArea: "Walk-in fridge",
+      })
+      .returning({ id: schema.ingredients.id });
+    await db.insert(schema.packSizes).values({
+      locationId: restaurant.locationId,
+      ingredientId: ingredient.id,
+      label: "Smoke bag 1 kg",
+      qtyInBaseUnit: "1000.000",
+      isDefault: true,
+    });
+
+    const list = await get("/ingredients", cookie);
+    check(
+      "ingredients list shows the ingredient with cost per kg and reorder point",
+      list.status === 200 &&
+        list.body.includes("Smoke Mozzarella") &&
+        list.body.includes("€8.00 per kg") &&
+        list.body.includes("2,000 g") &&
+        list.body.includes("Smoke bag 1 kg"),
+      `${list.status}`,
+    );
+    const edit = await get(`/ingredients/${ingredient.id}`, cookie);
+    check(
+      "ingredient page shows the form prefilled in kg and the pack size",
+      edit.status === 200 && edit.body.includes('value="8"') && edit.body.includes("Smoke bag 1 kg") && edit.body.includes("1,000 g"),
+      `${edit.status}`,
+    );
+    const missing = await get("/ingredients/00000000-0000-4000-8000-000000000000", cookie);
+    check("an unknown ingredient id is not found", missing.body.includes("404") || missing.body.includes("not be found"), `${missing.status}`);
+    const malformed = await get("/ingredients/not-a-uuid", cookie);
+    check("a malformed ingredient id is not found", malformed.body.includes("404") || malformed.body.includes("not be found"), `${malformed.status}`);
 
     for (const path of process.argv.slice(3)) {
       const page = await get(path, cookie);
