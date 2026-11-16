@@ -72,3 +72,11 @@ The database already holds the demo restaurant "Pizzeria Demo" with 16 ingredien
 - Not done: the Vercel project. It needs your account; the steps are in section 1 above. The "live at a public URL" half of the done check waits for it.
 - Good to know: Next.js 16 works differently from older versions (see "Framework notes" in `CLAUDE.md`); decisions 37 to 42 in `DECISIONS.md` record what was chosen.
 - Preview URL: none yet. Once the Vercel project exists, every branch push gets one.
+
+### Stage 1: Auth and ingredients (2026-11-16)
+
+- Built: sign-up, login, first-login onboarding, three roles, the signed-in shell (works on a phone), ingredients with pack sizes, settings and team, and the demo data (`npm run db:seed`).
+- Done check passes: a second restaurant cannot read or change the first one's ingredients (`tests/integration/ingredients-isolation.test.ts`, 44 tests in total, run against the real database).
+- The reviewer agent found an open redirect in the e-mail link route; it is fixed and tested. It returned OK after that.
+- Different from the plan: the app uses its own database role (`app_user`), and team invites are one-time links you pass on, not e-mails. Reasons are in `DECISIONS.md`, entries 43 and 49.
+- Preview URL: none until the Vercel project exists (section 1). Not yet checked by a person in a browser or on a phone: please click through it once (see "Try it").
