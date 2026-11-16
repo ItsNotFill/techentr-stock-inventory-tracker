@@ -20,13 +20,13 @@ Rules:
 
 **Current stage: 0**
 
-**Now working on:** Stage 0, task 3 (Vitest). Branch `stage-0-setup`, main agent, no worktree.
+**Now working on:** Stage 0, task 4 (Supabase clients). Branch `stage-0-setup`, main agent, no worktree.
 
 ## Stage 0: Setup
 
 - [x] Scaffold Next.js (App Router) with TypeScript strict, Tailwind and ESLint; add the `typecheck` script
 - [x] Add shadcn/ui and the base components (button, input, table, dialog, form)
-- [ ] Add Vitest with one passing sample test; add the `test` script
+- [x] Add Vitest with one passing sample test; add the `test` script
 - [ ] Create the Supabase project; add `.env.example`, `.env.local` and the server and browser Supabase clients
 - [ ] Connect Drizzle: config, `db:generate` and `db:migrate` scripts, a test table migration applied to the database
 - [ ] Check the Drizzle RLS API names used in `SCHEMA.md` against the current docs; note any change in `DECISIONS.md`
