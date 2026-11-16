@@ -36,6 +36,13 @@
       "when": 1794851189658,
       "tag": "0004_ingredients_and_pack_sizes",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794852381227,
+      "tag": "0005_menu_items_and_recipe_lines",
+      "breakpoints": true
     }
   ]
 }

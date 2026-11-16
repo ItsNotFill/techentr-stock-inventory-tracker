@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 2** (stages 0 and 1 are merged; the stage 0 Vercel task waits on Filippo, see `NEXT_STEPS_FOR_FILIPPO.md`)
 
-**Now working on:** nothing
+**Now working on:** Stage 2, server side for the menu screens (lib/menu, validation, Server Actions, tests), including the rule "confirming a recipe sets is_mapped; removing every line clears it". Branch `stage-2-menu-recipes`, main agent, no worktree.
 
 ## Stage 0: Setup
 
@@ -56,7 +56,7 @@ Rules:
 
 ## Stage 2: Menu and recipes
 
-- [ ] Migration: `menu_items` and `recipe_lines` with RLS
+- [x] Migration: `menu_items` and `recipe_lines` with RLS
 - [ ] Menu screen: list of POS items with mapped, unmapped and ignored status
 - [ ] Menu item add and edit, including modifiers as their own items
 - [ ] Recipe editor: add ingredient and amount per item, in base units
