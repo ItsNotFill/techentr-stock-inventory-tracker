@@ -4,6 +4,7 @@ import { refresh } from "next/cache";
 import { checkRole } from "@/lib/auth/membership";
 import { MANAGER_ROLES } from "@/lib/auth/roles";
 import { withUser } from "@/lib/db/client";
+import { isUniqueViolation } from "@/lib/db/errors";
 import {
   addPackSize,
   createIngredient,
@@ -33,6 +34,10 @@ function toFormState(error: unknown): FormState {
     return error.field
       ? { ok: false, message: "Please check the highlighted fields.", errors: { [error.field]: [error.message] } }
       : formError(error.message);
+  }
+  // Someone else saved the same name at the same moment; the unique index refused this one.
+  if (isUniqueViolation(error)) {
+    return formError("Something with the same name was saved a moment ago. Check the list and try again.");
   }
   throw error;
 }

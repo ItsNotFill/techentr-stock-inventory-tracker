@@ -53,6 +53,17 @@ Good to know:
 - Supabase's built-in e-mail sender allows only a few e-mails per hour. That is enough to try sign-up, not for a pilot. For the pilot, set up your own SMTP sender under **Authentication**, **Emails**, **SMTP Settings**.
 - You can try the app without any of this: the seed data has three ready-made accounts that need no e-mail (see "Try it" below).
 
+### 3. Create a Claude API key (5 minutes)
+
+The AI tasks read photos (POS screenshots, end-of-day reports, supplier invoices) with the Claude API. `ANTHROPIC_API_KEY` in `.env.local` is empty, so those tasks are parked and everything else continues.
+
+1. Go to <https://console.anthropic.com> and log in (or create an account).
+2. Open **Settings**, then **Billing**, and add a small amount of credit (5 euros is plenty for building and testing: one photo costs cents).
+3. Open **API keys**, click **Create Key**, name it `restaurant-inventory`, and copy the key. It starts with `sk-ant-` and is shown only once.
+4. Open `.env.local` in the project folder and paste the key after `ANTHROPIC_API_KEY=` on that line. Save. Do not put it anywhere else in the project.
+5. In Vercel (once the project from step 1 exists): **Settings**, **Environment Variables**, add `ANTHROPIC_API_KEY` with the same value, then redeploy.
+6. Start a new session and say the key is there. The parked tasks are listed in `PROGRESS.md` under "AI onboarding", "Sales by photo" and "Restock by invoice photo".
+
 ## Try it
 
 The database already holds the demo restaurant "Pizzeria Demo" with 16 ingredients.
@@ -80,3 +91,11 @@ The database already holds the demo restaurant "Pizzeria Demo" with 16 ingredien
 - The reviewer agent found an open redirect in the e-mail link route; it is fixed and tested. It returned OK after that.
 - Different from the plan: the app uses its own database role (`app_user`), and team invites are one-time links you pass on, not e-mails. Reasons are in `DECISIONS.md`, entries 43 and 49.
 - Preview URL: none until the Vercel project exists (section 1). Not yet checked by a person in a browser or on a phone: please click through it once (see "Try it").
+
+### Stage 2: Menu and recipes, manual path (2026-11-16)
+
+- Built: menu items (with modifiers and "ignored" for things that use no stock), the recipe editor with live ingredient cost, and the demo menu: 14 items, each with a recipe or ignored (`npm run db:seed`).
+- Done check passes: a pizzeria menu can be entered with a recipe for every item. Checked by 60 tests against the real database and by a headless browser that clicks through the screens (`npm run test:e2e`). The reviewer agent returned OK.
+- The browser test found and fixed two bugs in every form: typed values were wiped after a failed save, and fields could attach to a hidden copy of an earlier screen.
+- Not done: the AI onboarding tasks (menu from POS screenshots, draft recipes). They need the Claude API key (section 3) and are parked in `PROGRESS.md`.
+- Preview URL: none until the Vercel project exists (section 1). A person has still not clicked through the app: please try the menu and a recipe once (see "Try it").

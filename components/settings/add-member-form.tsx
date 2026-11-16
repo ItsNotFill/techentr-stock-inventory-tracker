@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useId, useState } from "react";
 import { inviteMember, type InviteState } from "@/app/(app)/settings/actions";
 import { FormMessage, fieldErrors } from "@/components/form-message";
 import { Button } from "@/components/ui/button";
@@ -14,32 +14,42 @@ import { MEMBER_ROLES } from "@/lib/validation/team";
 import { AccessLinkBox } from "./access-link-box";
 
 export function AddMemberForm() {
-  const [state, formAction, pending] = useActionState<InviteState, FormData>(inviteMember, emptyFormState);
+  // Unique per form: Next.js keeps earlier screens in the page (hidden), and two
+  // forms with the same field ids would cross their labels.
+  const uid = useId();
+  // Controlled: React resets uncontrolled fields after every action, failed ones included.
+  const [email, setEmail] = useState("");
   const [role, setRole] = useState<MemberRole>("staff");
+  const [state, formAction, pending] = useActionState<InviteState, FormData>(async (previous, formData) => {
+    const result = await inviteMember(previous, formData);
+    // Ready for the next person once this one is on the team.
+    if (result.ok) setEmail("");
+    return result;
+  }, emptyFormState);
 
   return (
     <form action={formAction} noValidate>
       <FieldGroup>
         {state.ok ? <AccessLinkBox state={state} /> : <FormMessage state={state} />}
         <Field data-invalid={Boolean(state.errors?.email)}>
-          <FieldLabel htmlFor="member-email">E-mail</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-member-email`}>E-mail</FieldLabel>
           <Input
-            // A new key after a success empties the field for the next person.
-            key={state.ok ? state.email : "form"}
-            id="member-email"
+            id={`${uid}-member-email`}
             name="email"
             type="email"
             inputMode="email"
             autoComplete="off"
             required
             className="h-11"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
           />
           <FieldError errors={fieldErrors(state, "email")} />
         </Field>
         <Field data-invalid={Boolean(state.errors?.role)}>
-          <FieldLabel htmlFor="member-role">Role</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-member-role`}>Role</FieldLabel>
           <Select name="role" value={role} onValueChange={(value) => setRole(value as MemberRole)}>
-            <SelectTrigger id="member-role" className="h-11 w-full">
+            <SelectTrigger id={`${uid}-member-role`} className="h-11 w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

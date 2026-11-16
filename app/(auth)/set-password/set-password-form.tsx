@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useId } from "react";
 import { FormMessage, fieldErrors } from "@/components/form-message";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -9,6 +9,9 @@ import { emptyFormState } from "@/lib/validation/form";
 import { setPassword } from "../actions";
 
 export function SetPasswordForm() {
+  // Unique per form: Next.js keeps earlier screens in the page (hidden), and two
+  // forms with the same field ids would cross their labels.
+  const uid = useId();
   const [state, formAction, pending] = useActionState(setPassword, emptyFormState);
 
   return (
@@ -16,8 +19,8 @@ export function SetPasswordForm() {
       <FieldGroup>
         <FormMessage state={state} />
         <Field data-invalid={Boolean(state.errors?.password)}>
-          <FieldLabel htmlFor="password">New password</FieldLabel>
-          <Input id="password" name="password" type="password" autoComplete="new-password" required />
+          <FieldLabel htmlFor={`${uid}-password`}>New password</FieldLabel>
+          <Input id={`${uid}-password`} name="password" type="password" autoComplete="new-password" required />
           <FieldDescription>At least 8 characters.</FieldDescription>
           <FieldError errors={fieldErrors(state, "password")} />
         </Field>

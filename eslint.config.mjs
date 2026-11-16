@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Sub-agent worktrees are full copies of the project.
     ".claude/**",
+    "test-results/**",
+    "playwright-report/**",
   ]),
 ]);
 

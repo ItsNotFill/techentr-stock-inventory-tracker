@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState, useTransition } from "react";
+import { useActionState, useId, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { removePackSize, savePackSize } from "@/app/(app)/ingredients/actions";
 import { FormMessage, fieldErrors } from "@/components/form-message";
@@ -75,6 +75,9 @@ export function PackSizesEditor({
   baseUnit: BaseUnit;
   packSizes: PackSizeRow[];
 }) {
+  // Unique per form: Next.js keeps earlier screens in the page (hidden), and two
+  // forms with the same field ids would cross their labels.
+  const uid = useId();
   const [label, setLabel] = useState("");
   const [amount, setAmount] = useState("");
   const [unit, setUnit] = useState<string>(DEFAULT_DISPLAY_UNIT[baseUnit]);
@@ -118,9 +121,9 @@ export function PackSizesEditor({
             <input type="hidden" name="ingredientId" value={ingredientId} />
             <FormMessage state={state} />
             <Field data-invalid={invalid("label")}>
-              <FieldLabel htmlFor="packLabel">Label</FieldLabel>
+              <FieldLabel htmlFor={`${uid}-packLabel`}>Label</FieldLabel>
               <Input
-                id="packLabel"
+                id={`${uid}-packLabel`}
                 name="label"
                 className={CONTROL_HEIGHT}
                 value={label}
@@ -132,10 +135,10 @@ export function PackSizesEditor({
               <FieldError errors={fieldErrors(state, "label")} />
             </Field>
             <Field data-invalid={invalid("amount") || invalid("unit")}>
-              <FieldLabel htmlFor="packAmount">Amount in one pack</FieldLabel>
+              <FieldLabel htmlFor={`${uid}-packAmount`}>Amount in one pack</FieldLabel>
               <div className="flex items-center gap-2">
                 <Input
-                  id="packAmount"
+                  id={`${uid}-packAmount`}
                   name="amount"
                   inputMode="decimal"
                   className={CONTROL_HEIGHT}
@@ -145,7 +148,7 @@ export function PackSizesEditor({
                 />
                 <div className="w-28 shrink-0">
                   <Select name="unit" value={unit} onValueChange={setUnit}>
-                    <SelectTrigger id="packUnit" className={SELECT_HEIGHT} aria-invalid={invalid("unit")}>
+                    <SelectTrigger id={`${uid}-packUnit`} className={SELECT_HEIGHT} aria-invalid={invalid("unit")}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -162,12 +165,12 @@ export function PackSizesEditor({
             </Field>
             <Field orientation="horizontal">
               <Checkbox
-                id="packDefault"
+                id={`${uid}-packDefault`}
                 name="isDefault"
                 checked={isDefault}
                 onCheckedChange={(checked) => setIsDefault(checked === true)}
               />
-              <FieldLabel htmlFor="packDefault" className="font-normal">
+              <FieldLabel htmlFor={`${uid}-packDefault`} className="font-normal">
                 Use as default
               </FieldLabel>
             </Field>

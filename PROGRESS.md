@@ -18,7 +18,7 @@ Rules:
 - Every session starts with `git status`, `git worktree list` and the "Now working on" line; half-done work and leftover worktrees are finished or cleaned up first.
 - Things only Filippo can do are listed in `NEXT_STEPS_FOR_FILIPPO.md`.
 
-**Current stage: 2** (stages 0 and 1 are merged; the stage 0 Vercel task waits on Filippo, see `NEXT_STEPS_FOR_FILIPPO.md`)
+**Current stage: 3** (stages 0 to 2 are merged. Open and waiting on Filippo: the stage 0 Vercel task, and the stage 2 AI onboarding tasks, which need `ANTHROPIC_API_KEY`; see `NEXT_STEPS_FOR_FILIPPO.md`)
 
 **Now working on:** nothing
 
@@ -56,17 +56,17 @@ Rules:
 
 ## Stage 2: Menu and recipes
 
-- [ ] Migration: `menu_items` and `recipe_lines` with RLS
-- [ ] Menu screen: list of POS items with mapped, unmapped and ignored status
-- [ ] Menu item add and edit, including modifiers as their own items
-- [ ] Recipe editor: add ingredient and amount per item, in base units
-- [ ] Confirming a recipe sets `is_mapped`; removing every line clears it
-- [ ] Seed script v2: the pizzeria menu with recipes (Margherita 120 g mozzarella, Quattro Formaggi 80 g)
-- [ ] Run the done check by hand with a full pizzeria menu
+- [x] Migration: `menu_items` and `recipe_lines` with RLS
+- [x] Menu screen: list of POS items with mapped, unmapped and ignored status
+- [x] Menu item add and edit, including modifiers as their own items
+- [x] Recipe editor: add ingredient and amount per item, in base units
+- [x] Confirming a recipe sets `is_mapped`; removing every line clears it
+- [x] Seed script v2: the pizzeria menu with recipes (Margherita 120 g mozzarella, Quattro Formaggi 80 g)
+- [x] Run the done check by hand with a full pizzeria menu — done by a headless browser (`npm run test:e2e` enters an item and its recipe through the screens) and by `tests/integration/seed-pizzeria.test.ts` (the seeded 14-item menu has a recipe for every item). A person has not clicked through it yet
 
 **Done when:** you can enter a real pizzeria's menu with recipes for every item.
 
-AI onboarding (after the done check):
+AI onboarding (after the done check) — **parked: waiting for `ANTHROPIC_API_KEY`** (`NEXT_STEPS_FOR_FILIPPO.md`, section 3). Build these on a branch `stage-2-ai-onboarding` from `main` once the key is in `.env.local` (DECISIONS.md, entry 57):
 
 - [ ] Private `photos` Storage bucket with its access policy; migration for `ai_extractions`
 - [ ] `lib/ai`: Claude client, model from `AI_MODEL`, shared error and refusal handling, saving each call to `ai_extractions`

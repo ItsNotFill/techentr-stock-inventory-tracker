@@ -72,6 +72,9 @@ export async function deleteTestRestaurants(db: Database, restaurants: (TestRest
   const existing = restaurants.filter((r): r is TestRestaurant => Boolean(r));
   if (existing.length === 0) return;
   const locationIds = existing.map((r) => r.locationId);
+  // Menu items go first: recipe lines hold a RESTRICT key on ingredients, which
+  // would stop the cascade from the location.
+  await db.delete(schema.menuItems).where(inArray(schema.menuItems.locationId, locationIds));
   await db.delete(schema.locations).where(inArray(schema.locations.id, locationIds));
   for (const restaurant of existing) {
     await db.delete(schema.organizations).where(eq(schema.organizations.id, restaurant.organizationId));
