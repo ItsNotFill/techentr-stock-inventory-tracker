@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Restaurant Inventory",
+  title: { default: "Restaurant Inventory", template: "%s · Restaurant Inventory" },
   description: "Stock, recipes and unexplained usage for restaurants",
 };
 

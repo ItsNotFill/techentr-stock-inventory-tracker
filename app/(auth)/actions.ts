@@ -1,0 +1,83 @@
+"use server";
+
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { createRestaurantForUser } from "@/lib/auth/bootstrap";
+import { getCurrentUser } from "@/lib/auth/session";
+import { getAdminDb } from "@/lib/db/admin";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { loginSchema, onboardingSchema, signUpSchema } from "@/lib/validation/auth";
+import { formError, invalidForm, type FormState } from "@/lib/validation/form";
+
+export async function login(_previous: FormState, formData: FormData): Promise<FormState> {
+  const parsed = loginSchema.safeParse({
+    email: formData.get("email"),
+    password: formData.get("password"),
+  });
+  if (!parsed.success) return invalidForm(parsed.error);
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  if (error) {
+    if (error.code === "email_not_confirmed") {
+      return formError("Confirm your e-mail address first. The link is in the e-mail we sent you.");
+    }
+    return formError("Wrong e-mail address or password.");
+  }
+  redirect("/dashboard");
+}
+
+export async function signUp(_previous: FormState, formData: FormData): Promise<FormState> {
+  const parsed = signUpSchema.safeParse({
+    email: formData.get("email"),
+    password: formData.get("password"),
+  });
+  if (!parsed.success) return invalidForm(parsed.error);
+
+  const origin = (await headers()).get("origin");
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.auth.signUp({
+    ...parsed.data,
+    options: origin ? { emailRedirectTo: `${origin}/auth/confirm?next=/onboarding` } : undefined,
+  });
+  if (error) {
+    if (error.code === "weak_password") return formError("Choose a stronger password.");
+    if (error.code === "over_email_send_rate_limit") {
+      return formError("Too many sign-ups right now. Try again in a few minutes.");
+    }
+    return formError("Could not create the account. Try again.");
+  }
+
+  // With e-mail confirmation off, Supabase signs the user in straight away.
+  if (data.session) redirect("/onboarding");
+
+  // The same message whether or not the address was already registered,
+  // so the form does not reveal who has an account.
+  return {
+    ok: true,
+    message: "Check your inbox. Open the link in the e-mail to confirm your address, then log in.",
+  };
+}
+
+export async function signOut(): Promise<void> {
+  const supabase = await createSupabaseServerClient();
+  await supabase.auth.signOut();
+  redirect("/login");
+}
+
+/** First login: creates the organization, the first location and the owner membership. */
+export async function completeOnboarding(_previous: FormState, formData: FormData): Promise<FormState> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const parsed = onboardingSchema.safeParse({
+    restaurantName: formData.get("restaurantName"),
+    timezone: formData.get("timezone"),
+  });
+  if (!parsed.success) return invalidForm(parsed.error);
+
+  // The sign-up bootstrap is the one place the app uses the admin connection:
+  // RLS lets nobody insert organizations or locations.
+  await createRestaurantForUser(getAdminDb(), { userId: user.id, ...parsed.data });
+  redirect("/dashboard");
+}

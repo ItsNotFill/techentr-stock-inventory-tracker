@@ -1,0 +1,53 @@
+"use client";
+
+import Link from "next/link";
+import { useActionState } from "react";
+import { FormMessage, fieldErrors } from "@/components/form-message";
+import { Button } from "@/components/ui/button";
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { emptyFormState } from "@/lib/validation/form";
+import { signUp } from "../actions";
+
+export function SignUpForm() {
+  const [state, formAction, pending] = useActionState(signUp, emptyFormState);
+
+  if (state.ok) {
+    return (
+      <div className="flex flex-col gap-4">
+        <FormMessage state={state} />
+        <Button asChild variant="outline" size="lg">
+          <Link href="/login">Go to log in</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <form action={formAction} noValidate>
+      <FieldGroup>
+        <FormMessage state={state} />
+        <Field data-invalid={Boolean(state.errors?.email)}>
+          <FieldLabel htmlFor="email">E-mail</FieldLabel>
+          <Input id="email" name="email" type="email" autoComplete="email" inputMode="email" required />
+          <FieldError errors={fieldErrors(state, "email")} />
+        </Field>
+        <Field data-invalid={Boolean(state.errors?.password)}>
+          <FieldLabel htmlFor="password">Password</FieldLabel>
+          <Input id="password" name="password" type="password" autoComplete="new-password" required />
+          <FieldDescription>At least 8 characters.</FieldDescription>
+          <FieldError errors={fieldErrors(state, "password")} />
+        </Field>
+        <Button type="submit" size="lg" disabled={pending}>
+          {pending ? "Creating account…" : "Create account"}
+        </Button>
+        <p className="text-center text-sm text-muted-foreground">
+          Already have an account?{" "}
+          <Link href="/login" className="font-medium text-foreground underline underline-offset-4">
+            Log in
+          </Link>
+        </p>
+      </FieldGroup>
+    </form>
+  );
+}

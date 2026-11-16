@@ -37,6 +37,22 @@ After this, every push to a branch gets its own preview URL. You find it in Verc
 
 - Public URL: _(paste here)_
 
+### 2. Tell Supabase where the app lives (2 minutes, after step 1)
+
+Sign-up sends a confirmation e-mail, and the link in it must point at the app.
+
+1. Open the Supabase dashboard, your project, then **Authentication** in the left menu, then **URL Configuration**.
+2. **Site URL**: put the Vercel URL from step 1, for example `https://your-project.vercel.app`.
+3. **Redirect URLs**: click **Add URL** and add these two, one at a time:
+   - `http://localhost:3000/**`
+   - `https://your-project.vercel.app/**` (your real Vercel URL, with `/**` at the end)
+4. Click **Save**.
+
+Good to know:
+
+- Supabase's built-in e-mail sender allows only a few e-mails per hour. That is enough to try sign-up, not for a pilot. For the pilot, set up your own SMTP sender under **Authentication**, **Emails**, **SMTP Settings**.
+- If you want to try the app before doing this, the seed script (end of stage 1) creates three ready-made test accounts that need no e-mail.
+
 ## Stage summaries
 
 ### Stage 0: Setup (2026-11-16)

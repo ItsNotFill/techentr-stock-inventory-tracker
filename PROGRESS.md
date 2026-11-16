@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 1** (stage 0 is merged; its Vercel task waits on Filippo, see `NEXT_STEPS_FOR_FILIPPO.md`)
 
-**Now working on:** Stage 1, task 4 (sign-up and login pages, session handling in proxy.ts). Branch `stage-1-auth-ingredients`, main agent, no worktree.
+**Now working on:** Stage 1, tasks 8 and 9 (migration: ingredients and pack_sizes with RLS; lib/units). Branch `stage-1-auth-ingredients`, main agent, no worktree.
 
 ## Stage 0: Setup
 
@@ -39,10 +39,10 @@ Rules:
 - [x] Migration: enums, `organizations`, `locations`, `memberships`
 - [x] Migration: `is_member()` and `has_role()` functions; RLS policies for the three tenancy tables
 - [x] `lib/db/client.ts` (runs as the signed-in user) and `lib/db/admin.ts` (server only)
-- [ ] Sign-up and login pages with email; session handling in `proxy.ts` (the Next.js 16 name for middleware)
-- [ ] First-login onboarding: create organization, first location and owner membership
-- [ ] Role helpers and route guards for owner, manager, staff
-- [ ] Signed-in app shell with navigation, usable on a phone
+- [x] Sign-up and login pages with email; session handling in `proxy.ts` (the Next.js 16 name for middleware)
+- [x] First-login onboarding: create organization, first location and owner membership
+- [x] Role helpers and route guards for owner, manager, staff
+- [x] Signed-in app shell with navigation, usable on a phone
 - [ ] Migration: `ingredients` and `pack_sizes` with RLS
 - [ ] `lib/units`: base-unit and pack conversion with `decimal.js`, plus tests
 - [ ] Ingredients screen: table with name, unit, reorder point, cost
