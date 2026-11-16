@@ -125,6 +125,8 @@ Main agent and sub-agents (standard practice for every stage):
 - The main agent checks what comes back: tests, type check, lint, the rules in this file, and code quality. It then gives the sub-agent an OK or a not-OK.
 - Not OK: the main agent says what to fix and the same sub-agent fixes it. Nothing is pushed.
 - OK: the main agent puts the work on the stage branch, ticks the task in PROGRESS.md, and pushes.
+- A sub-agent does only the task it was given. It does not pick up the next task on its own.
+- No agent starts work on the next stage until the main agent has said the current stage is finished. The main agent says so only after the whole-stage review has passed, the branch is merged into `main`, and "Current stage" in PROGRESS.md is updated.
 - Pick each sub-agent's model by task: the strongest model for the schema, the import and ledger logic and `lib/ai`; a cheaper model for screens, styling and small fixes.
 
 Git:

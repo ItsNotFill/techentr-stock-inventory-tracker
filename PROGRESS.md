@@ -10,6 +10,7 @@ Rules:
 - The main agent hands tasks to sub-agents, at most two at a time, then waits for them to come back with something to show.
 - The main agent checks each result and gives an OK or a not-OK. Only after an OK does it tick the task here and push to the stage branch. Sub-agents never push, and stage work never goes straight to `main`.
 - When the stage's tasks are ticked and its done check passes, the main agent reviews the whole stage (tests, type check, lint, done check, `CLAUDE.md` rules, code quality), then merges the branch into `main` and pushes.
+- The main agent then says the stage is finished and updates "Current stage" below. No agent starts the next stage, or picks up a task it was not given, before that.
 - Then start the next stage on a new branch.
 
 **Current stage: 0**
