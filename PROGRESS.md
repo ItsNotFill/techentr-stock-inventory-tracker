@@ -49,7 +49,7 @@ Rules:
 - [ ] Ingredient add and edit form with Zod validation
 - [ ] Pack sizes editor inside the ingredient form
 - [ ] Settings and team screen: restaurant details, invite a user, set roles
-- [ ] Seed script v1: pizzeria organization, location, three test users, ingredients and pack sizes
+- [x] Seed script v1: pizzeria organization, location, three test users, ingredients and pack sizes
 - [x] Isolation test: a second restaurant's account cannot read or write the first one's ingredients
 
 **Done when:** two test accounts in different restaurants cannot see each other's ingredients.

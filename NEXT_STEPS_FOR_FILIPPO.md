@@ -51,7 +51,17 @@ Sign-up sends a confirmation e-mail, and the link in it must point at the app.
 Good to know:
 
 - Supabase's built-in e-mail sender allows only a few e-mails per hour. That is enough to try sign-up, not for a pilot. For the pilot, set up your own SMTP sender under **Authentication**, **Emails**, **SMTP Settings**.
-- If you want to try the app before doing this, the seed script (end of stage 1) creates three ready-made test accounts that need no e-mail.
+- You can try the app without any of this: the seed data has three ready-made accounts that need no e-mail (see "Try it" below).
+
+## Try it
+
+The database already holds the demo restaurant "Pizzeria Demo" with 16 ingredients.
+
+1. In the project folder run `npm run dev` and open <http://localhost:3000>.
+2. Log in as `owner@pizzeria-demo.example.com`, `manager@pizzeria-demo.example.com` or `staff@pizzeria-demo.example.com`.
+3. The password (one for all three) is in the file `.env.seed.local` in the project folder. That file is not committed.
+
+`npm run db:seed` can be run again at any time. It updates the demo restaurant and never deletes anything.
 
 ## Stage summaries
 
