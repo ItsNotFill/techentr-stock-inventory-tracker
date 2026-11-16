@@ -7,8 +7,9 @@ Rules:
 - Do not start a stage until the previous one passes its done check.
 - In stages 2 to 5 the manual tasks and the done check come first; the AI and offline tasks follow.
 - Each stage is built on its own branch, `stage-<n>-<short-name>`, created from an up-to-date `main`.
-- After each task: tick it here, commit, push to the stage branch. Never push stage work straight to `main`.
-- When the stage's tasks are ticked and its done check passes, hand it back to the main agent. It reviews the stage (tests, type check, lint, done check, `CLAUDE.md` rules, code quality), then merges the branch into `main` and pushes.
+- The main agent hands tasks to sub-agents, at most two at a time, then waits for them to come back with something to show.
+- The main agent checks each result and gives an OK or a not-OK. Only after an OK does it tick the task here and push to the stage branch. Sub-agents never push, and stage work never goes straight to `main`.
+- When the stage's tasks are ticked and its done check passes, the main agent reviews the whole stage (tests, type check, lint, done check, `CLAUDE.md` rules, code quality), then merges the branch into `main` and pushes.
 - Then start the next stage on a new branch.
 
 **Current stage: 0**

@@ -116,12 +116,22 @@ Environment variables live in `.env.local` (never committed) and are documented 
 - After each task: update PROGRESS.md and commit with a clear message.
 - Variance is called "unexplained usage" in the UI.
 
+Main agent and sub-agents (standard practice for every stage):
+
+- The main agent controls the project. It plans the stage, hands tasks to sub-agents, reviews their work, and is the only one that pushes.
+- At most two sub-agents run at the same time. Give them tasks that do not touch the same files.
+- Each sub-agent works in its own git worktree, commits there, and never pushes.
+- After handing out work, the main agent waits until a sub-agent comes back with something to show. It does not do that sub-agent's task in the meantime.
+- The main agent checks what comes back: tests, type check, lint, the rules in this file, and code quality. It then gives the sub-agent an OK or a not-OK.
+- Not OK: the main agent says what to fix and the same sub-agent fixes it. Nothing is pushed.
+- OK: the main agent puts the work on the stage branch, ticks the task in PROGRESS.md, and pushes.
+- Pick each sub-agent's model by task: the strongest model for the schema, the import and ledger logic and `lib/ai`; a cheaper model for screens, styling and small fixes.
+
 Git:
 
 - Each stage is built on its own branch, named `stage-<n>-<short-name>` (e.g. `stage-3-sales-import`), created from an up-to-date `main`.
-- After each task: update PROGRESS.md, commit with a clear message, and push to the stage branch. A stage has many pushes. Never push stage work straight to `main`.
-- When every task in the stage is ticked and its done check passes on the branch, hand the stage back to the main agent.
-- The main agent reviews the whole stage before it reaches `main`: tests, type check, lint, the done check, the rules in this file, and code quality. Anything it finds is fixed on the stage branch.
+- A stage has many pushes to its branch, one per approved task. Never push stage work straight to `main`.
+- When every task in the stage is ticked and its done check passes on the branch, the main agent reviews the whole stage: tests, type check, lint, the done check, the rules in this file, and code quality. Anything it finds is fixed on the stage branch.
 - Only after that review passes does the main agent merge the stage branch into `main` and push. The next stage then starts on a new branch from the updated `main`.
 - Never add Co-Authored-By, "Generated with Claude Code" or any other AI attribution to commits or PR descriptions.
 
