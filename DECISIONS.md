@@ -37,6 +37,7 @@ A short log of design decisions, so later sessions do not undo earlier choices. 
 | 24 | **All members of a location can read its rows; writes depend on role.** Hiding costs and theoretical stock from staff is done in the screens. | Postgres RLS works on rows, not columns; column-level rules are not worth the complexity for the MVP. |
 | 25 | **Tooling:** npm, Vitest, `decimal.js` for quantity maths, Serwist and IndexedDB for the PWA and offline counts. | Common, well-documented choices; `decimal.js` because Postgres `numeric` arrives in JS as a string and JS numbers are floats. |
 | 26 | **Refunds are sale lines with a negative quantity**, which write positive movements. | A refunded item was not used, and corrections must be new movements, not edits. |
+| 27 | **Supabase project setup:** automatic RLS is on for new tables, and new tables are not exposed to the Data API. All table access goes through Drizzle on the server; `supabase-js` is used only for Auth and Storage. | With the Data API closed, the browser's anon key cannot reach any table, so a missing or wrong policy cannot leak data; RLS stays on as the second layer behind the server. |
 
 ## Open questions (from SPEC.md, still open)
 
