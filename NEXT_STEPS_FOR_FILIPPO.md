@@ -101,3 +101,11 @@ The demo restaurant already holds the worked example from the spec: opening stoc
 - The reviewer agent found three ways the numbers could be wrong or forged; all fixed and tested before the merge.
 - Not done: offline counting (stage 4's last block), and nothing of stage 5 yet (deliveries, waste, dashboard, PWA).
 - Live: <https://techentr-stock-inventory-tracker.vercel.app/>; `/api/health` shows whether the live build reaches Supabase.
+
+### UI design pass: Basil kitchen theme (2026-11-17)
+
+- Built: one theme for every screen (green `#2E7D4F` on warm white, dark green sidebar, Geist font), page titles with a one-line description and the main action top right, shaded tables with right-aligned numbers and units, red only for losses, coloured status badges, empty states with a button, compact figures on a phone, and a "Get started" dashboard that doubles as the demo tour.
+- Fixed on the way: on the count screen, a figure typed while the previous one was still saving was not saved (now queued and saved); the stage 4 browser test now waits for the real "Saved" status.
+- Checked: 138 tests, five browser tests, type check, lint and build pass; the reviewer agent returned OK. Before and after screenshots of every screen, desktop and phone: `docs/screenshots/before` and `docs/screenshots/after`.
+- Rules for later screens: "Design rules" in `CLAUDE.md`; the palette and reasons in `DECISIONS.md`, entries 73 to 81.
+- Live: <https://techentr-stock-inventory-tracker.vercel.app>. Open point: input borders (`#D9D4C7`) are 1.5:1 against white, below the 3:1 WCAG asks for form fields; say if you want them darker.
