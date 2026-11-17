@@ -139,6 +139,7 @@ Agents (standard practice for every stage):
 - Work is sequential. Two `ui-builder` agents may run at the same time only on screens that do not depend on each other or on unfinished work and do not touch the same files. Never more than two.
 - Never run two tasks that touch the schema or migrations at the same time. This counts the main agent's own task. Schema and migration work is done by one agent, in sequence.
 - Each sub-agent works in its own git worktree, commits there, and never pushes.
+- A new worktree starts from `main`. The brief tells the sub-agent to reset it to the stage branch first (`DECISIONS.md`, entry 81).
 - After handing out work, the main agent waits until a sub-agent comes back with something to show. It does not do that sub-agent's task in the meantime.
 - The main agent checks what comes back: tests, type check, lint, the rules in this file, and code quality. It then gives the sub-agent an OK or a not-OK.
 - Not OK: the main agent says what to fix and the same sub-agent fixes it. Nothing is pushed.
@@ -199,3 +200,20 @@ This is not the Next.js of older tutorials. `AGENTS.md` says the same: read the 
 - **Stages.** Work one stage at a time from `PROGRESS.md`. Do not start a stage until the previous one passes its done check.
 - **Database connections.** `lib/db/client.ts` and `lib/db/admin.ts` connect through `DATABASE_URL` with `prepare: false`. `drizzle.config.ts` and `scripts/seed.ts` use `DATABASE_URL_MIGRATIONS`.
 - **Open design questions.** If something is not answered in `SPEC.md`, `SCHEMA.md` or `DECISIONS.md`, choose the option most consistent with them, record it in `DECISIONS.md`, and continue. See "Autonomy" for the few cases where the main agent stops.
+
+## Design rules
+
+The "Basil kitchen" theme. Details and reasons: `DECISIONS.md`, entries 73 to 80.
+
+- **Colours are tokens.** They live only in `app/globals.css`. Use the utilities (`bg-primary`, `text-muted-foreground`, `bg-success text-success-foreground`, `bg-table-header`, ...), never a hex value or a Tailwind palette colour (`bg-green-600`). One accent: green `#2E7D4F`. Red `#A32D2D` only for losses, errors and destructive actions.
+- **Font.** Geist Sans through `next/font` in `app/layout.tsx`. Do not add another font.
+- **Every screen** starts with `PageHeader`: title, one line on what the screen is for, and the main action on the right. Detail screens pass `back`; a status goes in `badge`.
+- **Buttons.** One filled green `default` button per screen or card, for the main action. `outline` for every other action. Filled `destructive` only for the final confirm inside a confirm dialog. `destructive-outline` for a button that opens that dialog and for per-row remove or delete. `ghost` for icon-only buttons, with an `sr-only` label.
+- **Clickable means it looks clickable.** Pointer cursor, hover state and the green focus ring on every button, link and row link. Links inside text are green.
+- **Tables.** Shaded header from `components/ui/table.tsx`. Numbers right-aligned, `tabular-nums`, always with their unit (`2,400 g`, `€8.00 per kg`). Colour amounts with the shared amount helper: negative red, zero muted and never bold. From `md` up a table, on a phone one card per row.
+- **Status** is a `Badge` with `success`, `warning`, `danger` or `neutral` (`DECISIONS.md`, entry 78). Never invent a new colour for a status.
+- **Empty lists** use `EmptyState` with the next step as a button.
+- **Summary figures** use `MetricCard` inside `MetricGrid`.
+- **Phone.** Touch targets at least 44 px. Staff screens (count, deliveries, waste) use big inputs (56 px on a phone) and a sticky save bar above the tab bar.
+- **Words.** "Unexplained usage", never "variance". "Has recipe" and "Needs recipe", never "mapped" or "unmapped".
+- **Check it by looking.** After a visible change, take screenshots (`SCREENSHOTS_DIR=<folder> npx playwright test screenshots`, desktop and phone) and compare them with `docs/screenshots/after`.

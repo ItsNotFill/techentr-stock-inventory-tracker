@@ -31,7 +31,7 @@ export function UndoButton({ importId }: { importId: string }) {
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <Button type="button" variant="outline" size="lg" className="h-11" onClick={() => setOpen(true)}>
+      <Button type="button" variant="outline" onClick={() => setOpen(true)}>
         Undo
       </Button>
       <AlertDialogContent>
@@ -44,6 +44,7 @@ export function UndoButton({ importId }: { importId: string }) {
         <AlertDialogFooter>
           <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
           <AlertDialogAction
+            variant="destructive"
             disabled={pending}
             onClick={(event) => {
               event.preventDefault();

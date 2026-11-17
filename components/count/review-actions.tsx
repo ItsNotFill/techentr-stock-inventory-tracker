@@ -44,11 +44,18 @@ export function ReviewActions({ sessionId }: { sessionId: string }) {
 
   return (
     <>
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <Button type="button" size="lg" className="h-12 sm:min-w-40" disabled={pending} onClick={approve}>
+      <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
+        <Button type="button" size="lg" className="h-12 text-base sm:min-w-36" disabled={pending} onClick={approve}>
           {pending ? "Working…" : "Approve"}
         </Button>
-        <Button type="button" size="lg" variant="outline" className="h-12 sm:min-w-40" disabled={pending} onClick={() => setOpen(true)}>
+        <Button
+          type="button"
+          size="lg"
+          variant="outline"
+          className="h-12 text-base sm:min-w-36"
+          disabled={pending}
+          onClick={() => setOpen(true)}
+        >
           Reject
         </Button>
       </div>

@@ -18,9 +18,9 @@ Rules:
 - Every session starts with `git status`, `git worktree list` and the "Now working on" line; half-done work and leftover worktrees are finished or cleaned up first.
 - Things only Filippo can do are listed in `NEXT_STEPS_FOR_FILIPPO.md`.
 
-**Current stage: 5** (stages 0 to 4 are merged, manual paths. Next: the UI design pass on `ui-design-pass`, then stage 5. Parked until `ANTHROPIC_API_KEY` exists: the AI tasks of stages 2 to 5. Offline counting (stage 4) is not done yet)
+**Current stage: 5** (stages 0 to 4 are merged, manual paths. The UI design pass (Basil kitchen theme) is merged too, 17 Nov. Next: offline counting (end of stage 4), then stage 5. Parked until `ANTHROPIC_API_KEY` exists: the AI tasks of stages 2 to 5)
 
-**Now working on:** nothing
+**Now working on:** nothing. The UI design pass is merged into `main`; the next task is the first offline-counting task below.
 
 ## Stage 0: Setup
 

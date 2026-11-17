@@ -5,7 +5,7 @@ import type { FormState } from "@/lib/validation/form";
 export function FormMessage({ state }: { state: FormState }) {
   if (!state.message) return null;
   return (
-    <Alert variant={state.ok ? "default" : "destructive"} aria-live="polite">
+    <Alert variant={state.ok ? "success" : "destructive"} aria-live="polite">
       <AlertDescription>{state.message}</AlertDescription>
     </Alert>
   );

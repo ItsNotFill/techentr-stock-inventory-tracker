@@ -40,7 +40,6 @@ export function AddMemberForm() {
             inputMode="email"
             autoComplete="off"
             required
-            className="h-11"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
           />
@@ -49,7 +48,7 @@ export function AddMemberForm() {
         <Field data-invalid={Boolean(state.errors?.role)}>
           <FieldLabel htmlFor={`${uid}-member-role`}>Role</FieldLabel>
           <Select name="role" value={role} onValueChange={(value) => setRole(value as MemberRole)}>
-            <SelectTrigger id={`${uid}-member-role`} className="h-11 w-full">
+            <SelectTrigger id={`${uid}-member-role`} className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -62,7 +61,7 @@ export function AddMemberForm() {
           </Select>
           <FieldError errors={fieldErrors(state, "role")} />
         </Field>
-        <Button type="submit" size="lg" disabled={pending} className="h-11 sm:w-fit">
+        <Button type="submit" size="lg" disabled={pending} className="sm:w-fit">
           {pending ? "Adding…" : "Add to team"}
         </Button>
       </FieldGroup>

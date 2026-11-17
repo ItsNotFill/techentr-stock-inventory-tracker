@@ -1,10 +1,12 @@
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { listApprovedCounts } from "@/lib/variance";
 import { formatMoney } from "@/lib/units";
-import { amountTone } from "./tone";
+import { amountTone } from "@/components/amount-tone";
+import { cn } from "@/lib/utils";
 
 type ApprovedCount = Awaited<ReturnType<typeof listApprovedCounts>>[number];
 
@@ -19,12 +21,12 @@ export function CountList({ counts, timezone }: { counts: ApprovedCount[]; timez
         <CardContent className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-sm text-muted-foreground">{formatter.format(latest.submittedAt)}</p>
-            <p className="text-lg font-semibold">
-              Last count: <span className={amountTone(latest.totalValue)}>{formatMoney(latest.totalValue)}</span> of
+            <p className="text-lg font-semibold md:text-xl">
+              Last count: <span className={cn("tabular-nums", amountTone(latest.totalValue, { emphasis: true }))}>{formatMoney(latest.totalValue)}</span> of
               unexplained usage
             </p>
           </div>
-          <Button asChild size="lg" className="h-11 w-full sm:w-auto">
+          <Button asChild size="lg" className="w-full sm:w-auto">
             <Link href={`/unexplained-usage/${latest.sessionId}`}>See details</Link>
           </Button>
         </CardContent>
@@ -36,15 +38,20 @@ export function CountList({ counts, timezone }: { counts: ApprovedCount[]; timez
           <li key={count.sessionId}>
             <Link
               href={`/unexplained-usage/${count.sessionId}`}
-              className="block rounded-xl border bg-card p-4 active:bg-muted"
+              className="flex items-center gap-3 rounded-lg border border-border bg-card p-4 shadow-sm transition-colors hover:bg-row-hover active:bg-accent"
             >
-              <span className="block font-medium">{formatter.format(count.submittedAt)}</span>
-              <span className="mt-1 flex items-baseline justify-between gap-3 text-sm">
-                <span className="text-muted-foreground">
-                  {count.lineCount} {count.lineCount === 1 ? "ingredient" : "ingredients"} counted
+              <span className="min-w-0 flex-1">
+                <span className="block font-semibold text-primary">{formatter.format(count.submittedAt)}</span>
+                <span className="mt-1 flex items-baseline justify-between gap-3 text-sm">
+                  <span className="text-muted-foreground">
+                    {count.lineCount} {count.lineCount === 1 ? "ingredient" : "ingredients"} counted
+                  </span>
+                  <span className={cn("tabular-nums", amountTone(count.totalValue, { emphasis: true }))}>
+                    {formatMoney(count.totalValue)}
+                  </span>
                 </span>
-                <span className={`font-medium ${amountTone(count.totalValue)}`}>{formatMoney(count.totalValue)}</span>
               </span>
+              <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden />
             </Link>
           </li>
         ))}
@@ -64,13 +71,13 @@ export function CountList({ counts, timezone }: { counts: ApprovedCount[]; timez
           <TableBody>
             {counts.map((count) => (
               <TableRow key={count.sessionId}>
-                <TableCell>{formatter.format(count.submittedAt)}</TableCell>
+                <TableCell className="font-medium">{formatter.format(count.submittedAt)}</TableCell>
                 <TableCell className="text-right">{count.lineCount}</TableCell>
-                <TableCell className={`text-right font-medium ${amountTone(count.totalValue)}`}>
+                <TableCell className={cn("text-right", amountTone(count.totalValue, { emphasis: true }))}>
                   {formatMoney(count.totalValue)}
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button asChild variant="outline" size="lg" className="h-11">
+                  <Button asChild variant="outline">
                     <Link href={`/unexplained-usage/${count.sessionId}`}>See details</Link>
                   </Button>
                 </TableCell>

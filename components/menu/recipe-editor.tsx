@@ -1,5 +1,6 @@
 "use client";
 
+import { Plus, X } from "lucide-react";
 import Link from "next/link";
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -166,9 +167,9 @@ export function RecipeEditor({
         ) : null}
 
         {noIngredients && rows.length === 0 ? (
-          <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+          <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
             You have no ingredients yet. A recipe is made of ingredients.{" "}
-            <Link href="/ingredients/new" className="underline underline-offset-4">
+            <Link href="/ingredients/new" className="font-medium text-primary underline underline-offset-4">
               Add an ingredient
             </Link>{" "}
             first.
@@ -176,7 +177,9 @@ export function RecipeEditor({
         ) : (
           <>
             {rows.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No ingredients in this recipe yet.</p>
+              <p className="rounded-lg border border-dashed border-border px-4 py-3 text-sm text-muted-foreground">
+                No ingredients in this recipe yet.
+              </p>
             ) : (
               <ul className="flex flex-col gap-3">
                 {rows.map((row, index) => {
@@ -189,7 +192,7 @@ export function RecipeEditor({
                   const cost = costs[index];
                   const message = rowErrors.ingredientId ?? rowErrors.amount ?? rowErrors.unit;
                   return (
-                    <li key={row.key} className="flex flex-col gap-2 rounded-xl border p-3">
+                    <li key={row.key} className="flex flex-col gap-2 rounded-lg border border-border bg-muted/60 p-3">
                       <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_7rem_6rem]">
                         <Select value={row.ingredientId} onValueChange={(value) => changeIngredient(row.key, value)}>
                           <SelectTrigger
@@ -246,13 +249,13 @@ export function RecipeEditor({
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm">
                           <span className="text-muted-foreground">Cost</span>
-                          <span>{cost ? formatMoney(cost) : "–"}</span>
-                          {row.draft ? <Badge variant="outline">Draft</Badge> : null}
-                          {ingredient?.archived ? <Badge variant="secondary">Archived</Badge> : null}
+                          <span className="font-medium tabular-nums">{cost ? formatMoney(cost) : "–"}</span>
+                          {row.draft ? <Badge variant="warning">Draft</Badge> : null}
+                          {ingredient?.archived ? <Badge variant="neutral">Archived</Badge> : null}
                         </div>
-                        <Button type="button" variant="ghost" className="h-11" onClick={() => removeRow(row.key)}>
-                          Remove
-                          <span className="sr-only"> line {index + 1}</span>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => removeRow(row.key)}>
+                          <X className="size-5" aria-hidden />
+                          <span className="sr-only">Remove line {index + 1}</span>
                         </Button>
                       </div>
                       {ingredient?.archived ? (
@@ -272,28 +275,33 @@ export function RecipeEditor({
             )}
 
             <div>
-              <Button type="button" variant="outline" size="lg" className="h-11" onClick={addRow}>
+              <Button type="button" variant="outline" size="lg" onClick={addRow}>
+                <Plus aria-hidden />
                 Add ingredient
               </Button>
             </div>
 
-            <div className="flex items-center justify-between gap-2 border-t pt-3">
-              <span className="font-medium">Total ingredient cost</span>
-              <span className="font-medium">{complete.length > 0 ? formatMoney(total) : "–"}</span>
+            <div className="flex items-center justify-between gap-2 border-t border-border pt-3">
+              <span className="font-semibold">Total ingredient cost</span>
+              <span className="text-base font-semibold tabular-nums">{complete.length > 0 ? formatMoney(total) : "–"}</span>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
               <Button
                 type="button"
                 size="lg"
-                className="h-11"
                 variant={removing ? "destructive" : "default"}
                 disabled={pending || (!dirty && !initialRows.some((row) => row.draft))}
                 onClick={onSaveClick}
               >
                 {pending ? "Saving…" : removing ? "Remove recipe" : "Save recipe"}
               </Button>
-              {dirty ? <span className="text-sm text-muted-foreground">Unsaved changes</span> : null}
+              {dirty ? (
+                <span className="inline-flex items-center gap-2 text-sm font-medium text-warning-foreground">
+                  <span className="size-2 rounded-full bg-warning-foreground" aria-hidden />
+                  Unsaved changes
+                </span>
+              ) : null}
             </div>
           </>
         )}
@@ -310,6 +318,7 @@ export function RecipeEditor({
           <AlertDialogFooter>
             <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
             <AlertDialogAction
+              variant="destructive"
               disabled={pending}
               onClick={(event) => {
                 event.preventDefault();

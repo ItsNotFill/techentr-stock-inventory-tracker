@@ -1,8 +1,33 @@
 # Next steps for Filippo
 
-Things only you can do, newest need first. Stage summaries are at the bottom.
+## For teammates
+
+**Live app:** <https://techentr-stock-inventory-tracker.vercel.app>
+
+The app turns a restaurant's sales into the ingredients they should have used, compares that with what staff count on the shelf, and shows the gap in grams and euros as "unexplained usage".
+
+**Demo logins** (restaurant "Pizzeria Demo"). The password is the same for all three; Filippo shares it separately.
+
+| Role | E-mail | Sees |
+| --- | --- | --- |
+| Owner | `owner@pizzeria-demo.example.com` | everything, including settings and team |
+| Manager | `manager@pizzeria-demo.example.com` | ingredients, menu, imports, counts, unexplained usage |
+| Staff | `staff@pizzeria-demo.example.com` | counting only; best on a phone |
+
+Everyone shares the same demo restaurant, so what you change, others see. Undo an import when you are done, and reject a test count instead of approving it.
+
+**A six-step tour** (log in as owner or manager; the Dashboard lists the same steps):
+
+1. **Ingredients.** Everything the pizzeria buys, with cost per kg or unit, pack sizes (a 1 kg bag, a 25 kg sack) and a reorder point. Open Mozzarella to see the details.
+2. **Menu and recipe.** Open **Menu**, then **Margherita**: its recipe says one pizza uses 120 g of mozzarella, 160 g of flour and so on, and shows the ingredient cost per pizza (€1.41).
+3. **Import sales.** Open **Import sales**. The history shows the day already imported from the till's CSV export. To try it yourself, upload `sample-sales-day2.csv` (Filippo sends it with the password): pick the file, check the columns, import. Upload it again and nothing is imported twice. **Undo** in the history takes it back out.
+4. **Stock.** Back on **Ingredients**, the "In stock" column is what should be on the shelf after deliveries, sales and waste. Mozzarella shows **Low**: it is under its reorder point.
+5. **Count.** Log in as staff (on a phone if you can), open **Count**, **Start a count** and type what is on the shelf, by pack or by kg. Each figure saves when you leave the field; **Submit count** at the bottom. Then log in as manager: the count waits under **Count** for approval. Reject it with a note so the demo numbers stay as they are.
+6. **Unexplained usage.** Open **Unexplained usage**, then the count of 16 Nov. Mozzarella should have been 2,400 g, the count found 1,900 g: **−500 g, −€4.00** that no sale, delivery or waste explains. That gap, per ingredient and in euros, is the product.
 
 ## Waiting on you
+
+Things only you can do, newest need first. Stage summaries are at the bottom.
 
 ### 1. Create a Claude API key (5 minutes)
 
@@ -17,6 +42,7 @@ The AI tasks read photos (POS screenshots, end-of-day reports, supplier invoices
 
 ## Done
 
+- **Project moved out of iCloud Drive** (17 Nov): it now lives in `~/Development/Project_Tech_Entre`. `.gitignore` ignores iCloud conflict copies ("file 2.tsx", "page 3.tsx", ...).
 - **Vercel project** (17 Nov): live at <https://techentr-stock-inventory-tracker.vercel.app/>, deploying `main` automatically. Every pushed branch gets a preview URL.
 - **Supabase URL configuration** (17 Nov): Site URL is the Vercel URL; Redirect URLs are `https://techentr-stock-inventory-tracker.vercel.app/**` and `http://localhost:3000/**`.
 - **Supabase address fixed** (17 Nov): `NEXT_PUBLIC_SUPABASE_URL` ends in `.supabase.co` in `.env.local` and in Vercel. Checked: the demo owner logs in locally and on the live site, and all five browser tests pass against the live site. <https://techentr-stock-inventory-tracker.vercel.app/api/health> shows the live commit and whether Supabase is reachable.
@@ -75,3 +101,11 @@ The demo restaurant already holds the worked example from the spec: opening stoc
 - The reviewer agent found three ways the numbers could be wrong or forged; all fixed and tested before the merge.
 - Not done: offline counting (stage 4's last block), and nothing of stage 5 yet (deliveries, waste, dashboard, PWA).
 - Live: <https://techentr-stock-inventory-tracker.vercel.app/>; `/api/health` shows whether the live build reaches Supabase.
+
+### UI design pass: Basil kitchen theme (2026-11-17)
+
+- Built: one theme for every screen (green `#2E7D4F` on warm white, dark green sidebar, Geist font), page titles with a one-line description and the main action top right, shaded tables with right-aligned numbers and units, red only for losses, coloured status badges, empty states with a button, compact figures on a phone, and a "Get started" dashboard that doubles as the demo tour.
+- Fixed on the way: on the count screen, a figure typed while the previous one was still saving was not saved (now queued and saved); the stage 4 browser test now waits for the real "Saved" status.
+- Checked: 138 tests, five browser tests, type check, lint and build pass; the reviewer agent returned OK. Before and after screenshots of every screen, desktop and phone: `docs/screenshots/before` and `docs/screenshots/after`.
+- Rules for later screens: "Design rules" in `CLAUDE.md`; the palette and reasons in `DECISIONS.md`, entries 73 to 81.
+- Live: <https://techentr-stock-inventory-tracker.vercel.app>. Open point: input borders (`#D9D4C7`) are 1.5:1 against white, below the 3:1 WCAG asks for form fields; say if you want them darker.

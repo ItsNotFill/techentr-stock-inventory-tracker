@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { MetricCard, MetricGrid } from "@/components/metric-card";
 import { PageHeader } from "@/components/page-header";
-import { CardsSkeleton } from "@/components/page-skeleton";
-import { Card, CardContent } from "@/components/ui/card";
+import { MetricGridSkeleton } from "@/components/page-skeleton";
 import { ReportLines } from "@/components/unexplained-usage/report-lines";
-import { amountTone } from "@/components/unexplained-usage/tone";
+import { amountTone } from "@/components/amount-tone";
 import { requireRole } from "@/lib/auth/membership";
 import { MANAGER_ROLES } from "@/lib/auth/roles";
 import { withUser } from "@/lib/db/client";
@@ -16,29 +15,21 @@ import { getCountReport } from "@/lib/variance";
 
 export const metadata: Metadata = { title: "Count report" };
 
+const DESCRIPTION = "Per ingredient: what should have been on the shelf, what was counted, and the difference in euros.";
+const BACK = { href: "/unexplained-usage", label: "Back to unexplained usage" };
+
 export default function CountReportPage({ params }: PageProps<"/unexplained-usage/[id]">) {
   return (
     <Suspense
       fallback={
         <>
-          <PageHeader title="Unexplained usage" />
-          <CardsSkeleton cards={3} />
+          <PageHeader title="Unexplained usage" description={DESCRIPTION} back={BACK} />
+          <MetricGridSkeleton cards={3} />
         </>
       }
     >
       <CountReportContent params={params} />
     </Suspense>
-  );
-}
-
-function SummaryCard({ label, value, tone }: { label: string; value: string; tone?: string }) {
-  return (
-    <Card>
-      <CardContent>
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p className={`text-2xl font-semibold ${tone ?? ""}`}>{value}</p>
-      </CardContent>
-    </Card>
   );
 }
 
@@ -59,23 +50,17 @@ async function CountReportContent({ params }: { params: PageProps<"/unexplained-
 
   return (
     <>
-      <PageHeader title={`Count of ${when}`} />
+      <PageHeader title={`Count of ${when}`} description={DESCRIPTION} back={BACK} />
       <div className="flex flex-col gap-6">
-        <Link
-          href="/unexplained-usage"
-          className="inline-flex min-h-11 items-center text-sm text-muted-foreground underline underline-offset-4"
-        >
-          Back to unexplained usage
-        </Link>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <SummaryCard
+        <MetricGrid>
+          <MetricCard
             label="Unexplained usage"
             value={formatMoney(report.totalValue)}
             tone={amountTone(report.totalValue)}
           />
-          <SummaryCard label="Lost" value={formatMoney(report.lostValue)} tone={amountTone(report.lostValue)} />
-          <SummaryCard label="Ingredients counted" value={String(report.lines.length)} />
-        </div>
+          <MetricCard label="Lost" value={formatMoney(report.lostValue)} tone={amountTone(report.lostValue)} />
+          <MetricCard label="Ingredients counted" value={String(report.lines.length)} />
+        </MetricGrid>
         <p className="text-sm text-muted-foreground">
           Negative numbers are stock that is missing: used without a sale or waste record. Check portion sizes, recipes
           and waste logging first.

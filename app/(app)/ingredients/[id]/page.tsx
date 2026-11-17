@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ArchiveButton } from "@/components/ingredients/archive-button";
@@ -19,12 +18,15 @@ import { idSchema } from "@/lib/validation/ingredients";
 
 export const metadata: Metadata = { title: "Edit ingredient" };
 
+const DESCRIPTION = "Name, unit, cost and stock levels, and the pack sizes it is delivered in.";
+const BACK = { href: "/ingredients", label: "Back to ingredients" };
+
 export default function EditIngredientPage({ params }: PageProps<"/ingredients/[id]">) {
   return (
     <Suspense
       fallback={
         <>
-          <PageHeader title="Ingredient" />
+          <PageHeader title="Ingredient" description={DESCRIPTION} back={BACK} />
           <CardsSkeleton cards={1} />
         </>
       }
@@ -72,13 +74,13 @@ async function EditIngredientContent({ params }: { params: PageProps<"/ingredien
 
   return (
     <>
-      <PageHeader title={ingredient.name}>
-        {ingredient.isActive ? null : <Badge variant="secondary">Archived</Badge>}
-      </PageHeader>
+      <PageHeader
+        title={ingredient.name}
+        description={DESCRIPTION}
+        back={BACK}
+        badge={ingredient.isActive ? null : <Badge variant="neutral">Archived</Badge>}
+      />
       <div className="flex max-w-2xl flex-col gap-6">
-        <Link href="/ingredients" className="text-sm text-muted-foreground underline underline-offset-4">
-          Back to ingredients
-        </Link>
         <Card>
           <CardContent>
             {/* key: start again from the saved values when they change. */}

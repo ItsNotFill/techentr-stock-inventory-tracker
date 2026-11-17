@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ItemActions } from "@/components/menu/item-actions";
@@ -19,12 +18,15 @@ import { idSchema } from "@/lib/validation/ingredients";
 
 export const metadata: Metadata = { title: "Menu item" };
 
+const DESCRIPTION = "The item as your POS sells it, and the recipe each sale uses up.";
+const BACK = { href: "/menu", label: "Back to menu" };
+
 export default function MenuItemPage({ params }: PageProps<"/menu/[id]">) {
   return (
     <Suspense
       fallback={
         <>
-          <PageHeader title="Menu item" />
+          <PageHeader title="Menu item" description={DESCRIPTION} back={BACK} />
           <CardsSkeleton cards={2} />
         </>
       }
@@ -92,13 +94,8 @@ async function MenuItemContent({ params }: { params: PageProps<"/menu/[id]">["pa
 
   return (
     <>
-      <PageHeader title={item.displayName}>
-        <StatusBadge item={item} />
-      </PageHeader>
+      <PageHeader title={item.displayName} description={DESCRIPTION} back={BACK} badge={<StatusBadge item={item} />} />
       <div className="flex max-w-2xl flex-col gap-6">
-        <Link href="/menu" className="text-sm text-muted-foreground underline underline-offset-4">
-          Back to menu
-        </Link>
         <Card>
           <CardContent>
             {/* key: start again from the saved values when they change. */}
