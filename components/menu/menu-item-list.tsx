@@ -15,7 +15,7 @@ function Names({ item }: { item: MenuItemSummary }) {
     <>
       <span className="font-medium text-primary">{item.displayName}</span>
       {item.displayName !== item.posName ? (
-        <span className="block text-sm font-normal text-muted-foreground">{item.posName}</span>
+        <span className="block text-table font-normal text-muted-foreground">{item.posName}</span>
       ) : null}
     </>
   );

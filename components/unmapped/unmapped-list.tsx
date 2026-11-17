@@ -16,7 +16,7 @@ function Names({ entry }: { entry: UnmappedQueueEntry }) {
     <>
       <span className="font-medium">{entry.displayName}</span>
       {entry.displayName !== entry.posName ? (
-        <span className="block text-sm font-normal text-muted-foreground">{entry.posName}</span>
+        <span className="block text-table font-normal text-muted-foreground">{entry.posName}</span>
       ) : null}
     </>
   );

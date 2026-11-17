@@ -47,7 +47,7 @@ async function IngredientsContent({ searchParams }: { searchParams: PageProps<"/
   const stockById = Object.fromEntries(ingredients.map((ingredient) => [ingredient.id, stockOf(stock, ingredient.id)]));
 
   const archivedToggle = (
-    <Button asChild variant="ghost" size="sm" className="h-11 md:h-9">
+    <Button asChild variant="outline" size="sm">
       <Link href={includeArchived ? "/ingredients" : "/ingredients?archived=1"}>
         {includeArchived ? <ArchiveRestore aria-hidden /> : <Archive aria-hidden />}
         {includeArchived ? "Hide archived" : "Show archived"}

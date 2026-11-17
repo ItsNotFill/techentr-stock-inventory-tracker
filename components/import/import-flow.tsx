@@ -213,9 +213,9 @@ export function ImportFlow({ timeZone }: { timeZone: string }) {
 
   if (result) {
     return (
-      <div className="flex flex-col items-start gap-4 rounded-lg border border-success-border bg-card p-5 shadow-sm md:p-6">
+      <div className="flex flex-col items-start gap-4 rounded-lg border border-border bg-card p-5 shadow-sm md:p-6">
         <h2 className="flex items-center gap-2 text-lg font-semibold">
-          <CircleCheck className="size-5 shrink-0 text-success" aria-hidden />
+          <CircleCheck className="size-5 shrink-0 text-success-foreground" aria-hidden />
           Imported {plural(result.ordersImported, "order", "orders")} ({plural(result.linesImported, "line", "lines")})
         </h2>
         <ul className="flex list-disc flex-col gap-1 pl-5 text-sm">

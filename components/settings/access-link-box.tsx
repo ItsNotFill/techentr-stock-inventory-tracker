@@ -30,7 +30,7 @@ export function AccessLinkBox({ state }: { state: InviteState }) {
 
   return (
     <div
-      className="flex flex-col gap-3 rounded-lg border border-info-border bg-accent p-4 text-sm"
+      className="flex flex-col gap-3 rounded-lg border border-border bg-accent p-4 text-sm"
       role="status"
       aria-live="polite"
     >

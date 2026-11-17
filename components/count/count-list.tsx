@@ -12,7 +12,7 @@ function when(count: CountSummary, timeZone: string): string {
   return formatDateTime(count.submittedAt ?? count.startedAt, timeZone);
 }
 
-const textLink = "text-sm font-medium text-primary underline-offset-4 hover:underline";
+const textLink = "font-medium text-primary underline-offset-4 hover:text-primary-hover hover:underline";
 
 /** Submitted counts for owners and managers to review. */
 export function WaitingList({ counts, userId, timeZone }: { counts: CountSummary[]; userId: string; timeZone: string }) {
@@ -25,7 +25,7 @@ export function WaitingList({ counts, userId, timeZone }: { counts: CountSummary
         <li key={count.id}>
           <Link
             href={`/count/${count.id}`}
-            className="group flex min-h-16 items-center justify-between gap-3 rounded-lg border border-warning-border bg-card p-4 shadow-sm transition-colors hover:border-primary hover:bg-row-hover"
+            className="group flex min-h-16 items-center justify-between gap-3 rounded-lg border border-border bg-card p-4 shadow-sm transition-colors hover:border-primary hover:bg-row-hover"
           >
             <span className="min-w-0">
               <span className="block font-semibold break-words">{countWho(count, userId)}</span>
@@ -90,7 +90,7 @@ export function RecentCounts({
               {showUsage(count) ? (
                 <Link
                   href={`/unexplained-usage/${count.id}`}
-                  className={buttonVariants({ variant: "ghost", className: "flex-1" })}
+                  className={buttonVariants({ variant: "outline", className: "flex-1" })}
                 >
                   See unexplained usage
                 </Link>

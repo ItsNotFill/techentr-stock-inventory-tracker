@@ -40,15 +40,25 @@ async function DashboardContent() {
           <Link href={action.href}>{action.label}</Link>
         </Button>
       </PageHeader>
-      <Card className="max-w-xl">
+      <Card className="max-w-2xl">
         <CardHeader>
           <CardTitle>{membership.locationName}</CardTitle>
           <CardDescription>
-            You are signed in as {ROLE_LABELS[membership.role].toLowerCase()}. Low stock, the last import and unexplained
-            usage will appear here as the restaurant starts using the app.
+            Low stock, the last import and unexplained usage will appear here as the restaurant starts using the app.
           </CardDescription>
         </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">Timezone: {membership.timezone}</CardContent>
+        <CardContent>
+          <dl className="grid gap-4 border-t border-border pt-4 sm:grid-cols-2">
+            <div>
+              <dt className="text-sm text-muted-foreground">Signed in as</dt>
+              <dd className="mt-0.5 font-medium">{ROLE_LABELS[membership.role]}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-muted-foreground">Timezone</dt>
+              <dd className="mt-0.5 font-medium">{membership.timezone}</dd>
+            </div>
+          </dl>
+        </CardContent>
       </Card>
     </>
   );

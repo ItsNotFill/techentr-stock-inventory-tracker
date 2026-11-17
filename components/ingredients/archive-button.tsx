@@ -47,7 +47,7 @@ export function ArchiveButton({
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <Button type="button" variant="destructive-outline" size={size} onClick={() => setOpen(true)}>
+      <Button type="button" variant="destructive" size={size} onClick={() => setOpen(true)}>
         Archive
       </Button>
       <AlertDialogContent>

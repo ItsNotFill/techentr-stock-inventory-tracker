@@ -33,7 +33,7 @@ async function Notice({ searchParams }: { searchParams: PageProps<"/login">["sea
   const text = typeof notice === "string" ? NOTICES[notice] : undefined;
   if (!text) return null;
   return (
-    <Alert variant="neutral">
+    <Alert>
       <AlertDescription>{text}</AlertDescription>
     </Alert>
   );

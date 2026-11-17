@@ -73,7 +73,7 @@ export function ItemActions({
 
         <div>
           <AlertDialog open={open} onOpenChange={setOpen}>
-            <Button type="button" variant="destructive-outline" size="lg" onClick={() => setOpen(true)}>
+            <Button type="button" variant="destructive" size="lg" onClick={() => setOpen(true)}>
               Delete item
             </Button>
             <AlertDialogContent>

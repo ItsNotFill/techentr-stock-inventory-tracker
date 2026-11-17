@@ -8,9 +8,9 @@ const LABELS: Record<CountSummary["status"], string> = {
   rejected: "Rejected",
 };
 
-/** Grey while counting, amber while it waits for a manager, then green or red. */
+/** Amber while counting and while it waits for a manager, then green or red. */
 const VARIANT = {
-  draft: "neutral",
+  draft: "warning",
   submitted: "warning",
   approved: "success",
   rejected: "danger",

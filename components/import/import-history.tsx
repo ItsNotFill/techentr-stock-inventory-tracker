@@ -9,7 +9,7 @@ import { UndoButton } from "./undo-button";
 function StatusBadge({ status }: { status: ImportHistoryEntry["status"] }) {
   if (status === "undone") return <Badge variant="neutral">Undone</Badge>;
   if (status === "confirmed") return <Badge variant="success">Imported</Badge>;
-  return <Badge variant="neutral">Draft</Badge>;
+  return <Badge variant="warning">Draft</Badge>;
 }
 
 /** Past imports: a table from `md` up, cards on a phone. */

@@ -229,11 +229,7 @@ export function CountSheetForm({
                     key={ingredient.id}
                     className={cn(
                       "scroll-mt-24 scroll-mb-56 rounded-lg border bg-card p-4 shadow-sm transition-colors",
-                      status?.state === "error"
-                        ? "border-destructive"
-                        : counted
-                          ? "border-success-border"
-                          : "border-border",
+                      status?.state === "error" ? "border-destructive" : "border-border",
                     )}
                   >
                     <div className="flex items-center justify-between gap-3">
@@ -241,8 +237,8 @@ export function CountSheetForm({
                         {ingredient.name}
                       </label>
                       {counted ? (
-                        <span className="flex shrink-0 items-center gap-1 text-sm font-medium text-success">
-                          <CheckIcon className="size-4" aria-hidden />
+                        <span className="flex h-6 shrink-0 items-center gap-1 rounded-full bg-success px-2.5 text-xs font-medium text-success-foreground">
+                          <CheckIcon className="size-3.5" aria-hidden />
                           Counted
                         </span>
                       ) : null}
@@ -296,7 +292,7 @@ export function CountSheetForm({
                             status.state === "error"
                               ? "text-destructive"
                               : status.state === "saved"
-                                ? "text-success"
+                                ? "text-success-foreground"
                                 : "text-muted-foreground",
                           )}
                           role={status.state === "error" ? "alert" : undefined}
@@ -318,20 +314,14 @@ export function CountSheetForm({
       ) : null}
 
       <div>
-        <Button
-          type="button"
-          variant="ghost"
-          className="text-destructive hover:bg-danger-subtle hover:text-destructive"
-          disabled={pending}
-          onClick={() => setDeleteOpen(true)}
-        >
+        <Button type="button" variant="destructive" disabled={pending} onClick={() => setDeleteOpen(true)}>
           <Trash2 aria-hidden />
           Delete draft
         </Button>
       </div>
 
       {/* Stays above the phone tab bar while scrolling; at the end of the list it sits in place, so it never covers the last item. */}
-      <div className="sticky bottom-[calc(var(--tabbar-height)+env(safe-area-inset-bottom))] z-10 -mx-4 flex gap-3 border-t border-border bg-card p-4 shadow-[0_-4px_12px_rgb(0_0_0/0.06)] md:bottom-4 md:mx-0 md:rounded-lg md:border">
+      <div className="sticky bottom-[calc(var(--tabbar-height)+env(safe-area-inset-bottom))] z-10 -mx-4 flex gap-3 border-t border-border bg-card p-4 md:bottom-4 md:mx-0 md:rounded-lg md:border">
         <Button type="button" variant="outline" size="lg" className="h-12 flex-1 text-base" disabled={saving || pending} onClick={() => void save()}>
           {saving ? "Saving…" : "Save"}
         </Button>

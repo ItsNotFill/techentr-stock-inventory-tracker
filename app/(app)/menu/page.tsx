@@ -81,10 +81,10 @@ async function MenuContent({ searchParams }: { searchParams: PageProps<"/menu">[
               href={entry.value === "all" ? "/menu" : `/menu?status=${entry.value}`}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "inline-flex h-11 items-center rounded-full border px-4 text-sm font-medium transition-colors md:h-9",
+                "inline-flex h-11 items-center rounded-full border px-4 text-sm font-medium transition-colors md:h-10",
                 active
                   ? "border-primary bg-primary text-primary-foreground hover:bg-primary-hover"
-                  : "border-input bg-card text-foreground hover:border-foreground/50 hover:bg-muted",
+                  : "border-border bg-card text-foreground hover:border-muted-foreground/50 hover:bg-row-hover",
               )}
             >
               {entry.label} ({counts[entry.value]})

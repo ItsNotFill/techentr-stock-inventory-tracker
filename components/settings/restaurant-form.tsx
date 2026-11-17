@@ -78,7 +78,7 @@ export function RestaurantForm({ name, posProvider, timezone }: Props) {
           <FieldDescription>Decides which day a sale or a count belongs to.</FieldDescription>
           <FieldError errors={fieldErrors(state, "timezone")} />
         </Field>
-        <Button type="submit" size="lg" disabled={pending} className="sm:w-fit">
+        <Button type="submit" variant="outline" size="lg" disabled={pending} className="sm:w-fit">
           {pending ? "Saving…" : "Save details"}
         </Button>
       </FieldGroup>

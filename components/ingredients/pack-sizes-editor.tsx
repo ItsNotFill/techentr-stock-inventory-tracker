@@ -58,7 +58,7 @@ function PackRow({ ingredientId, baseUnit, pack }: { ingredientId: string; baseU
             Make default
           </Button>
         )}
-        <Button type="button" variant="destructive-outline" disabled={pending} onClick={remove}>
+        <Button type="button" variant="destructive" disabled={pending} onClick={remove}>
           Remove
         </Button>
       </div>
@@ -176,7 +176,7 @@ export function PackSizesEditor({
                 Use as default
               </FieldLabel>
             </Field>
-            <Button type="submit" size="lg" className="sm:w-fit" disabled={pending}>
+            <Button type="submit" variant="outline" size="lg" className="sm:w-fit" disabled={pending}>
               {pending ? "Adding…" : "Add pack size"}
             </Button>
           </FieldGroup>

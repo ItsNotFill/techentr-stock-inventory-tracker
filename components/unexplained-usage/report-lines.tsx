@@ -14,7 +14,7 @@ function Name({ line }: { line: ReportLine }) {
         </Badge>
       ) : null}
       {line.storageArea ? (
-        <span className="block text-sm font-normal text-muted-foreground">{line.storageArea}</span>
+        <span className="block text-table font-normal text-muted-foreground">{line.storageArea}</span>
       ) : null}
     </>
   );

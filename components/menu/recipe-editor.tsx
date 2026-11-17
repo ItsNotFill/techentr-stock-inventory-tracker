@@ -250,18 +250,12 @@ export function RecipeEditor({
                         <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm">
                           <span className="text-muted-foreground">Cost</span>
                           <span className="font-medium tabular-nums">{cost ? formatMoney(cost) : "–"}</span>
-                          {row.draft ? <Badge variant="neutral">Draft</Badge> : null}
+                          {row.draft ? <Badge variant="warning">Draft</Badge> : null}
                           {ingredient?.archived ? <Badge variant="neutral">Archived</Badge> : null}
                         </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          className="text-destructive hover:bg-danger-subtle hover:text-destructive"
-                          onClick={() => removeRow(row.key)}
-                        >
-                          <X aria-hidden />
-                          Remove
-                          <span className="sr-only"> line {index + 1}</span>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => removeRow(row.key)}>
+                          <X className="size-5" aria-hidden />
+                          <span className="sr-only">Remove line {index + 1}</span>
                         </Button>
                       </div>
                       {ingredient?.archived ? (
@@ -303,8 +297,8 @@ export function RecipeEditor({
                 {pending ? "Saving…" : removing ? "Remove recipe" : "Save recipe"}
               </Button>
               {dirty ? (
-                <span className="inline-flex items-center gap-2 text-sm font-medium text-warning">
-                  <span className="size-2 rounded-full bg-warning" aria-hidden />
+                <span className="inline-flex items-center gap-2 text-sm font-medium text-warning-foreground">
+                  <span className="size-2 rounded-full bg-warning-foreground" aria-hidden />
                   Unsaved changes
                 </span>
               ) : null}

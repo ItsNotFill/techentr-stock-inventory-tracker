@@ -48,7 +48,7 @@ export function TeamList({ members }: { members: TeamRow[] }) {
                 <TableCell>
                   <span className="font-medium">{member.email}</span>
                   {member.isSelf ? <span className="text-muted-foreground"> (you)</span> : null}
-                  <span className="block text-sm text-muted-foreground">Joined {member.joined}</span>
+                  <span className="block text-table text-muted-foreground">Joined {member.joined}</span>
                 </TableCell>
                 <TableCell>
                   <RoleSelect member={member} />
@@ -64,7 +64,7 @@ export function TeamList({ members }: { members: TeamRow[] }) {
 
       <ul className="flex flex-col gap-3 md:hidden">
         {members.map((member) => (
-          <li key={member.userId} className="flex flex-col gap-3 rounded-lg border border-border p-3">
+          <li key={member.userId} className="flex flex-col gap-3 rounded-lg border border-border bg-card p-3">
             <div className="min-w-0">
               <p className="font-medium break-all">
                 {member.email}
@@ -147,7 +147,7 @@ function MemberActions({ member, className }: { member: TeamRow; className?: str
       </Button>
       <Button
         type="button"
-        variant="destructive-outline"
+        variant="destructive"
         className="flex-1 md:flex-none"
         onClick={() => setConfirmOpen(true)}
       >
