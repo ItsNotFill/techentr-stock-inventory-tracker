@@ -139,6 +139,7 @@ Agents (standard practice for every stage):
 - Work is sequential. Two `ui-builder` agents may run at the same time only on screens that do not depend on each other or on unfinished work and do not touch the same files. Never more than two.
 - Never run two tasks that touch the schema or migrations at the same time. This counts the main agent's own task. Schema and migration work is done by one agent, in sequence.
 - Each sub-agent works in its own git worktree, commits there, and never pushes.
+- A new worktree starts from `main`. The brief tells the sub-agent to reset it to the stage branch first (`DECISIONS.md`, entry 81).
 - After handing out work, the main agent waits until a sub-agent comes back with something to show. It does not do that sub-agent's task in the meantime.
 - The main agent checks what comes back: tests, type check, lint, the rules in this file, and code quality. It then gives the sub-agent an OK or a not-OK.
 - Not OK: the main agent says what to fix and the same sub-agent fixes it. Nothing is pushed.
