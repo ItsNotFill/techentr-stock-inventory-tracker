@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 5** (stages 0 to 4 are merged, manual paths. Next: the UI design pass on `ui-design-pass`, then stage 5. Parked until `ANTHROPIC_API_KEY` exists: the AI tasks of stages 2 to 5. Offline counting (stage 4) is not done yet)
 
-**Now working on:** UI design pass (Basil kitchen theme) on branch `ui-design-pass`. Done: the ui-designer's theme tokens, page header, metric card, empty state and nav are merged; its worktree is removed. Next: screen-by-screen polish (ui-builder, worktrees under `.claude/worktrees/`), AFTER screenshots in `docs/screenshots/after`, tests and e2e, reviewer, merge to `main`, live check, design rules in `DECISIONS.md` and `CLAUDE.md`, "For teammates" in `NEXT_STEPS_FOR_FILIPPO.md`.
+**Now working on:** UI design pass (Basil kitchen theme) on branch `ui-design-pass`. Done: theme tokens, page header, metric card, empty state and nav merged. In progress, each in its own worktree under `.claude/worktrees/`: (a) `ui-designer`: shared `destructive-outline` button, shared amount colouring, compact metric cards on a phone; (b) `ui-builder`: dashboard "Get started" steps and a one-line import stepper on a phone. Next: `ui-builder` applies (a) to the screens (row and trigger delete buttons, zero amounts, metric grid), AFTER screenshots in `docs/screenshots/after`, tests and e2e, reviewer, merge to `main`, live check, design rules in `DECISIONS.md` and `CLAUDE.md`, "For teammates" in `NEXT_STEPS_FOR_FILIPPO.md`.
 
 ## Stage 0: Setup
 
