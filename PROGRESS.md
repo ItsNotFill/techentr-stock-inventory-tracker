@@ -18,7 +18,7 @@ Rules:
 - Every session starts with `git status`, `git worktree list` and the "Now working on" line; half-done work and leftover worktrees are finished or cleaned up first.
 - Things only Filippo can do are listed in `NEXT_STEPS_FOR_FILIPPO.md`.
 
-**Current stage: 4** (stages 0 to 3 are merged, manual paths. Waiting on Filippo: the Supabase address fix in Vercel and `.env.local`, and `ANTHROPIC_API_KEY` for the parked AI tasks; see `NEXT_STEPS_FOR_FILIPPO.md`)
+**Current stage: 5** (stages 0 to 4 are merged, manual paths. Next: the UI design pass on `ui-design-pass`, then stage 5. Parked until `ANTHROPIC_API_KEY` exists: the AI tasks of stages 2 to 5. Offline counting (stage 4) is not done yet)
 
 **Now working on:** nothing
 
@@ -109,21 +109,21 @@ Sales by photo (after the done check) — **parked: waiting for `ANTHROPIC_API_K
 
 ## Stage 4: Stock count and variance
 
-- [ ] Migration: `count_sessions` and `count_lines` with RLS
-- [ ] `lib/variance`: unexplained usage in units and euros; tests including −500 g and −€4
-- [ ] Mobile count screen: ingredients grouped by storage area, large inputs
-- [ ] Count entry by pack or base unit, converted with `lib/units`
-- [ ] Save draft and submit; submit stores the provisional theoretical stock
-- [ ] Manager approval screen: list of submitted counts, approve or reject with a note
-- [ ] Approval writes `count_adjust` movements as of `submitted_at`; opening counts are flagged
-- [ ] Late-movement correction in `lib/ledger`; tests for late sales, undo after a count, and counts approved out of order
-- [ ] Test: unexplained usage on a line always equals the sum of its `count_adjust` movements
-- [ ] Unexplained usage report: per count, theoretical, counted and difference in units and euros, sorted by euros lost
-- [ ] Seed script v4: the worked example's waste movement and closing count
+- [x] Migration: `count_sessions` and `count_lines` with RLS
+- [x] `lib/variance`: unexplained usage in units and euros; tests including −500 g and −€4
+- [x] Mobile count screen: ingredients grouped by storage area, large inputs
+- [x] Count entry by pack or base unit, converted with `lib/units`
+- [x] Save draft and submit; submit stores the provisional theoretical stock
+- [x] Manager approval screen: list of submitted counts, approve or reject with a note
+- [x] Approval writes `count_adjust` movements as of `submitted_at`; opening counts are flagged
+- [x] Late-movement correction in `lib/ledger`; tests for late sales, undo after a count, and counts approved out of order
+- [x] Test: unexplained usage on a line always equals the sum of its `count_adjust` movements
+- [x] Unexplained usage report: per count, theoretical, counted and difference in units and euros, sorted by euros lost
+- [x] Seed script v4: the worked example's waste movement and closing count
 
 **Done when:** the worked example's closing count shows −500 g and −€4.
 
-Offline counting (after the done check):
+Offline counting (after the done check) — **not done yet**; picked up after the design pass:
 
 - [ ] Save count drafts to IndexedDB as they are typed
 - [ ] Sync on reconnect, idempotent through `client_id`

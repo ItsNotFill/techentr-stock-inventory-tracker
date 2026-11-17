@@ -1,8 +1,10 @@
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { runAsUser } from "@/lib/db/rls";
 import { zonedTimeToUtc } from "@/lib/imports/time";
+import { countSessions } from "@/lib/db/schema";
 import { listIngredients } from "@/lib/ingredients";
+import { getCountReport } from "@/lib/variance";
 import { stockAt, stockOf } from "@/lib/ledger";
 import { getMenuItem, listMenuItems } from "@/lib/menu";
 import { menuItemStatus } from "@/lib/menu/status";
@@ -79,8 +81,32 @@ describe.skipIf(!hasDatabase)("seeded pizzeria", () => {
     expect(await stockAtHour(SEED_DAY.openingHour)).toBe("2000.000"); // opening count
     expect(await stockAtHour(SEED_DAY.deliveryHour)).toBe("7000.000"); // + 5 x 1 kg
     expect(await stockAtHour(15)).toBe("5000.000"); // after lunch: 14 Margherita (1,680 g), 4 Quattro Formaggi (320 g)
-    // After the last order of the day: 7,000 - 30 x 120 - 10 x 80. Later movements do not change this.
-    expect(await stockAtHour(22)).toBe("2600.000");
+    // After the last order of the day: 7,000 - 30 x 120 - 10 x 80.
+    expect(await stockAtHour(21)).toBe("2600.000");
+    // The dropped tray (21:30) and the closing count (23:00), when the seed has them.
+    const after = await stockAtHour(24);
+    expect(["2600.000", "1900.000"]).toContain(after);
+  });
+
+  it("the closing count shows -500 g and -EUR 4 of mozzarella (stage 4 done check)", async (context) => {
+    if (!ownerId) return context.skip();
+    const [count] = await testDb.db
+      .select({ id: countSessions.id, status: countSessions.status })
+      .from(countSessions)
+      .where(eq(countSessions.clientId, SEED_DAY.closingCount.clientId));
+    if (!count) return context.skip();
+    expect(count.status).toBe("approved");
+
+    const report = await runAsUser(testDb.db, ownerId, (tx) => getCountReport(tx, SEED_LOCATION.id, count.id));
+    const mozzarella = report!.lines.find((line) => line.ingredientName === SEED_DAY.mozzarella.name)!;
+    expect([mozzarella.expectedQty, mozzarella.countedQty]).toEqual(["2400.000", "1900.000"]);
+    expect(mozzarella.differenceQty).toBe("-500.000");
+    expect(mozzarella.differenceValue).toBe("-4.00");
+    expect(mozzarella.isOpening).toBe(false);
+    // Mozzarella is the biggest loss, and the only one: the rest was counted as expected.
+    expect(report!.lines[0].ingredientName).toBe(SEED_DAY.mozzarella.name);
+    expect(report!.totalValue).toBe("-4.00");
+    expect(report!.lines.length).toBe(SEED_INGREDIENTS.length);
   });
 
   it("uses the SPEC amounts: Margherita 120 g and Quattro Formaggi 80 g of mozzarella", async (context) => {

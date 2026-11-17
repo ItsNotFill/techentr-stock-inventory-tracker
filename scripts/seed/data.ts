@@ -232,6 +232,18 @@ export const SEED_DAY = {
   deliveryHour: 10,
   mozzarella: { name: "Mozzarella", openingQty: "2000", deliveryQty: "5000" },
   salesFile: "scripts/seed/sample-sales-day1.csv",
+  /** A dropped tray of mozzarella after service. */
+  waste: { hour: 21, minute: 30, qty: "-200", reason: "dropped" as const, note: "Dropped tray (seed)" },
+  /**
+   * The closing count, by staff, approved by the manager. Every ingredient is
+   * counted as expected, except mozzarella: 1,900 g where 2,400 g were expected,
+   * which is the worked example's -500 g and -EUR 4.00.
+   */
+  closingCount: {
+    hour: 23,
+    clientId: "5eed0000-0000-4000-8000-0000000000c1",
+    counted: { Mozzarella: "1900" } as Record<string, string>,
+  },
 };
 
 /** How the sample sales files are laid out (the same mapping the import screen would save). */

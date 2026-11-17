@@ -6,6 +6,7 @@ import { FormMessage, fieldErrors } from "@/components/form-message";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { useHydrated } from "@/hooks/use-hydrated";
 import { emptyFormState } from "@/lib/validation/form";
 import { signUp } from "../actions";
 
@@ -14,6 +15,7 @@ export function SignUpForm() {
   // forms with the same field ids would cross their labels.
   const uid = useId();
   const [state, formAction, pending] = useActionState(signUp, emptyFormState);
+  const hydrated = useHydrated();
   // Controlled: React resets uncontrolled fields after every action, failed ones included.
   const [email, setEmail] = useState("");
 
@@ -52,7 +54,7 @@ export function SignUpForm() {
           <FieldDescription>At least 8 characters.</FieldDescription>
           <FieldError errors={fieldErrors(state, "password")} />
         </Field>
-        <Button type="submit" size="lg" disabled={pending}>
+        <Button type="submit" size="lg" disabled={pending || !hydrated}>
           {pending ? "Creating account…" : "Create account"}
         </Button>
         <p className="text-center text-sm text-muted-foreground">

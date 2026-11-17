@@ -41,3 +41,16 @@ test("the demo owner can log in and see the pizzeria's ingredients and menu", as
   await expect(page.getByText("Margherita", { exact: true }).filter({ visible: true }).first()).toBeVisible();
   await expect(page.getByText("Quattro Formaggi", { exact: true }).filter({ visible: true }).first()).toBeVisible();
 });
+
+test("the demo owner sees the worked example's unexplained usage: mozzarella -500 g, -EUR 4.00", async ({ page }) => {
+  await logIn(page, owner.email);
+  await page.goto("/unexplained-usage");
+  await expect(page.getByRole("heading", { name: "Unexplained usage", level: 1 })).toBeVisible();
+  await expect(page.getByText(/Last count: −€4\.00/).filter({ visible: true }).first()).toBeVisible();
+  await page.getByRole("link", { name: "See details" }).filter({ visible: true }).first().click();
+  await expect(page).toHaveURL(/\/unexplained-usage\/[0-9a-f-]{36}$/);
+  await expect(page.getByText("−500 g").filter({ visible: true }).first()).toBeVisible();
+  await expect(page.getByText("−€4.00").filter({ visible: true }).first()).toBeVisible();
+  await expect(page.getByText("1,900 g").filter({ visible: true }).first()).toBeVisible();
+  await expect(page.getByText("2,400 g").filter({ visible: true }).first()).toBeVisible();
+});

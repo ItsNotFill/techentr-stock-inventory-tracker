@@ -62,10 +62,15 @@ lib/
     schema/             Drizzle tables, enums, RLS policies
     client.ts           RLS-enforcing client (runs as the signed-in user)
     admin.ts            admin connection: migrations, seed, sign-up bootstrap only
-  ledger/               append movements, stock queries, late-movement correction
+  ledger/               append movements, stock queries, depletion, late-movement correction (with migrations 0011, 0012)
+  counts/               stock counts: start, save, submit, approve, reject
   units/                base-unit and pack conversion
   variance/             unexplained-usage maths
   imports/              CSV parsing, column mapping, idempotent import, undo
+  menu/                 menu items, recipes, unmapped queue
+  ingredients/          ingredients and pack sizes
+  team/                 team and restaurant details
+  auth/                 session, membership, roles, sign-up bootstrap
   supabase/             server and browser Supabase clients (Auth and Storage only)
   validation/           shared Zod schemas
 drizzle/                generated SQL migrations (never edit the DB by hand)
