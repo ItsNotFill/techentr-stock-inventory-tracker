@@ -1,6 +1,8 @@
+import { Plus, UtensilsCrossed } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { EmptyState } from "@/components/empty-state";
 import { MenuItemList } from "@/components/menu/menu-item-list";
 import { PageHeader } from "@/components/page-header";
 import { TableSkeleton } from "@/components/page-skeleton";
@@ -26,9 +28,12 @@ const FILTERS: { value: Filter; label: string }[] = [
 export default function MenuPage({ searchParams }: PageProps<"/menu">) {
   return (
     <>
-      <PageHeader title="Menu">
-        <Button asChild size="lg" className="h-11">
-          <Link href="/menu/new">Add item</Link>
+      <PageHeader title="Menu" description="What your POS sells. A recipe on an item makes its sales use stock.">
+        <Button asChild size="lg">
+          <Link href="/menu/new">
+            <Plus aria-hidden />
+            Add item
+          </Link>
         </Button>
       </PageHeader>
       <Suspense fallback={<TableSkeleton />}>
@@ -48,44 +53,53 @@ async function MenuContent({ searchParams }: { searchParams: PageProps<"/menu">[
   for (const item of items) counts[menuItemStatus(item)] += 1;
   const shown = filter === "all" ? items : items.filter((item) => menuItemStatus(item) === filter);
 
+  if (items.length === 0) {
+    return (
+      <EmptyState
+        icon={UtensilsCrossed}
+        title="No menu items yet"
+        description="The menu is what your POS sells. Give each item a recipe and every sale uses up the right amount of stock. Add the first item to get started."
+      >
+        <Button asChild size="lg">
+          <Link href="/menu/new">
+            <Plus aria-hidden />
+            Add item
+          </Link>
+        </Button>
+      </EmptyState>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-4">
-      {items.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed p-8 text-center">
-          <p className="font-medium">No menu items yet</p>
-          <p className="max-w-md text-sm text-muted-foreground">
-            The menu is what your POS sells. Give each item a recipe and every sale uses up the right amount of
-            stock. Add the first item to get started.
-          </p>
-          <Button asChild size="lg" className="h-11">
-            <Link href="/menu/new">Add item</Link>
+      <nav aria-label="Filter by status" className="flex flex-wrap gap-2">
+        {FILTERS.map((entry) => {
+          const active = filter === entry.value;
+          return (
+            <Link
+              key={entry.value}
+              href={entry.value === "all" ? "/menu" : `/menu?status=${entry.value}`}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "inline-flex h-11 items-center rounded-full border px-4 text-sm font-medium transition-colors md:h-9",
+                active
+                  ? "border-primary bg-primary text-primary-foreground hover:bg-primary-hover"
+                  : "border-input bg-card text-foreground hover:border-foreground/50 hover:bg-muted",
+              )}
+            >
+              {entry.label} ({counts[entry.value]})
+            </Link>
+          );
+        })}
+      </nav>
+      {shown.length === 0 ? (
+        <EmptyState size="sm" title="No items match this filter.">
+          <Button asChild variant="outline">
+            <Link href="/menu">Show all items</Link>
           </Button>
-        </div>
+        </EmptyState>
       ) : (
-        <>
-          <nav aria-label="Filter by status" className="flex flex-wrap gap-2">
-            {FILTERS.map((entry) => (
-              <Link
-                key={entry.value}
-                href={entry.value === "all" ? "/menu" : `/menu?status=${entry.value}`}
-                aria-current={filter === entry.value ? "page" : undefined}
-                className={cn(
-                  "inline-flex h-11 items-center rounded-full border px-4 text-sm",
-                  filter === entry.value ? "bg-primary text-primary-foreground" : "bg-card hover:bg-muted",
-                )}
-              >
-                {entry.label} ({counts[entry.value]})
-              </Link>
-            ))}
-          </nav>
-          {shown.length === 0 ? (
-            <p className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
-              No items match this filter.
-            </p>
-          ) : (
-            <MenuItemList items={shown} />
-          )}
-        </>
+        <MenuItemList items={shown} />
       )}
     </div>
   );

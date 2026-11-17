@@ -169,7 +169,7 @@ export function MenuItemForm({ defaults }: { defaults: MenuItemFormDefaults }) {
           </Field>
         </div>
 
-        <Button type="submit" size="lg" className="h-11" disabled={pending}>
+        <Button type="submit" size="lg" className="sm:w-fit" disabled={pending}>
           {pending ? "Saving…" : editing ? "Save changes" : "Add item"}
         </Button>
       </FieldGroup>

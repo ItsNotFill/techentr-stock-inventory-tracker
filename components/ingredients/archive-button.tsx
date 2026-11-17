@@ -39,7 +39,7 @@ export function ArchiveButton({
 
   if (archived) {
     return (
-      <Button type="button" variant="outline" size={size} className="h-11" disabled={pending} onClick={() => run(false)}>
+      <Button type="button" variant="outline" size={size} disabled={pending} onClick={() => run(false)}>
         {pending ? "Restoring…" : "Restore"}
       </Button>
     );
@@ -47,7 +47,7 @@ export function ArchiveButton({
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <Button type="button" variant="destructive" size={size} className="h-11" onClick={() => setOpen(true)}>
+      <Button type="button" variant="destructive-outline" size={size} onClick={() => setOpen(true)}>
         Archive
       </Button>
       <AlertDialogContent>
@@ -58,6 +58,7 @@ export function ArchiveButton({
         <AlertDialogFooter>
           <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
           <AlertDialogAction
+            variant="destructive"
             disabled={pending}
             onClick={(event) => {
               event.preventDefault();

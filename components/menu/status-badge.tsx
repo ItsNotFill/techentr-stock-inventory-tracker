@@ -1,9 +1,13 @@
 import { Badge } from "@/components/ui/badge";
-import { MENU_ITEM_STATUS_LABELS, menuItemStatus } from "@/lib/menu/status";
+import { MENU_ITEM_STATUS_LABELS, menuItemStatus, type MenuItemStatus } from "@/lib/menu/status";
 
-/** "Needs recipe" stands out; the other two are quiet. */
+const VARIANT = { mapped: "success", unmapped: "warning", ignored: "neutral" } as const satisfies Record<
+  MenuItemStatus,
+  string
+>;
+
+/** Green when the item has a recipe, amber while it needs one, grey when ignored. */
 export function StatusBadge({ item }: { item: { isMapped: boolean; isIgnored: boolean } }) {
   const status = menuItemStatus(item);
-  const variant = status === "unmapped" ? "destructive" : status === "mapped" ? "default" : "secondary";
-  return <Badge variant={variant}>{MENU_ITEM_STATUS_LABELS[status]}</Badge>;
+  return <Badge variant={VARIANT[status]}>{MENU_ITEM_STATUS_LABELS[status]}</Badge>;
 }

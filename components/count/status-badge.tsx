@@ -8,9 +8,16 @@ const LABELS: Record<CountSummary["status"], string> = {
   rejected: "Rejected",
 };
 
+/** Grey while counting, amber while it waits for a manager, then green or red. */
+const VARIANT = {
+  draft: "neutral",
+  submitted: "warning",
+  approved: "success",
+  rejected: "danger",
+} as const satisfies Record<CountSummary["status"], string>;
+
 export function CountStatusBadge({ status }: { status: CountSummary["status"] }) {
-  const variant = status === "approved" ? "default" : status === "rejected" ? "destructive" : status === "submitted" ? "secondary" : "outline";
-  return <Badge variant={variant}>{LABELS[status]}</Badge>;
+  return <Badge variant={VARIANT[status]}>{LABELS[status]}</Badge>;
 }
 
 export function countWho(count: { countedBy: string; countedByEmail?: string | null }, userId: string): string {

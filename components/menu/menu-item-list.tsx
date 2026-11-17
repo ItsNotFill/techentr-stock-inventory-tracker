@@ -1,3 +1,4 @@
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,7 +13,7 @@ function money(value: string | null): string {
 function Names({ item }: { item: MenuItemSummary }) {
   return (
     <>
-      <span className="font-medium">{item.displayName}</span>
+      <span className="font-medium text-primary">{item.displayName}</span>
       {item.displayName !== item.posName ? (
         <span className="block text-sm font-normal text-muted-foreground">{item.posName}</span>
       ) : null}
@@ -23,13 +24,19 @@ function Names({ item }: { item: MenuItemSummary }) {
 export function MenuItemList({ items }: { items: MenuItemSummary[] }) {
   return (
     <>
-      {/* Phone: stacked cards. */}
+      {/* Phone: stacked cards; the whole card opens the item. */}
       <ul className="flex flex-col gap-3 md:hidden">
         {items.map((item) => (
-          <li key={item.id} className="relative rounded-xl border bg-card p-4">
+          <li
+            key={item.id}
+            className="relative rounded-xl border border-border-strong bg-card p-4 shadow-xs transition-colors hover:bg-accent/40 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-ring"
+          >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <Link href={`/menu/${item.id}`} className="after:absolute after:inset-0 after:content-['']">
+                <Link
+                  href={`/menu/${item.id}`}
+                  className="font-semibold outline-none after:absolute after:inset-0 after:content-['']"
+                >
                   <Names item={item} />
                 </Link>
                 {item.kind === "modifier" ? (
@@ -38,21 +45,24 @@ export function MenuItemList({ items }: { items: MenuItemSummary[] }) {
                   </Badge>
                 ) : null}
               </div>
-              <StatusBadge item={item} />
+              <div className="flex shrink-0 items-center gap-1">
+                <StatusBadge item={item} />
+                <ChevronRight className="size-5 text-muted-foreground" aria-hidden />
+              </div>
             </div>
-            <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
+            <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-sm tabular-nums">
               <dt className="text-muted-foreground">Category</dt>
-              <dd>{item.category ?? "–"}</dd>
+              <dd className="text-right">{item.category ?? "–"}</dd>
               <dt className="text-muted-foreground">Price</dt>
-              <dd>{money(item.price)}</dd>
+              <dd className="text-right">{money(item.price)}</dd>
               <dt className="text-muted-foreground">Ingredient cost</dt>
-              <dd>{money(item.recipeCost)}</dd>
+              <dd className="text-right">{money(item.recipeCost)}</dd>
             </dl>
           </li>
         ))}
       </ul>
 
-      {/* Tablet and up: table. */}
+      {/* Tablet and up: table; every cell opens the item. */}
       <div className="hidden md:block">
         <Table>
           <TableHeader>
@@ -60,8 +70,8 @@ export function MenuItemList({ items }: { items: MenuItemSummary[] }) {
               <TableHead>Name</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Ingredient cost</TableHead>
+              <TableHead className="text-right">Price</TableHead>
+              <TableHead className="text-right">Ingredient cost</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
@@ -76,14 +86,14 @@ export function MenuItemList({ items }: { items: MenuItemSummary[] }) {
               return (
                 <TableRow key={item.id}>
                   <TableCell>
-                    <Link href={href} className="block py-1">
+                    <Link href={href} className="block py-1 hover:underline hover:decoration-primary hover:underline-offset-4">
                       <Names item={item} />
                     </Link>
                   </TableCell>
                   <TableCell>{cell(item.kind === "modifier" ? <Badge variant="outline">Modifier</Badge> : null)}</TableCell>
                   <TableCell>{cell(item.category ?? "–")}</TableCell>
-                  <TableCell>{cell(money(item.price))}</TableCell>
-                  <TableCell>{cell(money(item.recipeCost))}</TableCell>
+                  <TableCell className="text-right">{cell(money(item.price))}</TableCell>
+                  <TableCell className="text-right">{cell(money(item.recipeCost))}</TableCell>
                   <TableCell>{cell(<StatusBadge item={item} />)}</TableCell>
                 </TableRow>
               );

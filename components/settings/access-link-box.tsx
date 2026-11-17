@@ -30,11 +30,11 @@ export function AccessLinkBox({ state }: { state: InviteState }) {
 
   return (
     <div
-      className="flex flex-col gap-3 rounded-lg border border-primary/40 bg-primary/5 p-4 text-sm"
+      className="flex flex-col gap-3 rounded-lg border border-info-border bg-accent p-4 text-sm"
       role="status"
       aria-live="polite"
     >
-      <p>{state.message}</p>
+      <p className="font-medium">{state.message}</p>
       {link ? (
         <>
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -42,10 +42,10 @@ export function AccessLinkBox({ state }: { state: InviteState }) {
               readOnly
               value={link}
               aria-label="One-time link"
-              className="h-11 min-w-0 flex-1"
+              className="min-w-0 flex-1 bg-card read-only:bg-card"
               onFocus={(event) => event.currentTarget.select()}
             />
-            <Button type="button" size="lg" variant="secondary" onClick={copy} className="h-11 sm:w-32">
+            <Button type="button" size="lg" variant="outline" onClick={copy} className="sm:w-36">
               {copied ? <CheckIcon /> : <CopyIcon />}
               {copied ? "Copied" : "Copy link"}
             </Button>

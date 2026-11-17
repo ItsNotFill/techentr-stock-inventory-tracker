@@ -37,7 +37,7 @@ async function OnboardingContent() {
       <OnboardingForm />
       <form action={signOut} className="text-center text-sm text-muted-foreground">
         Signed in as {user.email ?? "unknown"}.{" "}
-        <Button type="submit" variant="link" className="h-auto p-0">
+        <Button type="submit" variant="link" className="h-auto p-0 md:h-auto">
           Log out
         </Button>
       </form>

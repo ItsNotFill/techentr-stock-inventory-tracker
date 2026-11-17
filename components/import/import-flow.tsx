@@ -1,5 +1,6 @@
 "use client";
 
+import { CircleCheck, Upload } from "lucide-react";
 import Link from "next/link";
 import { useId, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -10,12 +11,13 @@ import {
   type AnalyzeResult,
   type PreviewResult,
 } from "@/app/(app)/import/actions";
-import { CONTROL_HEIGHT, SELECT_HEIGHT } from "@/components/ingredients/units";
+import { SELECT_HEIGHT } from "@/components/ingredients/units";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 import type { ImportResult } from "@/lib/imports";
 import {
   DATE_FORMAT_LABELS,
@@ -89,18 +91,32 @@ function toColumnMap(choice: Choice): ColumnMap {
   };
 }
 
+/** Numbered steps: the current one filled in the accent colour, done ones tinted. */
 function StepIndicator({ step }: { step: number }) {
   return (
-    <ol className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm" aria-label="Steps">
-      {STEPS.map((label, index) => (
-        <li
-          key={label}
-          aria-current={index === step ? "step" : undefined}
-          className={index === step ? "font-semibold" : "text-muted-foreground"}
-        >
-          {index + 1} {label}
-        </li>
-      ))}
+    <ol className="flex flex-wrap items-center gap-x-2 gap-y-2 text-sm" aria-label="Steps">
+      {STEPS.map((label, index) => {
+        const current = index === step;
+        const done = index < step;
+        return (
+          <li key={label} aria-current={current ? "step" : undefined} className="flex items-center gap-2">
+            <span
+              className={cn(
+                "flex size-7 items-center justify-center rounded-full text-xs font-semibold tabular-nums",
+                current
+                  ? "bg-primary text-primary-foreground"
+                  : done
+                    ? "bg-accent text-accent-foreground"
+                    : "border border-input bg-card text-muted-foreground",
+              )}
+            >
+              {index + 1}
+            </span>{" "}
+            <span className={current ? "font-semibold text-foreground" : "text-muted-foreground"}>{label}</span>
+            {index < STEPS.length - 1 ? <span className="mx-1 h-px w-5 bg-border-strong sm:w-8" aria-hidden /> : null}
+          </li>
+        );
+      })}
     </ol>
   );
 }
@@ -197,8 +213,9 @@ export function ImportFlow({ timeZone }: { timeZone: string }) {
 
   if (result) {
     return (
-      <div className="flex flex-col items-start gap-4 rounded-xl border bg-card p-5">
-        <h2 className="text-lg font-semibold">
+      <div className="flex flex-col items-start gap-4 rounded-xl border border-success-border bg-card p-5 shadow-xs md:p-6">
+        <h2 className="flex items-center gap-2 text-lg font-semibold">
+          <CircleCheck className="size-5 shrink-0 text-success" aria-hidden />
           Imported {plural(result.ordersImported, "order", "orders")} ({plural(result.linesImported, "line", "lines")})
         </h2>
         <ul className="flex list-disc flex-col gap-1 pl-5 text-sm">
@@ -217,11 +234,11 @@ export function ImportFlow({ timeZone }: { timeZone: string }) {
         </ul>
         <div className="flex flex-wrap gap-2">
           {result.linesWaiting > 0 ? (
-            <Button asChild size="lg" className="h-11">
+            <Button asChild size="lg">
               <Link href="/unmapped">Add recipes</Link>
             </Button>
           ) : null}
-          <Button type="button" variant="outline" size="lg" className="h-11" onClick={reset}>
+          <Button type="button" variant="outline" size="lg" onClick={reset}>
             Import another file
           </Button>
         </div>
@@ -230,7 +247,7 @@ export function ImportFlow({ timeZone }: { timeZone: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-5 rounded-xl border bg-card p-4 md:p-5">
+    <div className="flex flex-col gap-5 rounded-xl border border-border-strong bg-card p-4 shadow-xs md:p-6">
       <StepIndicator step={step} />
       {message ? (
         <Alert variant="destructive">
@@ -255,11 +272,17 @@ export function ImportFlow({ timeZone }: { timeZone: string }) {
               setDragging(false);
               if (!pending) handleFile(event.dataTransfer.files[0]);
             }}
-            className={`flex min-h-40 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-6 text-center focus-within:ring-2 focus-within:ring-ring ${
-              dragging ? "bg-muted" : "hover:bg-muted/50"
-            }`}
+            className={cn(
+              "group flex min-h-44 cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6 text-center transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring",
+              dragging ? "border-primary bg-accent" : "border-border-strong hover:border-primary hover:bg-accent/50",
+            )}
           >
-            <span className="text-base font-medium">{pending ? "Reading the file…" : "Choose a CSV file"}</span>
+            <span className="flex size-11 items-center justify-center rounded-full bg-accent text-primary">
+              <Upload className="size-5" aria-hidden />
+            </span>
+            <span className={buttonVariants({ size: "lg", className: "pointer-events-none" })}>
+              {pending ? "Reading the file…" : "Choose a CSV file"}
+            </span>
             <span className="text-sm text-muted-foreground">Tap here, or drop the file on this box</span>
             <input
               ref={fileInput}
@@ -366,7 +389,7 @@ export function ImportFlow({ timeZone }: { timeZone: string }) {
 
           <div className="flex flex-col gap-2">
             <p className="text-sm font-medium">First rows of the file</p>
-            <div className="max-w-full overflow-x-auto rounded-lg border">
+            <div className="max-w-full">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -397,7 +420,6 @@ export function ImportFlow({ timeZone }: { timeZone: string }) {
               type="button"
               variant="outline"
               size="lg"
-              className={CONTROL_HEIGHT}
               disabled={pending}
               onClick={() => {
                 setMessage(null);
@@ -407,7 +429,7 @@ export function ImportFlow({ timeZone }: { timeZone: string }) {
             >
               Back
             </Button>
-            <Button type="button" size="lg" className={CONTROL_HEIGHT} disabled={pending} onClick={checkFile}>
+            <Button type="button" size="lg" disabled={pending} onClick={checkFile}>
               {pending ? "Checking…" : "Check file"}
             </Button>
           </div>
@@ -450,7 +472,7 @@ function CheckStep({
       {orders.new === 0 ? (
         <p className="font-medium">There is nothing new to import in this file.</p>
       ) : (
-        <ul className="flex list-disc flex-col gap-1 pl-5">
+        <ul className="flex list-disc flex-col gap-1 pl-5 marker:text-muted-foreground">
           <li className="font-medium">
             {plural(orders.new, "order", "orders")} to import ({plural(lines.toImport, "line", "lines")})
           </li>
@@ -460,7 +482,7 @@ function CheckStep({
             </li>
           ) : null}
           <li>{plural(lines.willUseStock, "line", "lines")} will use stock</li>
-          <li>{plural(lines.waitingForRecipe, "line", "lines")} wait for a recipe</li>
+          <li>{plural(lines.waitingForRecipe, "line waits", "lines wait")} for a recipe</li>
           <li>{plural(lines.ignored, "line is an ignored item", "lines are ignored items")}</li>
         </ul>
       )}
@@ -475,11 +497,11 @@ function CheckStep({
           <p className="text-sm">
             New items found (they will be added to the menu without a recipe, and their sales wait until you add one):
           </p>
-          <ul className="flex flex-col gap-1 rounded-lg border p-3 text-sm">
+          <ul className="flex flex-col divide-y divide-border rounded-lg border border-border-strong px-3 text-sm">
             {newItems.map((item) => (
-              <li key={item.name} className="flex justify-between gap-3">
+              <li key={item.name} className="flex justify-between gap-3 py-2">
                 <span className="min-w-0 break-words">{item.name}</span>
-                <span className="shrink-0 text-muted-foreground">{plural(item.lines, "line", "lines")}</span>
+                <span className="shrink-0 text-muted-foreground tabular-nums">{plural(item.lines, "line", "lines")}</span>
               </li>
             ))}
           </ul>
@@ -488,7 +510,7 @@ function CheckStep({
 
       {invalidRowCount > 0 ? (
         <div className="flex flex-col gap-2">
-          <Alert>
+          <Alert variant="warning">
             <AlertDescription>
               {plural(invalidRowCount, "row has", "rows have")} problems. The {orders.blocked}{" "}
               {orders.blocked === 1 ? "order" : "orders"} they belong to will not be imported. Fix the file and upload
@@ -498,11 +520,11 @@ function CheckStep({
                 : ""}
             </AlertDescription>
           </Alert>
-          <div className="max-w-full overflow-x-auto rounded-lg border">
+          <div className="max-w-full">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Line</TableHead>
+                  <TableHead className="text-right">Line</TableHead>
                   <TableHead>Order</TableHead>
                   <TableHead>Item</TableHead>
                   <TableHead>Problem</TableHead>
@@ -511,7 +533,7 @@ function CheckStep({
               <TableBody>
                 {invalidRows.map((row) => (
                   <TableRow key={row.rowNumber}>
-                    <TableCell>{row.rowNumber}</TableCell>
+                    <TableCell className="text-right">{row.rowNumber}</TableCell>
                     <TableCell>{row.orderId ?? "–"}</TableCell>
                     <TableCell>{row.itemName ?? "–"}</TableCell>
                     <TableCell className="whitespace-normal">{row.errors.join(" ")}</TableCell>
@@ -524,11 +546,11 @@ function CheckStep({
       ) : null}
 
       <div className="flex flex-wrap gap-2">
-        <Button type="button" variant="outline" size="lg" className={CONTROL_HEIGHT} disabled={pending} onClick={onBack}>
+        <Button type="button" variant="outline" size="lg" disabled={pending} onClick={onBack}>
           Back
         </Button>
         {orders.new > 0 ? (
-          <Button type="button" size="lg" className={CONTROL_HEIGHT} disabled={pending} onClick={onConfirm}>
+          <Button type="button" size="lg" disabled={pending} onClick={onConfirm}>
             {pending ? "Importing…" : `Import ${plural(orders.new, "order", "orders")}`}
           </Button>
         ) : null}

@@ -1,6 +1,8 @@
+import { CircleCheck, FileUp } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { TableSkeleton } from "@/components/page-skeleton";
 import { Button } from "@/components/ui/button";
@@ -32,15 +34,18 @@ async function UnmappedContent() {
 
   if (entries.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed p-8 text-center">
-        <p className="font-medium">Nothing is waiting</p>
-        <p className="max-w-md text-sm text-muted-foreground">
-          Every item in your sales has a recipe or is ignored.
-        </p>
-        <Button asChild size="lg" className="h-11">
-          <Link href="/import">Import sales</Link>
+      <EmptyState
+        icon={CircleCheck}
+        title="Nothing is waiting"
+        description="Every item in your sales has a recipe or is ignored. New items show up here after a sales import."
+      >
+        <Button asChild size="lg">
+          <Link href="/import">
+            <FileUp aria-hidden />
+            Import sales
+          </Link>
         </Button>
-      </div>
+      </EmptyState>
     );
   }
   return <UnmappedList entries={entries} timezone={membership.timezone} />;

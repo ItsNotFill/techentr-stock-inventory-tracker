@@ -1,3 +1,4 @@
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -23,16 +24,20 @@ function isLow(ingredient: IngredientWithPacks, stock: string): boolean {
 /** Theoretical stock; red when negative, with a "Low" badge at or below the reorder point. */
 function StockValue({ ingredient, stock }: { ingredient: IngredientWithPacks; stock: string }) {
   return (
-    <>
-      <span className={toDecimal(stock).isNegative() ? "text-destructive" : undefined}>
+    <span className="inline-flex items-center justify-end gap-2">
+      {isLow(ingredient, stock) ? <Badge variant="warning">Low</Badge> : null}
+      <span className={toDecimal(stock).isNegative() ? "font-medium text-destructive" : undefined}>
         {formatQty(stock, ingredient.baseUnit)}
       </span>
-      {isLow(ingredient, stock) ? (
-        <Badge variant="outline" className="ml-2">
-          Low
-        </Badge>
-      ) : null}
-    </>
+    </span>
+  );
+}
+
+function ArchivedBadge() {
+  return (
+    <Badge variant="neutral" className="ml-2 align-middle">
+      Archived
+    </Badge>
   );
 }
 
@@ -48,42 +53,38 @@ export function IngredientList({
   const showRestore = ingredients.some((ingredient) => !ingredient.isActive);
   return (
     <>
-      <p className="mb-3 text-sm text-muted-foreground">
-        In stock is what the app works out from counts, deliveries, sales and waste.
-      </p>
-      {/* Phone: stacked cards. */}
+      {/* Phone: stacked cards; the whole card opens the ingredient. */}
       <ul className="flex flex-col gap-3 md:hidden">
         {ingredients.map((ingredient) => (
-          <li key={ingredient.id} className="relative rounded-xl border bg-card p-4">
+          <li
+            key={ingredient.id}
+            className="relative rounded-xl border border-border-strong bg-card p-4 shadow-xs transition-colors hover:bg-accent/40 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-ring"
+          >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <Link
                   href={`/ingredients/${ingredient.id}`}
-                  className="font-medium after:absolute after:inset-0 after:content-['']"
+                  className="font-semibold text-primary outline-none after:absolute after:inset-0 after:content-['']"
                 >
                   {ingredient.name}
                 </Link>
-                {ingredient.isActive ? null : (
-                  <Badge variant="secondary" className="ml-2">
-                    Archived
-                  </Badge>
-                )}
+                {ingredient.isActive ? null : <ArchivedBadge />}
               </div>
-              <span className="shrink-0 text-sm text-muted-foreground">{ingredient.baseUnit}</span>
+              <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden />
             </div>
-            <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
+            <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-sm tabular-nums">
               <dt className="text-muted-foreground">In stock</dt>
-              <dd>
+              <dd className="text-right">
                 <StockValue ingredient={ingredient} stock={stockOf(ingredient)} />
               </dd>
               <dt className="text-muted-foreground">Cost</dt>
-              <dd>{formatUnitCost(ingredient.costPerBaseUnit, ingredient.baseUnit)}</dd>
+              <dd className="text-right">{formatUnitCost(ingredient.costPerBaseUnit, ingredient.baseUnit)}</dd>
               <dt className="text-muted-foreground">Reorder point</dt>
-              <dd>{reorderPoint(ingredient)}</dd>
+              <dd className="text-right">{reorderPoint(ingredient)}</dd>
               <dt className="text-muted-foreground">Storage area</dt>
-              <dd>{ingredient.storageArea ?? "–"}</dd>
+              <dd className="text-right">{ingredient.storageArea ?? "–"}</dd>
               <dt className="text-muted-foreground">Pack sizes</dt>
-              <dd>{packSummary(ingredient)}</dd>
+              <dd className="text-right">{packSummary(ingredient)}</dd>
             </dl>
             {ingredient.isActive ? null : (
               <div className="relative z-10 mt-3">
@@ -94,16 +95,16 @@ export function IngredientList({
         ))}
       </ul>
 
-      {/* Tablet and up: table. */}
+      {/* Tablet and up: table; every cell opens the ingredient. */}
       <div className="hidden md:block">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Unit</TableHead>
-              <TableHead>In stock</TableHead>
-              <TableHead>Cost</TableHead>
-              <TableHead>Reorder point</TableHead>
+              <TableHead className="text-right">In stock</TableHead>
+              <TableHead className="text-right">Cost</TableHead>
+              <TableHead className="text-right">Reorder point</TableHead>
               <TableHead>Storage area</TableHead>
               <TableHead>Pack sizes</TableHead>
               {showRestore ? <TableHead className="w-28" /> : null}
@@ -119,24 +120,24 @@ export function IngredientList({
               );
               return (
                 <TableRow key={ingredient.id}>
-                  <TableCell className="font-medium">
-                    <Link href={href} className="block py-1">
+                  <TableCell>
+                    <Link href={href} className="block py-1 font-medium text-primary hover:underline hover:underline-offset-4">
                       {ingredient.name}
-                      {ingredient.isActive ? null : (
-                        <Badge variant="secondary" className="ml-2">
-                          Archived
-                        </Badge>
-                      )}
+                      {ingredient.isActive ? null : <ArchivedBadge />}
                     </Link>
                   </TableCell>
-                  <TableCell>{cell(ingredient.baseUnit)}</TableCell>
-                  <TableCell>{cell(<StockValue ingredient={ingredient} stock={stockOf(ingredient)} />)}</TableCell>
-                  <TableCell>{cell(formatUnitCost(ingredient.costPerBaseUnit, ingredient.baseUnit))}</TableCell>
-                  <TableCell>{cell(reorderPoint(ingredient))}</TableCell>
+                  <TableCell className="text-muted-foreground">{cell(ingredient.baseUnit)}</TableCell>
+                  <TableCell className="text-right">
+                    {cell(<StockValue ingredient={ingredient} stock={stockOf(ingredient)} />)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {cell(formatUnitCost(ingredient.costPerBaseUnit, ingredient.baseUnit))}
+                  </TableCell>
+                  <TableCell className="text-right">{cell(reorderPoint(ingredient))}</TableCell>
                   <TableCell>{cell(ingredient.storageArea ?? "–")}</TableCell>
                   <TableCell>{cell(packSummary(ingredient))}</TableCell>
                   {showRestore ? (
-                    <TableCell>
+                    <TableCell className="text-right">
                       {ingredient.isActive ? null : <ArchiveButton ingredientId={ingredient.id} archived size="default" />}
                     </TableCell>
                   ) : null}

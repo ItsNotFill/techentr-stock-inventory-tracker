@@ -31,16 +31,16 @@ export function UnmappedList({ entries, timezone }: { entries: UnmappedQueueEntr
       {/* Phone: stacked cards. */}
       <ul className="flex flex-col gap-3 md:hidden">
         {entries.map((entry) => (
-          <li key={entry.id} className="rounded-xl border bg-card p-4">
+          <li key={entry.id} className="rounded-xl border border-border-strong bg-card p-4 shadow-xs">
             <Names entry={entry} />
-            <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
+            <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-sm tabular-nums">
               <dt className="text-muted-foreground">Waiting sales</dt>
-              <dd>{waiting(entry)}</dd>
+              <dd className="text-right">{waiting(entry)}</dd>
               <dt className="text-muted-foreground">Last sold</dt>
-              <dd>{lastSold(entry)}</dd>
+              <dd className="text-right">{lastSold(entry)}</dd>
             </dl>
             <div className="mt-3 flex flex-wrap gap-2">
-              <Button asChild size="lg" className="h-11 flex-1">
+              <Button asChild size="lg" className="flex-1">
                 <Link href={`/menu/${entry.id}`}>Add recipe</Link>
               </Button>
               <IgnoreButton menuItemId={entry.id} name={entry.displayName} />
@@ -70,7 +70,7 @@ export function UnmappedList({ entries, timezone }: { entries: UnmappedQueueEntr
                 <TableCell>{lastSold(entry)}</TableCell>
                 <TableCell>
                   <div className="flex justify-end gap-2">
-                    <Button asChild size="lg" className="h-11">
+                    <Button asChild>
                       <Link href={`/menu/${entry.id}`}>Add recipe</Link>
                     </Button>
                     <IgnoreButton menuItemId={entry.id} name={entry.displayName} />

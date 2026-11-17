@@ -7,9 +7,9 @@ import { amountTone } from "./tone";
 function Name({ line }: { line: ReportLine }) {
   return (
     <>
-      <span className="font-medium">{line.ingredientName}</span>
+      <span className="font-medium text-foreground">{line.ingredientName}</span>
       {line.isOpening ? (
-        <Badge variant="secondary" className="ml-2 align-middle">
+        <Badge variant="info" className="ml-2 align-middle">
           First count
         </Badge>
       ) : null}
@@ -32,20 +32,23 @@ export function ReportLines({ lines }: { lines: ReportLine[] }) {
       {/* Phone: one card per ingredient. */}
       <ul className="flex flex-col gap-3 md:hidden">
         {lines.map((line) => (
-          <li key={line.lineId} className={`rounded-xl border bg-card p-4 ${line.isOpening ? "opacity-70" : ""}`}>
+          <li
+            key={line.lineId}
+            className={`rounded-xl border bg-card p-4 shadow-xs ${line.isOpening ? "border-border" : "border-border-strong"}`}
+          >
             <Name line={line} />
-            <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
+            <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-sm tabular-nums">
               <dt className="text-muted-foreground">Expected</dt>
-              <dd>
+              <dd className="text-right">
                 {formatQty(line.expectedQty, line.baseUnit)}
                 <LateNote line={line} />
               </dd>
               <dt className="text-muted-foreground">Counted</dt>
-              <dd>{formatQty(line.countedQty, line.baseUnit)}</dd>
+              <dd className="text-right">{formatQty(line.countedQty, line.baseUnit)}</dd>
               <dt className="text-muted-foreground">Difference</dt>
-              <dd className={amountTone(line.differenceQty)}>{formatQty(line.differenceQty, line.baseUnit)}</dd>
+              <dd className={`text-right ${amountTone(line.differenceQty)}`}>{formatQty(line.differenceQty, line.baseUnit)}</dd>
               <dt className="text-muted-foreground">Difference in €</dt>
-              <dd className={`font-medium ${amountTone(line.differenceValue)}`}>{formatMoney(line.differenceValue)}</dd>
+              <dd className={`text-right font-semibold ${amountTone(line.differenceValue)}`}>{formatMoney(line.differenceValue)}</dd>
             </dl>
             <p className="mt-2 text-xs text-muted-foreground">
               Cost used: {formatUnitCost(line.unitCost, line.baseUnit)}
@@ -69,7 +72,7 @@ export function ReportLines({ lines }: { lines: ReportLine[] }) {
           </TableHeader>
           <TableBody>
             {lines.map((line) => (
-              <TableRow key={line.lineId} className={line.isOpening ? "text-muted-foreground" : ""}>
+              <TableRow key={line.lineId} className={line.isOpening ? "text-muted-foreground" : undefined}>
                 <TableCell>
                   <Name line={line} />
                 </TableCell>
@@ -81,10 +84,10 @@ export function ReportLines({ lines }: { lines: ReportLine[] }) {
                 <TableCell className={`text-right ${amountTone(line.differenceQty)}`}>
                   {formatQty(line.differenceQty, line.baseUnit)}
                 </TableCell>
-                <TableCell className={`text-right font-medium ${amountTone(line.differenceValue)}`}>
+                <TableCell className={`text-right font-semibold ${amountTone(line.differenceValue)}`}>
                   {formatMoney(line.differenceValue)}
                 </TableCell>
-                <TableCell className="text-right text-xs text-muted-foreground">
+                <TableCell className="text-right text-muted-foreground">
                   {formatUnitCost(line.unitCost, line.baseUnit)}
                 </TableCell>
               </TableRow>

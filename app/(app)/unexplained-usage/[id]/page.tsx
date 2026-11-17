@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { PageHeader } from "@/components/page-header";
@@ -16,12 +15,15 @@ import { getCountReport } from "@/lib/variance";
 
 export const metadata: Metadata = { title: "Count report" };
 
+const DESCRIPTION = "Per ingredient: what should have been on the shelf, what was counted, and the difference in euros.";
+const BACK = { href: "/unexplained-usage", label: "Back to unexplained usage" };
+
 export default function CountReportPage({ params }: PageProps<"/unexplained-usage/[id]">) {
   return (
     <Suspense
       fallback={
         <>
-          <PageHeader title="Unexplained usage" />
+          <PageHeader title="Unexplained usage" description={DESCRIPTION} back={BACK} />
           <CardsSkeleton cards={3} />
         </>
       }
@@ -35,8 +37,8 @@ function SummaryCard({ label, value, tone }: { label: string; value: string; ton
   return (
     <Card>
       <CardContent>
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p className={`text-2xl font-semibold ${tone ?? ""}`}>{value}</p>
+        <p className="text-sm font-medium text-muted-foreground">{label}</p>
+        <p className={`mt-1 text-2xl font-semibold tracking-tight tabular-nums md:text-3xl ${tone ?? ""}`}>{value}</p>
       </CardContent>
     </Card>
   );
@@ -59,14 +61,8 @@ async function CountReportContent({ params }: { params: PageProps<"/unexplained-
 
   return (
     <>
-      <PageHeader title={`Count of ${when}`} />
+      <PageHeader title={`Count of ${when}`} description={DESCRIPTION} back={BACK} />
       <div className="flex flex-col gap-6">
-        <Link
-          href="/unexplained-usage"
-          className="inline-flex min-h-11 items-center text-sm text-muted-foreground underline underline-offset-4"
-        >
-          Back to unexplained usage
-        </Link>
         <div className="grid gap-4 sm:grid-cols-3">
           <SummaryCard
             label="Unexplained usage"

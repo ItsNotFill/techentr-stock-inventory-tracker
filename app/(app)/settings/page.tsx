@@ -43,7 +43,7 @@ async function SettingsContent() {
   }));
 
   return (
-    <div className="flex max-w-3xl flex-col gap-6">
+    <div className="flex max-w-4xl flex-col gap-6">
       <Card>
         <CardHeader>
           <CardTitle>Restaurant details</CardTitle>

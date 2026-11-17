@@ -46,7 +46,6 @@ export function RestaurantForm({ name, posProvider, timezone }: Props) {
             onChange={(event) => setNameValue(event.target.value)}
             required
             maxLength={80}
-            className="h-11"
           />
           <FieldError errors={fieldErrors(state, "name")} />
         </Field>
@@ -59,14 +58,13 @@ export function RestaurantForm({ name, posProvider, timezone }: Props) {
             onChange={(event) => setPosValue(event.target.value)}
             placeholder="Lightspeed, Square, …"
             maxLength={60}
-            className="h-11"
           />
           <FieldError errors={fieldErrors(state, "posProvider")} />
         </Field>
         <Field data-invalid={Boolean(state.errors?.timezone)}>
           <FieldLabel htmlFor={`${uid}-timezone`}>Timezone</FieldLabel>
           <Select name="timezone" value={zone} onValueChange={setZone}>
-            <SelectTrigger id={`${uid}-timezone`} className="h-11 w-full">
+            <SelectTrigger id={`${uid}-timezone`} className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="max-h-72">
@@ -80,7 +78,7 @@ export function RestaurantForm({ name, posProvider, timezone }: Props) {
           <FieldDescription>Decides which day a sale or a count belongs to.</FieldDescription>
           <FieldError errors={fieldErrors(state, "timezone")} />
         </Field>
-        <Button type="submit" size="lg" disabled={pending} className="h-11 sm:w-fit">
+        <Button type="submit" size="lg" disabled={pending} className="sm:w-fit">
           {pending ? "Saving…" : "Save details"}
         </Button>
       </FieldGroup>

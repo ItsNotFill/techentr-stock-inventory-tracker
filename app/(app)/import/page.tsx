@@ -14,7 +14,10 @@ export const metadata: Metadata = { title: "Import sales" };
 export default function ImportPage() {
   return (
     <>
-      <PageHeader title="Import sales" />
+      <PageHeader
+        title="Import sales"
+        description="Upload a sales export from your POS. Each sale then uses stock through its recipe."
+      />
       <Suspense fallback={<TableSkeleton />}>
         <ImportContent />
       </Suspense>
@@ -29,7 +32,10 @@ async function ImportContent() {
     <div className="flex flex-col gap-10">
       <ImportFlow timeZone={membership.timezone} />
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold tracking-tight">Import history</h2>
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight">Import history</h2>
+          <p className="text-sm text-muted-foreground">Every file you imported. Undo takes its sales out again.</p>
+        </div>
         <ImportHistory imports={imports} timeZone={membership.timezone} />
       </section>
     </div>

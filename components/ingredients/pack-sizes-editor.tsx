@@ -48,17 +48,17 @@ function PackRow({ ingredientId, baseUnit, pack }: { ingredientId: string; baseU
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-medium">{pack.label}</span>
-          {pack.isDefault ? <Badge>Default</Badge> : null}
+          {pack.isDefault ? <Badge variant="info">Default</Badge> : null}
         </div>
-        <p className="text-sm text-muted-foreground">{formatQty(pack.qtyInBaseUnit, baseUnit)}</p>
+        <p className="text-sm text-muted-foreground tabular-nums">{formatQty(pack.qtyInBaseUnit, baseUnit)}</p>
       </div>
       <div className="flex gap-2">
         {pack.isDefault ? null : (
-          <Button type="button" variant="outline" className="h-11" disabled={pending} onClick={makeDefault}>
+          <Button type="button" variant="outline" disabled={pending} onClick={makeDefault}>
             Make default
           </Button>
         )}
-        <Button type="button" variant="destructive" className="h-11" disabled={pending} onClick={remove}>
+        <Button type="button" variant="destructive-outline" disabled={pending} onClick={remove}>
           Remove
         </Button>
       </div>
@@ -107,9 +107,11 @@ export function PackSizesEditor({
       </CardHeader>
       <CardContent className="flex flex-col gap-6">
         {packSizes.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No pack sizes yet.</p>
+          <p className="rounded-lg border border-dashed border-border-strong px-4 py-3 text-sm text-muted-foreground">
+            No pack sizes yet. Add the first one below.
+          </p>
         ) : (
-          <ul className="divide-y">
+          <ul className="divide-y divide-border rounded-lg border border-border px-3">
             {packSizes.map((pack) => (
               <PackRow key={pack.id} ingredientId={ingredientId} baseUnit={baseUnit} pack={pack} />
             ))}
@@ -174,7 +176,7 @@ export function PackSizesEditor({
                 Use as default
               </FieldLabel>
             </Field>
-            <Button type="submit" size="lg" className="h-11" disabled={pending}>
+            <Button type="submit" size="lg" className="sm:w-fit" disabled={pending}>
               {pending ? "Adding…" : "Add pack size"}
             </Button>
           </FieldGroup>

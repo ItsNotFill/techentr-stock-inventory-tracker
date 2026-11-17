@@ -39,23 +39,22 @@ export function TeamList({ members }: { members: TeamRow[] }) {
             <TableRow>
               <TableHead>E-mail</TableHead>
               <TableHead>Role</TableHead>
-              <TableHead>Joined</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {members.map((member) => (
               <TableRow key={member.userId}>
-                <TableCell className="font-medium">
-                  {member.email}
+                <TableCell>
+                  <span className="font-medium">{member.email}</span>
                   {member.isSelf ? <span className="text-muted-foreground"> (you)</span> : null}
+                  <span className="block text-sm text-muted-foreground">Joined {member.joined}</span>
                 </TableCell>
                 <TableCell>
                   <RoleSelect member={member} />
                 </TableCell>
-                <TableCell>{member.joined}</TableCell>
                 <TableCell>
-                  <MemberActions member={member} className="justify-end" />
+                  <MemberActions member={member} className="justify-end md:flex-nowrap" />
                 </TableCell>
               </TableRow>
             ))}
@@ -65,7 +64,7 @@ export function TeamList({ members }: { members: TeamRow[] }) {
 
       <ul className="flex flex-col gap-3 md:hidden">
         {members.map((member) => (
-          <li key={member.userId} className="flex flex-col gap-3 rounded-lg border p-3">
+          <li key={member.userId} className="flex flex-col gap-3 rounded-lg border border-border-strong p-3">
             <div className="min-w-0">
               <p className="font-medium break-all">
                 {member.email}
@@ -98,7 +97,7 @@ function RoleSelect({ member, className }: { member: TeamRow; className?: string
 
   return (
     <Select value={role} onValueChange={change} disabled={pending}>
-      <SelectTrigger className={`h-11 w-36 ${className ?? ""}`} aria-label={`Role of ${member.email}`}>
+      <SelectTrigger className={`w-36 ${className ?? ""}`} aria-label={`Role of ${member.email}`}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
@@ -140,7 +139,7 @@ function MemberActions({ member, className }: { member: TeamRow; className?: str
       <Button
         type="button"
         variant="outline"
-        className="h-11 flex-1 md:flex-none"
+        className="flex-1 md:flex-none"
         onClick={newLink}
         disabled={linkPending}
       >
@@ -148,8 +147,8 @@ function MemberActions({ member, className }: { member: TeamRow; className?: str
       </Button>
       <Button
         type="button"
-        variant="outline"
-        className="h-11 flex-1 text-destructive md:flex-none"
+        variant="destructive-outline"
+        className="flex-1 md:flex-none"
         onClick={() => setConfirmOpen(true)}
       >
         Remove
