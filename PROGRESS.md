@@ -18,7 +18,7 @@ Rules:
 - Every session starts with `git status`, `git worktree list` and the "Now working on" line; half-done work and leftover worktrees are finished or cleaned up first.
 - Things only Filippo can do are listed in `NEXT_STEPS_FOR_FILIPPO.md`.
 
-**Current stage: 3** (stages 0 to 2 are merged. Open and waiting on Filippo: the stage 0 Vercel task, and the stage 2 AI onboarding tasks, which need `ANTHROPIC_API_KEY`; see `NEXT_STEPS_FOR_FILIPPO.md`)
+**Current stage: 4** (stages 0 to 3 are merged, manual paths. Waiting on Filippo: the Supabase address fix in Vercel and `.env.local`, and `ANTHROPIC_API_KEY` for the parked AI tasks; see `NEXT_STEPS_FOR_FILIPPO.md`)
 
 **Now working on:** nothing
 
@@ -79,26 +79,26 @@ AI onboarding (after the done check) — **parked: waiting for `ANTHROPIC_API_KE
 
 ## Stage 3: Sales import and depletion
 
-- [ ] Migration: `pos_import_mappings`, `sales_imports`, `sales`, `sale_lines` with RLS and `UNIQUE(location_id, pos_order_id)`
-- [ ] Migration: `stock_movements` with RLS, revoked update and delete, and the blocking triggers
-- [ ] `lib/ledger`: append movements, stock now, stock at a time; tests
-- [ ] Lock an ingredient's base unit once it has movements (extend `baseUnitLocked` in `lib/ingredients`)
-- [ ] Depletion function (sale lines × confirmed recipe lines → movements); tests including the 2,600 g example
-- [ ] CSV upload and parsing with Papa Parse
-- [ ] Column-mapping step, saved per POS in `pos_import_mappings`
-- [ ] Row validation with Zod and a preview table showing errors
-- [ ] Confirm import in one transaction: skip orders already imported, write sales, lines and movements, store the counts
-- [ ] Unknown POS items are created as unmapped menu items; their lines wait with `depleted_at` null
-- [ ] Unmapped items screen: map to a recipe or ignore; mapping back-fills depletion
-- [ ] `undo_sales_import()` database function and the undo button
-- [ ] Import history list with imported, skipped and unmapped counts
-- [ ] Seed script v3: opening stock and a delivery as movements, plus a sample sales CSV for the worked example
-- [ ] Theoretical stock column on the ingredients screen
-- [ ] Integration test: the same CSV twice changes stock once; undo restores it
+- [x] Migration: `pos_import_mappings`, `sales_imports`, `sales`, `sale_lines` with RLS and `UNIQUE(location_id, pos_order_id)`
+- [x] Migration: `stock_movements` with RLS, revoked update and delete, and the blocking triggers
+- [x] `lib/ledger`: append movements, stock now, stock at a time; tests
+- [x] Lock an ingredient's base unit once it has movements (extend `baseUnitLocked` in `lib/ingredients`)
+- [x] Depletion function (sale lines × confirmed recipe lines → movements); tests including the 2,600 g example
+- [x] CSV upload and parsing with Papa Parse
+- [x] Column-mapping step, saved per POS in `pos_import_mappings`
+- [x] Row validation with Zod and a preview table showing errors
+- [x] Confirm import in one transaction: skip orders already imported, write sales, lines and movements, store the counts
+- [x] Unknown POS items are created as unmapped menu items; their lines wait with `depleted_at` null
+- [x] Unmapped items screen: map to a recipe or ignore; mapping back-fills depletion
+- [x] `undo_sales_import()` database function and the undo button
+- [x] Import history list with imported, skipped and unmapped counts
+- [x] Seed script v3: opening stock and a delivery as movements, plus a sample sales CSV for the worked example
+- [x] Theoretical stock column on the ingredients screen
+- [x] Integration test: the same CSV twice changes stock once; undo restores it
 
 **Done when:** uploading the same CSV twice changes stock only once, and the mozzarella worked example gives 2,600 g.
 
-Sales by photo (after the done check):
+Sales by photo (after the done check) — **parked: waiting for `ANTHROPIC_API_KEY`** (DECISIONS.md, entry 57):
 
 - [ ] Zod schema and prompt for end-of-day reports; tests against saved example outputs
 - [ ] Photo upload creates a draft `sales_imports` row with the stored photo

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { IngredientWithPacks } from "@/lib/ingredients";
-import { formatQty, formatUnitCost } from "@/lib/units";
+import { formatQty, formatUnitCost, toDecimal } from "@/lib/units";
 import { ArchiveButton } from "./archive-button";
 
 function packSummary(ingredient: IngredientWithPacks): string {
@@ -16,10 +16,41 @@ function reorderPoint(ingredient: IngredientWithPacks): string {
   return ingredient.reorderPoint === null ? "–" : formatQty(ingredient.reorderPoint, ingredient.baseUnit);
 }
 
-export function IngredientList({ ingredients }: { ingredients: IngredientWithPacks[] }) {
+function isLow(ingredient: IngredientWithPacks, stock: string): boolean {
+  return ingredient.reorderPoint !== null && toDecimal(stock).lte(toDecimal(ingredient.reorderPoint));
+}
+
+/** Theoretical stock; red when negative, with a "Low" badge at or below the reorder point. */
+function StockValue({ ingredient, stock }: { ingredient: IngredientWithPacks; stock: string }) {
+  return (
+    <>
+      <span className={toDecimal(stock).isNegative() ? "text-destructive" : undefined}>
+        {formatQty(stock, ingredient.baseUnit)}
+      </span>
+      {isLow(ingredient, stock) ? (
+        <Badge variant="outline" className="ml-2">
+          Low
+        </Badge>
+      ) : null}
+    </>
+  );
+}
+
+export function IngredientList({
+  ingredients,
+  stock,
+}: {
+  ingredients: IngredientWithPacks[];
+  /** Theoretical stock in base units per ingredient id, as decimal strings. */
+  stock: Record<string, string>;
+}) {
+  const stockOf = (ingredient: IngredientWithPacks) => stock[ingredient.id] ?? "0.000";
   const showRestore = ingredients.some((ingredient) => !ingredient.isActive);
   return (
     <>
+      <p className="mb-3 text-sm text-muted-foreground">
+        In stock is what the app works out from counts, deliveries, sales and waste.
+      </p>
       {/* Phone: stacked cards. */}
       <ul className="flex flex-col gap-3 md:hidden">
         {ingredients.map((ingredient) => (
@@ -41,6 +72,10 @@ export function IngredientList({ ingredients }: { ingredients: IngredientWithPac
               <span className="shrink-0 text-sm text-muted-foreground">{ingredient.baseUnit}</span>
             </div>
             <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
+              <dt className="text-muted-foreground">In stock</dt>
+              <dd>
+                <StockValue ingredient={ingredient} stock={stockOf(ingredient)} />
+              </dd>
               <dt className="text-muted-foreground">Cost</dt>
               <dd>{formatUnitCost(ingredient.costPerBaseUnit, ingredient.baseUnit)}</dd>
               <dt className="text-muted-foreground">Reorder point</dt>
@@ -66,6 +101,7 @@ export function IngredientList({ ingredients }: { ingredients: IngredientWithPac
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Unit</TableHead>
+              <TableHead>In stock</TableHead>
               <TableHead>Cost</TableHead>
               <TableHead>Reorder point</TableHead>
               <TableHead>Storage area</TableHead>
@@ -94,6 +130,7 @@ export function IngredientList({ ingredients }: { ingredients: IngredientWithPac
                     </Link>
                   </TableCell>
                   <TableCell>{cell(ingredient.baseUnit)}</TableCell>
+                  <TableCell>{cell(<StockValue ingredient={ingredient} stock={stockOf(ingredient)} />)}</TableCell>
                   <TableCell>{cell(formatUnitCost(ingredient.costPerBaseUnit, ingredient.baseUnit))}</TableCell>
                   <TableCell>{cell(reorderPoint(ingredient))}</TableCell>
                   <TableCell>{cell(ingredient.storageArea ?? "–")}</TableCell>

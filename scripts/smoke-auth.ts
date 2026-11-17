@@ -1,7 +1,8 @@
 /**
  * Smoke test over HTTP against a running server (default http://localhost:3000):
  * signed-out redirect, sign-in, onboarding redirect, dashboard after bootstrap,
- * the ingredient screens with data, and any extra paths given as arguments.
+ * the ingredient, menu, stock, queue and import screens with data, and any
+ * extra paths given as arguments.
  * Creates a throwaway user and restaurant and removes them again.
  *
  *   npm run dev            (in another terminal)
@@ -11,11 +12,13 @@ import { randomUUID } from "node:crypto";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { config } from "dotenv";
-import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { createRestaurantForUser } from "../lib/auth/bootstrap";
+import { deleteRestaurantData } from "../tests/helpers/db";
 import * as schema from "../lib/db/schema";
+import { confirmImport, parseCsv, prepareImport } from "../lib/imports";
+import { appendMovements } from "../lib/ledger";
 
 config({ path: ".env.local", quiet: true });
 
@@ -164,17 +167,46 @@ async function main() {
     const menuMissing = await get("/menu/not-a-uuid", cookie);
     check("a malformed menu item id is not found", menuMissing.body.includes("404") || menuMissing.body.includes("not be found"));
 
+    // Stock: an opening count, then a day of sales through the real import code.
+    await db.transaction((tx) =>
+      appendMovements(tx, restaurant!.locationId, [
+        { ingredientId: ingredient.id, qtyDelta: "2500", type: "count_adjust", occurredAt: new Date("2026-11-16T07:00:00Z"), createdBy: userId },
+      ]),
+    );
+    const csv = parseCsv("Order ID,Date,Time,Item,Quantity\n1,16/11/2026,12:00,SMOKE MARGHERITA,5\n2,16/11/2026,12:30,Smoke Tiramisu,2\n");
+    const prepared = prepareImport(
+      csv,
+      { orderId: "Order ID", itemName: "Item", itemId: null, quantity: "Quantity", soldAt: "Date", soldAtTime: "Time", dateFormat: "dmy", decimalSeparator: "." },
+      "Europe/Amsterdam",
+    );
+    await db.transaction((tx) => confirmImport(tx, restaurant!.locationId, userId, { fileName: "smoke.csv", prepared }));
+
+    const stockList = await get("/ingredients", cookie);
+    check(
+      "ingredients list shows theoretical stock (2,500 g - 5 x 120 g) and flags it as low",
+      stockList.status === 200 && stockList.body.includes("1,900 g") && stockList.body.includes("Low"),
+      `${stockList.status}`,
+    );
+    const queue = await get("/unmapped", cookie);
+    check(
+      "the needs-recipe queue shows the item whose sales are waiting",
+      queue.status === 200 && queue.body.includes("Smoke Tiramisu") && queue.body.includes("2 sold") && !queue.body.includes("Smoke Margherita"),
+      `${queue.status}`,
+    );
+    const importPage = await get("/import", cookie);
+    check(
+      "the import page shows the import in its history",
+      importPage.status === 200 && importPage.body.includes("smoke.csv"),
+      `${importPage.status}`,
+    );
+
     for (const path of process.argv.slice(3)) {
       const page = await get(path, cookie);
       check(`${path} renders for the owner`, page.status === 200 && !page.body.includes("Application error"), `${page.status}`);
     }
   } finally {
     if (restaurant) {
-      await db.delete(schema.menuItems).where(eq(schema.menuItems.locationId, restaurant.locationId));
-      await db.delete(schema.locations).where(eq(schema.locations.id, restaurant.locationId));
-      if (restaurant.organizationId) {
-        await db.delete(schema.organizations).where(eq(schema.organizations.id, restaurant.organizationId));
-      }
+      await deleteRestaurantData(db, [restaurant.locationId], restaurant.organizationId ? [restaurant.organizationId] : []);
     }
     await admin.auth.admin.deleteUser(userId);
     await pool.end();

@@ -13,7 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth/membership";
 import { MANAGER_ROLES } from "@/lib/auth/roles";
 import { withUser } from "@/lib/db/client";
-import { getIngredient, type IngredientWithPacks } from "@/lib/ingredients";
+import { baseUnitLocked, getIngredient, type IngredientWithPacks } from "@/lib/ingredients";
 import { DISPLAY_UNITS, fromBaseUnits, toDecimal, type Quantity } from "@/lib/units";
 import { idSchema } from "@/lib/validation/ingredients";
 
@@ -64,7 +64,10 @@ async function EditIngredientContent({ params }: { params: PageProps<"/ingredien
   // A malformed id can never match; real database errors still reach the error screen.
   const parsedId = idSchema.safeParse(id);
   if (!parsedId.success) notFound();
-  const ingredient = await withUser((tx) => getIngredient(tx, membership.locationId, parsedId.data));
+  const { ingredient, unitLocked } = await withUser(async (tx) => ({
+    ingredient: await getIngredient(tx, membership.locationId, parsedId.data),
+    unitLocked: await baseUnitLocked(tx, membership.locationId, parsedId.data),
+  }));
   if (!ingredient) notFound();
 
   return (
@@ -82,7 +85,7 @@ async function EditIngredientContent({ params }: { params: PageProps<"/ingredien
             <IngredientForm
               key={JSON.stringify(toDefaults(ingredient))}
               defaults={toDefaults(ingredient)}
-              unitLocked={ingredient.packSizes.length > 0}
+              unitLocked={unitLocked}
             />
           </CardContent>
         </Card>

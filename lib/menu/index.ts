@@ -1,6 +1,7 @@
 import { and, asc, eq, inArray, isNull, ne, notInArray, sql } from "drizzle-orm";
 import type { Tx } from "@/lib/db/rls";
-import { ingredients, menuItems, recipeLines, type BaseUnit, type MenuItem } from "@/lib/db/schema";
+import { ingredients, menuItems, recipeLines, saleLines, sales, type BaseUnit, type MenuItem } from "@/lib/db/schema";
+import { depleteSaleLines } from "@/lib/ledger/depletion";
 import { DISPLAY_UNITS, toBaseUnits, toDbMoney, toDbQty, toDecimal } from "@/lib/units";
 import type { MenuItemFormValues, RecipeLineInput } from "@/lib/validation/menu";
 
@@ -81,6 +82,46 @@ export async function listMenuItems(tx: Tx, locationId: string): Promise<MenuIte
       recipeCost: total?.recipeCost ? toDbMoney(total.recipeCost) : null,
     };
   });
+}
+
+export type UnmappedQueueEntry = {
+  id: string;
+  posName: string;
+  displayName: string;
+  posItemId: string | null;
+  /** Sale lines waiting for this item's recipe. */
+  waitingLines: number;
+  /** Units sold on those lines (refunds subtract). */
+  waitingQty: string;
+  /** Most recent sale among the waiting lines, or null when it was never sold. */
+  lastSoldAt: Date | null;
+};
+
+/**
+ * The unmapped queue: items seen in sales (or added by hand) that have no
+ * recipe and are not ignored. Items with the most waiting sales come first.
+ */
+export async function listUnmappedQueue(tx: Tx, locationId: string): Promise<UnmappedQueueEntry[]> {
+  const waitingLines = sql<number>`count(${saleLines.id})::int`;
+  return tx
+    .select({
+      id: menuItems.id,
+      posName: menuItems.posName,
+      displayName: menuItems.displayName,
+      posItemId: menuItems.posItemId,
+      waitingLines,
+      waitingQty: sql<string>`coalesce(sum(${saleLines.qty}), 0)::numeric(14, 3)::text`,
+      lastSoldAt: sql<Date | null>`max(${sales.soldAt})`.mapWith((value) => (value ? new Date(value) : null)),
+    })
+    .from(menuItems)
+    .leftJoin(
+      saleLines,
+      and(eq(saleLines.menuItemId, menuItems.id), eq(saleLines.locationId, locationId), isNull(saleLines.depletedAt)),
+    )
+    .leftJoin(sales, eq(sales.id, saleLines.saleId))
+    .where(and(eq(menuItems.locationId, locationId), eq(menuItems.isMapped, false), eq(menuItems.isIgnored, false)))
+    .groupBy(menuItems.id)
+    .orderBy(sql`count(${saleLines.id}) desc`, asc(sql`lower(${menuItems.displayName})`));
 }
 
 export async function getMenuItem(tx: Tx, locationId: string, id: string): Promise<MenuItemDetail | null> {
@@ -212,6 +253,10 @@ export async function deleteMenuItem(tx: Tx, locationId: string, id: string): Pr
  * Saves an item's whole recipe: the lines given replace what was there.
  * Every saved line is confirmed. With at least one line the item becomes
  * mapped (and is no longer ignored); with none it goes back to unmapped.
+ *
+ * Sales of the item that were imported while it had no recipe are depleted
+ * now, dated at their own sale time (the back-fill). Sales that were already
+ * depleted keep the amounts of the recipe they were sold under.
  */
 export async function saveRecipe(
   tx: Tx,
@@ -219,7 +264,7 @@ export async function saveRecipe(
   userId: string,
   menuItemId: string,
   lines: RecipeLineInput[],
-): Promise<{ isMapped: boolean }> {
+): Promise<{ isMapped: boolean; backfilledLines: number }> {
   const [item] = await tx
     .select({ id: menuItems.id })
     .from(menuItems)
@@ -294,5 +339,9 @@ export async function saveRecipe(
     .update(menuItems)
     .set(isMapped ? { isMapped: true, isIgnored: false } : { isMapped: false })
     .where(and(eq(menuItems.id, menuItemId), eq(menuItems.locationId, locationId)));
-  return { isMapped };
+
+  const backfill = isMapped
+    ? await depleteSaleLines(tx, locationId, userId, { menuItemId })
+    : { linesDepleted: 0, movementsWritten: 0 };
+  return { isMapped, backfilledLines: backfill.linesDepleted };
 }

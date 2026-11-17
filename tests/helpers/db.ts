@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
-import { eq, inArray } from "drizzle-orm";
+import { inArray, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { createRestaurantForUser } from "@/lib/auth/bootstrap";
@@ -27,23 +27,24 @@ function supabaseAdmin() {
   });
 }
 
-export type TestUser = { id: string; email: string };
+export type TestUser = { id: string; email: string; password: string };
 
 /** Creates a confirmed Supabase Auth user with a throwaway address. No e-mail is sent. */
 export async function createTestUser(label: string): Promise<TestUser> {
   const email = `test-${label}-${randomUUID()}@example.com`;
+  const password = randomUUID();
   const { data, error } = await supabaseAdmin().auth.admin.createUser({
     email,
-    password: randomUUID(),
+    password,
     email_confirm: true,
   });
   if (error || !data.user) {
     throw new Error(`Could not create test user: ${error?.message}`);
   }
-  return { id: data.user.id, email };
+  return { id: data.user.id, email, password };
 }
 
-export async function deleteTestUser(user: TestUser | undefined): Promise<void> {
+export async function deleteTestUser(user: Pick<TestUser, "id"> | undefined): Promise<void> {
   if (!user) return;
   await supabaseAdmin().auth.admin.deleteUser(user.id);
 }
@@ -67,16 +68,34 @@ export async function addTestMember(db: Database, restaurant: TestRestaurant, us
   await db.insert(schema.memberships).values({ userId: user.id, locationId: restaurant.locationId, role });
 }
 
+/**
+ * Removes throwaway restaurants and everything stored under them, ledger
+ * included. Admin connection only. This is the one place outside
+ * undo_sales_import() that deletes stock movements: it sets the
+ * transaction-local switch the delete trigger looks for (DECISIONS.md 59).
+ * Never call it with a real restaurant.
+ */
+export async function deleteRestaurantData(db: Database, locationIds: string[], organizationIds: string[]) {
+  if (locationIds.length === 0) return;
+  await db.transaction(async (tx) => {
+    await tx.execute(sql`select set_config('app.allow_movement_delete', 'on', true)`);
+    // Children first: several keys are RESTRICT and would stop the cascade from the location.
+    await tx.delete(schema.stockMovements).where(inArray(schema.stockMovements.locationId, locationIds));
+    await tx.delete(schema.salesImports).where(inArray(schema.salesImports.locationId, locationIds));
+    await tx.delete(schema.menuItems).where(inArray(schema.menuItems.locationId, locationIds));
+    await tx.delete(schema.locations).where(inArray(schema.locations.id, locationIds));
+    if (organizationIds.length > 0) {
+      await tx.delete(schema.organizations).where(inArray(schema.organizations.id, organizationIds));
+    }
+  });
+}
+
 /** Removes test restaurants and everything stored under them. */
 export async function deleteTestRestaurants(db: Database, restaurants: (TestRestaurant | undefined)[]) {
   const existing = restaurants.filter((r): r is TestRestaurant => Boolean(r));
-  if (existing.length === 0) return;
-  const locationIds = existing.map((r) => r.locationId);
-  // Menu items go first: recipe lines hold a RESTRICT key on ingredients, which
-  // would stop the cascade from the location.
-  await db.delete(schema.menuItems).where(inArray(schema.menuItems.locationId, locationIds));
-  await db.delete(schema.locations).where(inArray(schema.locations.id, locationIds));
-  for (const restaurant of existing) {
-    await db.delete(schema.organizations).where(eq(schema.organizations.id, restaurant.organizationId));
-  }
+  await deleteRestaurantData(
+    db,
+    existing.map((r) => r.locationId),
+    existing.map((r) => r.organizationId),
+  );
 }

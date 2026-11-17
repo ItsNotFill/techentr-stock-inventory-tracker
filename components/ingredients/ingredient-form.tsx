@@ -77,7 +77,7 @@ export function IngredientForm({
   unitLocked = false,
 }: {
   defaults: IngredientFormDefaults;
-  /** The ingredient has pack sizes, so the server refuses a unit change. */
+  /** The ingredient has pack sizes, recipes or stock movements, so the server refuses a unit change. */
   unitLocked?: boolean;
 }) {
   // Unique per form: Next.js keeps earlier screens in the page (hidden), and two
@@ -164,7 +164,7 @@ export function IngredientForm({
           </Select>
           <FieldDescription>
             {unitLocked
-              ? "The unit cannot change while this ingredient has pack sizes. Remove them first."
+              ? "The unit cannot change once the ingredient has pack sizes, recipes or stock movements."
               : "How this ingredient is counted and stored."}
           </FieldDescription>
           <FieldError errors={fieldErrors(state, "baseUnit")} />
