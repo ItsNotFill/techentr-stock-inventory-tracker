@@ -118,7 +118,7 @@ Sales by photo (after the done check) — **parked: waiting for `ANTHROPIC_API_K
 - [x] Approval writes `count_adjust` movements as of `submitted_at`; opening counts are flagged
 - [x] Late-movement correction in `lib/ledger`; tests for late sales, undo after a count, and counts approved out of order
 - [x] Test: unexplained usage on a line always equals the sum of its `count_adjust` movements
-- [ ] Unexplained usage report: per count, theoretical, counted and difference in units and euros, sorted by euros lost
+- [x] Unexplained usage report: per count, theoretical, counted and difference in units and euros, sorted by euros lost
 - [x] Seed script v4: the worked example's waste movement and closing count
 
 **Done when:** the worked example's closing count shows −500 g and −€4.
