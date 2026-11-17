@@ -54,6 +54,14 @@ async function newPage(browser: Browser, viewport: Viewport): Promise<Page> {
     deviceScaleFactor: viewport === "phone" ? 2 : 1,
     hasTouch: viewport === "phone",
   });
+  // Hide the Next.js dev-server badge: it is not part of the app and covers the "Log out" button.
+  await context.addInitScript(() => {
+    document.addEventListener("DOMContentLoaded", () => {
+      const style = document.createElement("style");
+      style.textContent = "nextjs-portal { display: none !important; }";
+      document.head.appendChild(style);
+    });
+  });
   return context.newPage();
 }
 
