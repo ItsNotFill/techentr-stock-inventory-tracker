@@ -1,3 +1,5 @@
+import { FileSpreadsheet } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { ImportHistoryEntry } from "@/lib/imports";
@@ -5,21 +7,27 @@ import { formatDateTime } from "./format";
 import { UndoButton } from "./undo-button";
 
 function StatusBadge({ status }: { status: ImportHistoryEntry["status"] }) {
-  if (status === "undone") return <Badge variant="secondary">Undone</Badge>;
-  if (status === "confirmed") return <Badge>Imported</Badge>;
-  return <Badge variant="outline">Draft</Badge>;
+  if (status === "undone") return <Badge variant="neutral">Undone</Badge>;
+  if (status === "confirmed") return <Badge variant="success">Imported</Badge>;
+  return <Badge variant="warning">Draft</Badge>;
 }
 
 /** Past imports: a table from `md` up, cards on a phone. */
 export function ImportHistory({ imports, timeZone }: { imports: ImportHistoryEntry[]; timeZone: string }) {
   if (imports.length === 0) {
-    return <p className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">No imports yet.</p>;
+    return (
+      <EmptyState
+        icon={FileSpreadsheet}
+        title="No imports yet"
+        description="Choose a CSV file above. Each file you import is listed here, and you can undo it."
+      />
+    );
   }
   return (
     <>
       <ul className="flex flex-col gap-3 md:hidden">
         {imports.map((entry) => (
-          <li key={entry.id} className="rounded-xl border bg-card p-4">
+          <li key={entry.id} className="rounded-lg border border-border bg-card p-4 shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="break-words font-medium">{entry.fileName ?? "Unnamed file"}</p>
@@ -27,13 +35,13 @@ export function ImportHistory({ imports, timeZone }: { imports: ImportHistoryEnt
               </div>
               <StatusBadge status={entry.status} />
             </div>
-            <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
+            <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-sm tabular-nums">
               <dt className="text-muted-foreground">Lines imported</dt>
-              <dd>{entry.rowCount}</dd>
+              <dd className="text-right">{entry.rowCount}</dd>
               <dt className="text-muted-foreground">Orders skipped</dt>
-              <dd>{entry.skippedCount}</dd>
+              <dd className="text-right">{entry.skippedCount}</dd>
               <dt className="text-muted-foreground">Waiting for recipe</dt>
-              <dd>{entry.unmappedCount}</dd>
+              <dd className="text-right">{entry.unmappedCount}</dd>
             </dl>
             {entry.status === "confirmed" ? (
               <div className="mt-3">

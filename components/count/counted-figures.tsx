@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/empty-state";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { CountSheetIngredient } from "@/lib/counts";
 import { formatQty } from "@/lib/units";
@@ -6,7 +7,7 @@ import { formatQty } from "@/lib/units";
 export function CountedFigures({ ingredients }: { ingredients: CountSheetIngredient[] }) {
   const counted = ingredients.filter((ingredient) => ingredient.countedQty !== null);
   if (counted.length === 0) {
-    return <p className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">No ingredients were counted.</p>;
+    return <EmptyState size="sm" title="No ingredients were counted." />;
   }
   return (
     <Table>
@@ -19,7 +20,7 @@ export function CountedFigures({ ingredients }: { ingredients: CountSheetIngredi
       <TableBody>
         {counted.map((ingredient) => (
           <TableRow key={ingredient.id}>
-            <TableCell className="whitespace-normal break-words">{ingredient.name}</TableCell>
+            <TableCell className="font-medium break-words whitespace-normal">{ingredient.name}</TableCell>
             <TableCell className="text-right whitespace-nowrap">{formatQty(ingredient.countedQty ?? "0", ingredient.baseUnit)}</TableCell>
           </TableRow>
         ))}

@@ -31,7 +31,7 @@ export function IgnoreButton({ menuItemId, name }: { menuItemId: string; name: s
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <Button type="button" variant="outline" size="lg" className="h-11" onClick={() => setOpen(true)}>
+      <Button type="button" variant="outline" onClick={() => setOpen(true)}>
         Ignore
       </Button>
       <AlertDialogContent>

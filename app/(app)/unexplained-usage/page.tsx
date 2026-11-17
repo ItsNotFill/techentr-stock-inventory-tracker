@@ -1,6 +1,8 @@
+import { ClipboardList, TrendingDown } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { TableSkeleton } from "@/components/page-skeleton";
 import { Button } from "@/components/ui/button";
@@ -32,14 +34,18 @@ async function UnexplainedUsageContent() {
 
   if (counts.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed p-8 text-center">
-        <p className="max-w-md text-sm text-muted-foreground">
-          No approved counts yet. Unexplained usage appears after a stock count is approved.
-        </p>
-        <Button asChild size="lg" className="h-11">
-          <Link href="/count">Start a count</Link>
+      <EmptyState
+        icon={TrendingDown}
+        title="No approved counts yet"
+        description="Unexplained usage appears after a stock count is approved."
+      >
+        <Button asChild size="lg">
+          <Link href="/count">
+            <ClipboardList aria-hidden />
+            Start a count
+          </Link>
         </Button>
-      </div>
+      </EmptyState>
     );
   }
   return <CountList counts={counts} timezone={membership.timezone} />;

@@ -1,10 +1,11 @@
 "use client";
 
-import { CheckIcon } from "lucide-react";
+import { CheckIcon, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useId, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { deleteDraftAction, saveCountAction, submitCountAction } from "@/app/(app)/count/actions";
+import { EmptyState } from "@/components/empty-state";
 import { SELECT_HEIGHT } from "@/components/ingredients/units";
 import {
   AlertDialog,
@@ -188,19 +189,27 @@ export function CountSheetForm({
   }, [ingredients]);
 
   if (ingredients.length === 0) {
-    return <p className="rounded-xl border border-dashed p-6 text-center text-muted-foreground">There are no ingredients to count yet. Add ingredients first.</p>;
+    return <EmptyState title="There are no ingredients to count yet." description="Add ingredients first." />;
   }
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-lg font-medium" aria-live="polite">
-          {countedTotal} of {ingredients.length} counted
-        </p>
-        <label className="flex min-h-11 items-center gap-2 text-sm">
-          <Switch checked={onlyOpen} onCheckedChange={setOnlyOpen} />
-          Show only not counted
-        </label>
+      <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-lg font-semibold tabular-nums" aria-live="polite">
+            {countedTotal} of {ingredients.length} counted
+          </p>
+          <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm font-medium">
+            <Switch checked={onlyOpen} onCheckedChange={setOnlyOpen} />
+            Show only not counted
+          </label>
+        </div>
+        <div className="h-2 overflow-hidden rounded-full bg-muted" aria-hidden>
+          <div
+            className="h-full rounded-full bg-primary transition-[width]"
+            style={{ width: `${(countedTotal / ingredients.length) * 100}%` }}
+          />
+        </div>
       </div>
 
       {groups.map(([area, items]) => {
@@ -216,14 +225,20 @@ export function CountSheetForm({
                 const eq = equivalent(ingredient, values[ingredient.id] ?? "", unit);
                 const counted = isCounted(ingredient.id);
                 return (
-                  <li key={ingredient.id} className="rounded-xl border bg-card p-4">
+                  <li
+                    key={ingredient.id}
+                    className={cn(
+                      "scroll-mt-24 scroll-mb-56 rounded-lg border bg-card p-4 shadow-sm transition-colors",
+                      status?.state === "error" ? "border-destructive" : "border-border",
+                    )}
+                  >
                     <div className="flex items-center justify-between gap-3">
-                      <label htmlFor={`${uid}-${ingredient.id}`} className="min-w-0 break-words text-base font-medium">
+                      <label htmlFor={`${uid}-${ingredient.id}`} className="min-w-0 text-base font-semibold break-words">
                         {ingredient.name}
                       </label>
                       {counted ? (
-                        <span className="flex shrink-0 items-center gap-1 text-sm text-muted-foreground">
-                          <CheckIcon className="size-4 text-primary" aria-hidden />
+                        <span className="flex h-6 shrink-0 items-center gap-1 rounded-full bg-success px-2.5 text-xs font-medium text-success-foreground">
+                          <CheckIcon className="size-3.5" aria-hidden />
                           Counted
                         </span>
                       ) : null}
@@ -237,7 +252,7 @@ export function CountSheetForm({
                         placeholder="0"
                         value={values[ingredient.id] ?? ""}
                         aria-invalid={status?.state === "error" ? true : undefined}
-                        className="h-12 text-lg md:text-lg"
+                        className="h-14 text-xl font-medium tabular-nums md:h-12 md:text-lg"
                         onChange={(event) => change(ingredient.id, event.target.value, unit)}
                         onBlur={() => void save()}
                       />
@@ -248,7 +263,10 @@ export function CountSheetForm({
                           if ((values[ingredient.id] ?? "") !== "") queueMicrotask(() => void save());
                         }}
                       >
-                        <SelectTrigger className={cn(SELECT_HEIGHT, "data-[size=default]:h-12")} aria-label={`Unit for ${ingredient.name}`}>
+                        <SelectTrigger
+                          className={cn(SELECT_HEIGHT, "text-base data-[size=default]:h-14 md:text-base md:data-[size=default]:h-12")}
+                          aria-label={`Unit for ${ingredient.name}`}
+                        >
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -265,10 +283,20 @@ export function CountSheetForm({
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="mt-1 flex min-h-5 flex-wrap items-center justify-between gap-2 text-sm">
-                      <span className="text-muted-foreground">{eq ? `= ${eq}` : ""}</span>
+                    <div className="mt-1.5 flex min-h-5 flex-wrap items-center justify-between gap-2 text-sm">
+                      <span className="text-muted-foreground tabular-nums">{eq ? `= ${eq}` : ""}</span>
                       {status ? (
-                        <span className={status.state === "error" ? "text-destructive" : "text-muted-foreground"} role={status.state === "error" ? "alert" : undefined}>
+                        <span
+                          className={cn(
+                            "font-medium",
+                            status.state === "error"
+                              ? "text-destructive"
+                              : status.state === "saved"
+                                ? "text-success-foreground"
+                                : "text-muted-foreground",
+                          )}
+                          role={status.state === "error" ? "alert" : undefined}
+                        >
                           {status.state === "saving" ? "Saving…" : status.state === "saved" ? "Saved" : status.message}
                         </span>
                       ) : null}
@@ -282,16 +310,18 @@ export function CountSheetForm({
       })}
 
       {onlyOpen && countedTotal === ingredients.length ? (
-        <p className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">Everything is counted.</p>
+        <EmptyState size="sm" title="Everything is counted." />
       ) : null}
 
       <div>
-        <Button type="button" variant="ghost" className="h-11 text-destructive" disabled={pending} onClick={() => setDeleteOpen(true)}>
+        <Button type="button" variant="destructive" disabled={pending} onClick={() => setDeleteOpen(true)}>
+          <Trash2 aria-hidden />
           Delete draft
         </Button>
       </div>
 
-      <div className="sticky bottom-16 z-10 -mx-4 flex gap-3 border-t bg-background p-4 md:bottom-0 md:mx-0 md:rounded-xl md:border">
+      {/* Stays above the phone tab bar while scrolling; at the end of the list it sits in place, so it never covers the last item. */}
+      <div className="sticky bottom-[calc(var(--tabbar-height)+env(safe-area-inset-bottom))] z-10 -mx-4 flex gap-3 border-t border-border bg-card p-4 md:bottom-4 md:mx-0 md:rounded-lg md:border">
         <Button type="button" variant="outline" size="lg" className="h-12 flex-1 text-base" disabled={saving || pending} onClick={() => void save()}>
           {saving ? "Saving…" : "Save"}
         </Button>
@@ -319,6 +349,7 @@ export function CountSheetForm({
             </AlertDialogAction>
             {canApprove ? (
               <AlertDialogAction
+                variant="outline"
                 disabled={pending}
                 onClick={(event) => {
                   event.preventDefault();
@@ -341,6 +372,7 @@ export function CountSheetForm({
           <AlertDialogFooter>
             <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
             <AlertDialogAction
+              variant="destructive"
               disabled={pending}
               onClick={(event) => {
                 event.preventDefault();

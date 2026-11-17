@@ -169,7 +169,8 @@ export function MenuItemForm({ defaults }: { defaults: MenuItemFormDefaults }) {
           </Field>
         </div>
 
-        <Button type="submit" size="lg" className="h-11" disabled={pending}>
+        {/* On the item's page "Save recipe" is the main action, so this one is secondary there. */}
+        <Button type="submit" variant={editing ? "outline" : "default"} size="lg" className="sm:w-fit" disabled={pending}>
           {pending ? "Saving…" : editing ? "Save changes" : "Add item"}
         </Button>
       </FieldGroup>

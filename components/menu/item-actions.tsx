@@ -56,15 +56,15 @@ export function ItemActions({
     <Card>
       <CardContent className="flex flex-col gap-4">
         {ignored ? (
-          <div className="flex flex-col items-start gap-1">
-            <Button type="button" variant="outline" size="lg" className="h-11" disabled={pending} onClick={() => setIgnored(false)}>
+          <div className="flex flex-col items-start gap-2">
+            <Button type="button" variant="outline" size="lg" disabled={pending} onClick={() => setIgnored(false)}>
               Stop ignoring
             </Button>
             <p className="text-sm text-muted-foreground">This item is ignored: its sales do not use stock.</p>
           </div>
         ) : hasRecipe ? null : (
-          <div className="flex flex-col items-start gap-1">
-            <Button type="button" variant="outline" size="lg" className="h-11" disabled={pending} onClick={() => setIgnored(true)}>
+          <div className="flex flex-col items-start gap-2">
+            <Button type="button" variant="outline" size="lg" disabled={pending} onClick={() => setIgnored(true)}>
               Ignore this item
             </Button>
             <p className="text-sm text-muted-foreground">For things that use no stock, like a service charge.</p>
@@ -73,7 +73,7 @@ export function ItemActions({
 
         <div>
           <AlertDialog open={open} onOpenChange={setOpen}>
-            <Button type="button" variant="destructive" size="lg" className="h-11" onClick={() => setOpen(true)}>
+            <Button type="button" variant="destructive" size="lg" onClick={() => setOpen(true)}>
               Delete item
             </Button>
             <AlertDialogContent>
@@ -84,6 +84,7 @@ export function ItemActions({
               <AlertDialogFooter>
                 <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
                 <AlertDialogAction
+                  variant="destructive"
                   disabled={pending}
                   onClick={(event) => {
                     event.preventDefault();

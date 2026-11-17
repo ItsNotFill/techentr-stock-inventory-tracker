@@ -1,6 +1,8 @@
+import { Archive, ArchiveRestore, Carrot, Plus } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { EmptyState } from "@/components/empty-state";
 import { IngredientList } from "@/components/ingredients/ingredient-list";
 import { PageHeader } from "@/components/page-header";
 import { TableSkeleton } from "@/components/page-skeleton";
@@ -16,9 +18,15 @@ export const metadata: Metadata = { title: "Ingredients" };
 export default function IngredientsPage({ searchParams }: PageProps<"/ingredients">) {
   return (
     <>
-      <PageHeader title="Ingredients">
-        <Button asChild size="lg" className="h-11">
-          <Link href="/ingredients/new">Add ingredient</Link>
+      <PageHeader
+        title="Ingredients"
+        description="Everything you buy and count, with what is in stock and what it costs."
+      >
+        <Button asChild size="lg">
+          <Link href="/ingredients/new">
+            <Plus aria-hidden />
+            Add ingredient
+          </Link>
         </Button>
       </PageHeader>
       <Suspense fallback={<TableSkeleton />}>
@@ -38,25 +46,37 @@ async function IngredientsContent({ searchParams }: { searchParams: PageProps<"/
   }));
   const stockById = Object.fromEntries(ingredients.map((ingredient) => [ingredient.id, stockOf(stock, ingredient.id)]));
 
+  const archivedToggle = (
+    <Button asChild variant="outline" size="sm">
+      <Link href={includeArchived ? "/ingredients" : "/ingredients?archived=1"}>
+        {includeArchived ? <ArchiveRestore aria-hidden /> : <Archive aria-hidden />}
+        {includeArchived ? "Hide archived" : "Show archived"}
+      </Link>
+    </Button>
+  );
+
+  const empty = ingredients.length === 0;
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex justify-end">
-        <Button asChild variant="link" className="h-11">
-          <Link href={includeArchived ? "/ingredients" : "/ingredients?archived=1"}>
-            {includeArchived ? "Hide archived" : "Show archived"}
-          </Link>
-        </Button>
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+        <p className="text-sm text-muted-foreground">
+          {empty ? null : "In stock is what the app works out from counts, deliveries, sales and waste."}
+        </p>
+        {archivedToggle}
       </div>
-      {ingredients.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed p-8 text-center">
-          <p className="font-medium">No ingredients yet</p>
-          <p className="max-w-md text-sm text-muted-foreground">
-            Ingredients are what recipes use and what staff count on the shelf. Add the first one to get started.
-          </p>
-          <Button asChild size="lg" className="h-11">
-            <Link href="/ingredients/new">Add ingredient</Link>
+      {empty ? (
+        <EmptyState
+          icon={Carrot}
+          title="No ingredients yet"
+          description="Ingredients are what recipes use and what staff count on the shelf. Add the first one to get started."
+        >
+          <Button asChild size="lg">
+            <Link href="/ingredients/new">
+              <Plus aria-hidden />
+              Add ingredient
+            </Link>
           </Button>
-        </div>
+        </EmptyState>
       ) : (
         <IngredientList ingredients={ingredients} stock={stockById} />
       )}

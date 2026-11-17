@@ -271,7 +271,7 @@ export function IngredientForm({
           </Field>
         </div>
 
-        <Button type="submit" size="lg" className="h-11" disabled={pending}>
+        <Button type="submit" size="lg" className="sm:w-fit" disabled={pending}>
           {pending ? "Saving…" : editing ? "Save changes" : "Add ingredient"}
         </Button>
       </FieldGroup>
