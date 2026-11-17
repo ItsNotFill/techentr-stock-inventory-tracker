@@ -8,6 +8,8 @@
  * Stage 2 (v2): the menu with a confirmed recipe for every item.
  * Stage 3 (v3): opening stock and a delivery as ledger movements, and the
  *               worked example's day of sales imported from a sample CSV.
+ * Stage 4 (v4): the dropped tray (waste) and the closing count, submitted by
+ *               staff and approved by the manager: mozzarella -500 g, -EUR 4.00.
  *
  * The ledger is append-only, so stock is seeded once: when the demo restaurant
  * already has movements, that part is skipped. Sales are imported through the
@@ -29,7 +31,10 @@ import * as schema from "../lib/db/schema";
 import { ingredients, locations, memberships, menuItems, organizations, packSizes, recipeLines, stockMovements } from "../lib/db/schema";
 import { confirmImport, parseCsv, prepareImport, previewImport } from "../lib/imports";
 import { zonedTimeToUtc } from "../lib/imports/time";
-import { appendMovements, type NewMovement } from "../lib/ledger";
+import { approveCount, saveCountEntries, startCount, submitCount } from "../lib/counts";
+import { runAsUser } from "../lib/db/rls";
+import { appendMovements, stockAt, stockOf, type NewMovement } from "../lib/ledger";
+import { countSessions } from "../lib/db/schema";
 import { costPerBaseUnit, toDbQty, toDbUnitCost } from "../lib/units";
 import {
   SEED_COLUMN_MAP,
@@ -92,6 +97,7 @@ async function main() {
     // 2. Test users and their roles
     const password = seedPassword();
     let ownerId: string | undefined;
+    const userIdByRole = new Map<string, string>();
     for (const user of SEED_USERS) {
       const [existing] = await db.execute<{ id: string }>(
         sql`select id from auth.users where lower(email) = ${user.email} limit 1`,
@@ -114,6 +120,7 @@ async function main() {
         .values({ userId, locationId: SEED_LOCATION.id, role: user.role })
         .onConflictDoUpdate({ target: [memberships.userId, memberships.locationId], set: { role: user.role } });
       if (user.role === "owner") ownerId = userId;
+      userIdByRole.set(user.role, userId);
       console.log(`User: ${user.email} (${user.role})`);
     }
 
@@ -253,6 +260,58 @@ async function main() {
         ? `Sales: ${imported.ordersImported} orders imported (${imported.linesImported} lines, ${imported.linesWaiting} waiting for a recipe)`
         : "Sales: the sample day was already imported",
     );
+
+    // 7. The dropped tray and the closing count. Done as the demo users, through
+    //    the same code as the screens, so RLS and the ledger rules apply.
+    const staffId = userIdByRole.get("staff")!;
+    const managerId = userIdByRole.get("manager")!;
+    const mozzarellaId = ingredientIdByName.get(SEED_DAY.mozzarella.name)!;
+    const minuteAt = (hour: number, minute: number) =>
+      zonedTimeToUtc({ ...SEED_DAY.date, hour, minute, second: 0 }, SEED_LOCATION.timezone);
+
+    const [existingCount] = await db
+      .select({ id: countSessions.id })
+      .from(countSessions)
+      .where(sql`${countSessions.clientId} = ${SEED_DAY.closingCount.clientId}`);
+    if (existingCount) {
+      console.log("Count: the closing count is already there");
+    } else {
+      await runAsUser(db, staffId, (tx) =>
+        appendMovements(tx, SEED_LOCATION.id, [
+          {
+            ingredientId: mozzarellaId,
+            qtyDelta: SEED_DAY.waste.qty,
+            type: "waste",
+            wasteReason: SEED_DAY.waste.reason,
+            note: SEED_DAY.waste.note,
+            occurredAt: minuteAt(SEED_DAY.waste.hour, SEED_DAY.waste.minute),
+            createdBy: staffId,
+          },
+        ]),
+      );
+
+      const countTime = at(SEED_DAY.closingCount.hour);
+      const sessionId = await runAsUser(db, staffId, async (tx) => {
+        const expected = await stockAt(tx, SEED_LOCATION.id, countTime);
+        const id = await startCount(tx, SEED_LOCATION.id, staffId, SEED_DAY.closingCount.clientId);
+        await saveCountEntries(
+          tx,
+          SEED_LOCATION.id,
+          staffId,
+          id,
+          SEED_INGREDIENTS.map((item) => {
+            const ingredientId = ingredientIdByName.get(item.name)!;
+            const counted = SEED_DAY.closingCount.counted[item.name] ?? stockOf(expected, ingredientId);
+            // A shelf never holds less than nothing.
+            return { ingredientId, amount: counted.startsWith("-") ? "0" : counted, unit: item.baseUnit };
+          }),
+        );
+        await submitCount(tx, SEED_LOCATION.id, staffId, id, countTime);
+        return id;
+      });
+      await runAsUser(db, managerId, (tx) => approveCount(tx, SEED_LOCATION.id, managerId, sessionId));
+      console.log("Count: dropped tray logged; closing count submitted by staff and approved by the manager");
+    }
     console.log(`\nDone. Log in as one of the users above; the password is in ${SEED_ENV_FILE}.`);
   } finally {
     await pool.end();
