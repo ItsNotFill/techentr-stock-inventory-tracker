@@ -94,7 +94,7 @@ function toColumnMap(choice: Choice): ColumnMap {
 /** Numbered steps: the current one filled in the accent colour, done ones tinted. */
 function StepIndicator({ step }: { step: number }) {
   return (
-    <ol className="flex flex-wrap items-center gap-x-2 gap-y-2 text-sm" aria-label="Steps">
+    <ol className="flex items-center gap-x-1 text-sm sm:gap-x-2" aria-label="Steps">
       {STEPS.map((label, index) => {
         const current = index === step;
         const done = index < step;
@@ -112,8 +112,12 @@ function StepIndicator({ step }: { step: number }) {
             >
               {index + 1}
             </span>{" "}
-            <span className={current ? "font-semibold text-foreground" : "text-muted-foreground"}>{label}</span>
-            {index < STEPS.length - 1 ? <span className="mx-1 h-px w-5 bg-border sm:w-8" aria-hidden /> : null}
+            <span
+              className={cn(current ? "font-semibold text-foreground" : "sr-only text-muted-foreground sm:not-sr-only")}
+            >
+              {label}
+            </span>
+            {index < STEPS.length - 1 ? <span className="mx-0.5 h-px w-4 bg-border sm:mx-1 sm:w-8" aria-hidden /> : null}
           </li>
         );
       })}

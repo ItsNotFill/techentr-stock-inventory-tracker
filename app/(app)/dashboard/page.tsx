@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { GetStarted, StaffStart } from "@/components/dashboard/get-started";
 import { PageHeader } from "@/components/page-header";
 import { CardsSkeleton } from "@/components/page-skeleton";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { requireMembership } from "@/lib/auth/membership";
 import { canManage, ROLE_LABELS } from "@/lib/auth/roles";
 
@@ -18,7 +19,7 @@ export default function DashboardPage() {
       fallback={
         <>
           <PageHeader title="Dashboard" description={DESCRIPTION} />
-          <CardsSkeleton cards={1} />
+          <CardsSkeleton cards={2} />
         </>
       }
     >
@@ -33,6 +34,15 @@ async function DashboardContent() {
   const action = canManage(membership.role)
     ? { href: "/import", label: "Import sales" }
     : { href: "/count", label: "Count stock" };
+  const details = (
+    <Card size="sm">
+      <CardContent className="flex flex-col gap-1 text-sm">
+        <span className="font-medium">{membership.locationName}</span>
+        <span className="text-muted-foreground">Signed in as {ROLE_LABELS[membership.role].toLowerCase()}</span>
+        <span className="text-muted-foreground">Timezone: {membership.timezone}</span>
+      </CardContent>
+    </Card>
+  );
   return (
     <>
       <PageHeader title="Dashboard" description={DESCRIPTION}>
@@ -40,26 +50,17 @@ async function DashboardContent() {
           <Link href={action.href}>{action.label}</Link>
         </Button>
       </PageHeader>
-      <Card className="max-w-2xl">
-        <CardHeader>
-          <CardTitle>{membership.locationName}</CardTitle>
-          <CardDescription>
-            Low stock, the last import and unexplained usage will appear here as the restaurant starts using the app.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <dl className="grid gap-4 border-t border-border pt-4 sm:grid-cols-2">
-            <div>
-              <dt className="text-sm text-muted-foreground">Signed in as</dt>
-              <dd className="mt-0.5 font-medium">{ROLE_LABELS[membership.role]}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-muted-foreground">Timezone</dt>
-              <dd className="mt-0.5 font-medium">{membership.timezone}</dd>
-            </div>
-          </dl>
-        </CardContent>
-      </Card>
+      {canManage(membership.role) ? (
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:items-start">
+          <GetStarted />
+          {details}
+        </div>
+      ) : (
+        <div className="flex max-w-xl flex-col gap-4">
+          {details}
+          <StaffStart />
+        </div>
+      )}
     </>
   );
 }
