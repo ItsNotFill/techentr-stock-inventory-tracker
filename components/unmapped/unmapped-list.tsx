@@ -31,7 +31,7 @@ export function UnmappedList({ entries, timezone }: { entries: UnmappedQueueEntr
       {/* Phone: stacked cards. */}
       <ul className="flex flex-col gap-3 md:hidden">
         {entries.map((entry) => (
-          <li key={entry.id} className="rounded-xl border border-border-strong bg-card p-4 shadow-xs">
+          <li key={entry.id} className="rounded-lg border border-border bg-card p-4 shadow-sm">
             <Names entry={entry} />
             <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-sm tabular-nums">
               <dt className="text-muted-foreground">Waiting sales</dt>

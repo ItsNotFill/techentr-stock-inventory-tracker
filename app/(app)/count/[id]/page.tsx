@@ -121,7 +121,7 @@ async function CountDetail({ params }: { params: PageProps<"/count/[id]">["param
       </PageHeader>
       <div className="flex flex-col gap-6">
         {sheet.status === "rejected" ? (
-          <p className="rounded-xl border border-danger-border bg-danger-subtle p-4 text-sm text-danger">
+          <p className="rounded-lg border border-danger-border bg-danger-subtle p-4 text-sm text-danger">
             {sheet.reviewNote ? <>Note from the manager: {sheet.reviewNote}</> : "Rejected without a note."} Stock did not
             change.
           </p>

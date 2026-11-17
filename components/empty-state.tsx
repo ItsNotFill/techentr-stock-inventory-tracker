@@ -26,7 +26,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center rounded-xl border border-dashed border-border-strong bg-card text-center",
+        "flex flex-col items-center rounded-lg border border-dashed border-border bg-card text-center",
         small ? "gap-2 px-4 py-6" : "gap-3 px-6 py-10",
         className,
       )}
@@ -37,7 +37,7 @@ export function EmptyState({
         </div>
       ) : null}
       <div className="flex max-w-md flex-col gap-1">
-        <p className={cn("font-semibold text-foreground", small ? "text-sm" : "text-base")}>{title}</p>
+        <p className={cn("font-semibold text-foreground", small ? "text-sm" : "text-lg")}>{title}</p>
         {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
       </div>
       {children ? <div className="mt-1 flex flex-wrap justify-center gap-2">{children}</div> : null}

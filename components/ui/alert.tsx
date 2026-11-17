@@ -7,12 +7,11 @@ const alertVariants = cva(
   {
     variants: {
       variant: {
-        default: "border-border-strong bg-card text-card-foreground *:data-[slot=alert-description]:text-foreground",
-        info: "border-info-border bg-info-subtle text-info *:data-[slot=alert-description]:text-info",
-        success: "border-success-border bg-success-subtle text-success *:data-[slot=alert-description]:text-success",
-        warning: "border-warning-border bg-warning-subtle text-warning *:data-[slot=alert-description]:text-warning",
+        default: "border-border bg-card text-card-foreground *:data-[slot=alert-description]:text-foreground",
+        success: "border-transparent bg-success text-success-foreground *:data-[slot=alert-description]:text-success-foreground",
+        warning: "border-transparent bg-warning text-warning-foreground *:data-[slot=alert-description]:text-warning-foreground",
         destructive:
-          "border-danger-border bg-danger-subtle text-danger *:data-[slot=alert-description]:text-danger *:[svg]:text-current",
+          "border-transparent bg-danger text-danger-foreground *:data-[slot=alert-description]:text-danger-foreground *:[svg]:text-current",
       },
     },
     defaultVariants: {

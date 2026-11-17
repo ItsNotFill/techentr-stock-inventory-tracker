@@ -113,7 +113,7 @@ function StepIndicator({ step }: { step: number }) {
               {index + 1}
             </span>{" "}
             <span className={current ? "font-semibold text-foreground" : "text-muted-foreground"}>{label}</span>
-            {index < STEPS.length - 1 ? <span className="mx-1 h-px w-5 bg-border-strong sm:w-8" aria-hidden /> : null}
+            {index < STEPS.length - 1 ? <span className="mx-1 h-px w-5 bg-border sm:w-8" aria-hidden /> : null}
           </li>
         );
       })}
@@ -213,7 +213,7 @@ export function ImportFlow({ timeZone }: { timeZone: string }) {
 
   if (result) {
     return (
-      <div className="flex flex-col items-start gap-4 rounded-xl border border-success-border bg-card p-5 shadow-xs md:p-6">
+      <div className="flex flex-col items-start gap-4 rounded-lg border border-success-border bg-card p-5 shadow-sm md:p-6">
         <h2 className="flex items-center gap-2 text-lg font-semibold">
           <CircleCheck className="size-5 shrink-0 text-success" aria-hidden />
           Imported {plural(result.ordersImported, "order", "orders")} ({plural(result.linesImported, "line", "lines")})
@@ -247,7 +247,7 @@ export function ImportFlow({ timeZone }: { timeZone: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-5 rounded-xl border border-border-strong bg-card p-4 shadow-xs md:p-6">
+    <div className="flex flex-col gap-5 rounded-lg border border-border bg-card p-4 shadow-sm md:p-6">
       <StepIndicator step={step} />
       {message ? (
         <Alert variant="destructive">
@@ -273,8 +273,8 @@ export function ImportFlow({ timeZone }: { timeZone: string }) {
               if (!pending) handleFile(event.dataTransfer.files[0]);
             }}
             className={cn(
-              "group flex min-h-44 cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6 text-center transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring",
-              dragging ? "border-primary bg-accent" : "border-border-strong hover:border-primary hover:bg-accent/50",
+              "group flex min-h-44 cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-6 text-center transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring",
+              dragging ? "border-primary bg-accent" : "border-border hover:border-primary hover:bg-accent/50",
             )}
           >
             <span className="flex size-11 items-center justify-center rounded-full bg-accent text-primary">
@@ -497,7 +497,7 @@ function CheckStep({
           <p className="text-sm">
             New items found (they will be added to the menu without a recipe, and their sales wait until you add one):
           </p>
-          <ul className="flex flex-col divide-y divide-border rounded-lg border border-border-strong px-3 text-sm">
+          <ul className="flex flex-col divide-y divide-border rounded-lg border border-border px-3 text-sm">
             {newItems.map((item) => (
               <li key={item.name} className="flex justify-between gap-3 py-2">
                 <span className="min-w-0 break-words">{item.name}</span>

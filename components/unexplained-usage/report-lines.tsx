@@ -9,7 +9,7 @@ function Name({ line }: { line: ReportLine }) {
     <>
       <span className="font-medium text-foreground">{line.ingredientName}</span>
       {line.isOpening ? (
-        <Badge variant="info" className="ml-2 align-middle">
+        <Badge variant="neutral" className="ml-2 align-middle">
           First count
         </Badge>
       ) : null}
@@ -34,7 +34,7 @@ export function ReportLines({ lines }: { lines: ReportLine[] }) {
         {lines.map((line) => (
           <li
             key={line.lineId}
-            className={`rounded-xl border bg-card p-4 shadow-xs ${line.isOpening ? "border-border" : "border-border-strong"}`}
+            className={`rounded-lg border bg-card p-4 shadow-sm ${line.isOpening ? "border-border" : "border-border"}`}
           >
             <Name line={line} />
             <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-sm tabular-nums">

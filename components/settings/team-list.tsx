@@ -64,7 +64,7 @@ export function TeamList({ members }: { members: TeamRow[] }) {
 
       <ul className="flex flex-col gap-3 md:hidden">
         {members.map((member) => (
-          <li key={member.userId} className="flex flex-col gap-3 rounded-lg border border-border-strong p-3">
+          <li key={member.userId} className="flex flex-col gap-3 rounded-lg border border-border p-3">
             <div className="min-w-0">
               <p className="font-medium break-all">
                 {member.email}

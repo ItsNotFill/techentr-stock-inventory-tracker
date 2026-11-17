@@ -48,7 +48,7 @@ function PackRow({ ingredientId, baseUnit, pack }: { ingredientId: string; baseU
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-medium">{pack.label}</span>
-          {pack.isDefault ? <Badge variant="info">Default</Badge> : null}
+          {pack.isDefault ? <Badge variant="neutral">Default</Badge> : null}
         </div>
         <p className="text-sm text-muted-foreground tabular-nums">{formatQty(pack.qtyInBaseUnit, baseUnit)}</p>
       </div>
@@ -107,7 +107,7 @@ export function PackSizesEditor({
       </CardHeader>
       <CardContent className="flex flex-col gap-6">
         {packSizes.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-border-strong px-4 py-3 text-sm text-muted-foreground">
+          <p className="rounded-lg border border-dashed border-border px-4 py-3 text-sm text-muted-foreground">
             No pack sizes yet. Add the first one below.
           </p>
         ) : (

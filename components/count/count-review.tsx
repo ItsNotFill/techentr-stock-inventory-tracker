@@ -15,7 +15,7 @@ function tone(value: string, muted = false): string {
 export function CountReview({ report, submittedText, byYou }: { report: CountReport; submittedText: string | null; byYou: boolean }) {
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-5 rounded-xl border border-border-strong bg-card p-4 shadow-xs md:p-6 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-5 rounded-lg border border-border bg-card p-4 shadow-sm md:p-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
           <p className="text-sm text-muted-foreground">
             Submitted{submittedText ? ` on ${submittedText}` : ""}
@@ -33,14 +33,14 @@ export function CountReview({ report, submittedText, byYou }: { report: CountRep
 
       <ul className="flex flex-col gap-3 md:hidden">
         {report.lines.map((line) => (
-          <li key={line.lineId} className="rounded-xl border border-border-strong bg-card p-4 shadow-xs">
+          <li key={line.lineId} className="rounded-lg border border-border bg-card p-4 shadow-sm">
             <p className="font-semibold break-words">{line.ingredientName}</p>
             <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-sm tabular-nums">
               <dt className="text-muted-foreground">Counted</dt>
               <dd className="text-right">{formatQty(line.countedQty, line.baseUnit)}</dd>
               <dt className="text-muted-foreground">Expected</dt>
               <dd className="text-right">
-                {line.isOpening ? <Badge variant="info">First count</Badge> : formatQty(line.expectedQty, line.baseUnit)}
+                {line.isOpening ? <Badge variant="neutral">First count</Badge> : formatQty(line.expectedQty, line.baseUnit)}
               </dd>
               <dt className="text-muted-foreground">Difference</dt>
               <dd className={cn("text-right", tone(line.differenceQty, line.isOpening))}>{formatQty(line.differenceQty, line.baseUnit)}</dd>
@@ -68,7 +68,7 @@ export function CountReview({ report, submittedText, byYou }: { report: CountRep
                 <TableCell className="font-medium">{line.ingredientName}</TableCell>
                 <TableCell className="text-right">{formatQty(line.countedQty, line.baseUnit)}</TableCell>
                 <TableCell className="text-right">
-                  {line.isOpening ? <Badge variant="info">First count</Badge> : formatQty(line.expectedQty, line.baseUnit)}
+                  {line.isOpening ? <Badge variant="neutral">First count</Badge> : formatQty(line.expectedQty, line.baseUnit)}
                 </TableCell>
                 <TableCell className={cn("text-right", tone(line.differenceQty, line.isOpening))}>{formatQty(line.differenceQty, line.baseUnit)}</TableCell>
                 <TableCell className={cn("text-right font-medium", tone(line.differenceValue, line.isOpening))}>{formatMoney(line.differenceValue)}</TableCell>

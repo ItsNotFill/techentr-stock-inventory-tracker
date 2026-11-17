@@ -167,7 +167,7 @@ export function RecipeEditor({
         ) : null}
 
         {noIngredients && rows.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-border-strong p-4 text-sm text-muted-foreground">
+          <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
             You have no ingredients yet. A recipe is made of ingredients.{" "}
             <Link href="/ingredients/new" className="font-medium text-primary underline underline-offset-4">
               Add an ingredient
@@ -177,7 +177,7 @@ export function RecipeEditor({
         ) : (
           <>
             {rows.length === 0 ? (
-              <p className="rounded-lg border border-dashed border-border-strong px-4 py-3 text-sm text-muted-foreground">
+              <p className="rounded-lg border border-dashed border-border px-4 py-3 text-sm text-muted-foreground">
                 No ingredients in this recipe yet.
               </p>
             ) : (
@@ -250,7 +250,7 @@ export function RecipeEditor({
                         <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm">
                           <span className="text-muted-foreground">Cost</span>
                           <span className="font-medium tabular-nums">{cost ? formatMoney(cost) : "–"}</span>
-                          {row.draft ? <Badge variant="info">Draft</Badge> : null}
+                          {row.draft ? <Badge variant="neutral">Draft</Badge> : null}
                           {ingredient?.archived ? <Badge variant="neutral">Archived</Badge> : null}
                         </div>
                         <Button

@@ -5,10 +5,21 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Design tokens. One accent colour (blue), used for every primary action,
- * link, focus ring and the current page in the navigation. Green, amber and
- * red are only for status (badges, money). Contrast ratios are WCAG 2 against
- * the colour the token sits on; see the comments next to each value.
+ * Type scale. Body text is 15 px (text-sm), tables 14 px (text-table),
+ * section titles 18 px (text-lg), page titles 24 px (text-2xl).
+ */
+@theme {
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: calc(1.375 / 0.9375);
+  --text-table: 0.875rem;
+  --text-table--line-height: calc(1.25 / 0.875);
+}
+
+/*
+ * "Basil kitchen": warm off-white page, white surfaces, one green for brand and
+ * action. Red only for loss, errors and destructive actions. Components use the
+ * utilities these map to (bg-primary, bg-success text-success-foreground, ...),
+ * never hex values.
  */
 @theme inline {
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
@@ -28,31 +39,27 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  --color-placeholder: var(--placeholder);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-hover: var(--destructive-hover);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
-  --color-border-strong: var(--border-strong);
   --color-input: var(--input);
   --color-ring: var(--ring);
 
   --color-success: var(--success);
-  --color-success-subtle: var(--success-subtle);
-  --color-success-border: var(--success-border);
+  --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
-  --color-warning-subtle: var(--warning-subtle);
-  --color-warning-border: var(--warning-border);
-  --color-danger: var(--destructive);
-  --color-danger-subtle: var(--danger-subtle);
-  --color-danger-border: var(--danger-border);
-  --color-info: var(--info);
-  --color-info-subtle: var(--info-subtle);
-  --color-info-border: var(--info-border);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
   --color-neutral: var(--neutral);
-  --color-neutral-subtle: var(--neutral-subtle);
-  --color-neutral-border: var(--neutral-border);
+  --color-neutral-foreground: var(--neutral-foreground);
+
+  --color-table-header: var(--table-header);
+  --color-table-header-foreground: var(--table-header-foreground);
+  --color-row-hover: var(--row-hover);
 
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -62,6 +69,7 @@
 
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-title: var(--sidebar-title);
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
   --color-sidebar-accent: var(--sidebar-accent);
@@ -69,142 +77,128 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  /* Corners: 8 px on cards, tables, inputs, buttons and dialogs. */
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-xl: var(--radius);
+  --radius-2xl: var(--radius);
+  --radius-3xl: var(--radius);
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* WCAG 2 contrast ratios are noted next to each text colour, against the surface it sits on. */
 :root {
   --radius: 0.5rem;
 
-  /* Surfaces: a light grey page, white cards and tables on top of it. */
-  --background: #f5f6f8;
-  --foreground: #111827; /* 17.7:1 on white, 16.4:1 on the page */
+  --background: #f7f5f0; /* page */
+  --foreground: #1f2a22; /* 13.6:1 on the page, 14.9:1 on white */
   --card: #ffffff;
-  --card-foreground: #111827;
+  --card-foreground: #1f2a22;
   --popover: #ffffff;
-  --popover-foreground: #111827;
+  --popover-foreground: #1f2a22;
 
-  /* Accent: blue 700. White text on it 6.7:1; as link text on white 6.7:1. */
-  --primary: #1d4ed8;
-  --primary-hover: #1e40af; /* 8.7:1 with white text */
+  --primary: #2e7d4f; /* white text on it 5.1:1; as link text 5.1:1 on white, 4.6:1 on the page */
+  --primary-hover: #256943; /* white text on it 6.6:1 */
   --primary-foreground: #ffffff;
 
-  /* Secondary buttons are outlined, so "secondary" is white like a card. */
+  /* Secondary buttons: white with a border and dark text. */
   --secondary: #ffffff;
-  --secondary-foreground: #111827;
+  --secondary-foreground: #1f2a22;
 
-  /* Shaded table headers, hover rows, disabled controls. */
-  --muted: #f1f3f5;
-  --muted-foreground: #5b6470; /* 6.0:1 on white, 5.5:1 on the page, 5.4:1 on muted */
-  --placeholder: #6b7280; /* 4.8:1 on white */
+  --muted: #f1efe8; /* disabled controls, quiet fills */
+  --muted-foreground: #5c5a52; /* secondary text: 6.9:1 on white, 6.3:1 on the page, 6.0:1 on muted */
 
-  /* Light accent tint: current page in the nav, ghost-button hover, selected options. */
-  --accent: #eaf1fe;
-  --accent-foreground: #1e40af; /* 7.7:1 on the tint */
+  /* Light green tint for selected options and drop targets (dark text on it: 13.2:1). */
+  --accent: #eef3ea;
+  --accent-foreground: #1f2a22;
 
-  /* Red 700. White text on it 6.5:1; as text on white 6.5:1, on its tint 5.9:1. */
-  --destructive: #b91c1c;
-  --destructive-hover: #991b1b;
+  --destructive: #a32d2d; /* white text on it 7.1:1; as text 7.1:1 on white, 6.5:1 on the page */
+  --destructive-hover: #8a2525;
+  --destructive-foreground: #ffffff;
 
-  /* Borders. "strong" (3.3:1 on white) outlines inputs, cards, tables and outline
-     buttons; the plain border (1.5:1) divides rows and sections inside them. */
-  --border: #d1d5db;
-  --border-strong: #878d97;
-  --input: #878d97;
-  --ring: #1d4ed8;
+  --border: #d9d4c7; /* cards, inputs, tables (1.5:1 on white, as decided) */
+  --input: #d9d4c7;
+  --ring: #2e7d4f; /* 2 px focus ring: 5.1:1 on white, 4.6:1 on the page */
 
-  /* Status colours: text on the subtle background. */
-  --success: #166534; /* 6.5:1 on its tint */
-  --success-subtle: #dcfce7;
-  --success-border: #bbf7d0;
-  --warning: #92400e; /* 6.4:1 on its tint */
-  --warning-subtle: #fef3c7;
-  --warning-border: #fde68a;
-  --danger-subtle: #fef2f2; /* red text on it 5.9:1 */
-  --danger-border: #fecaca;
-  --info: #1e40af; /* 7.2:1 on its tint */
-  --info-subtle: #dbeafe;
-  --info-border: #bfdbfe;
-  --neutral: #374151; /* 9.4:1 on its tint */
-  --neutral-subtle: #f3f4f6;
-  --neutral-border: #d1d5db;
+  /* Status badges: light background, dark text of the same family. */
+  --success: #eaf3de;
+  --success-foreground: #27500a; /* 8.2:1 */
+  --warning: #faeeda;
+  --warning-foreground: #633806; /* 8.7:1 */
+  --danger: #fcebeb;
+  --danger-foreground: #791f1f; /* 9.0:1 */
+  --neutral: #f1efe8;
+  --neutral-foreground: #444441; /* 8.5:1 */
 
-  --chart-1: #1d4ed8;
-  --chart-2: #b91c1c;
-  --chart-3: #166534;
-  --chart-4: #92400e;
-  --chart-5: #5b6470;
+  --table-header: #eef3ea;
+  --table-header-foreground: #27500a; /* 8.3:1 */
+  --row-hover: #f7f5f0;
 
-  /* Navigation. */
-  --sidebar: #ffffff;
-  --sidebar-foreground: #374151; /* 10.3:1 on white */
-  --sidebar-primary: #1d4ed8;
+  --chart-1: #2e7d4f;
+  --chart-2: #a32d2d;
+  --chart-3: #633806;
+  --chart-4: #5c5a52;
+  --chart-5: #27500a;
+
+  /* Navigation (sidebar on desktop, tab bar on a phone). */
+  --sidebar: #1f3d2b;
+  --sidebar-foreground: #c0dd97; /* 8.0:1 on the sidebar, 6.2:1 on hover */
+  --sidebar-title: #eaf3de; /* 10.4:1 */
+  --sidebar-primary: #2e7d4f; /* active item: white text 5.1:1 */
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #eaf1fe;
-  --sidebar-accent-foreground: #1e40af;
-  --sidebar-border: #d1d5db;
-  --sidebar-ring: #1d4ed8;
+  --sidebar-accent: #2a4f38; /* hover */
+  --sidebar-accent-foreground: #eaf3de; /* 8.1:1 on hover */
+  --sidebar-border: #2a4f38;
+  --sidebar-ring: #eaf3de; /* focus ring on the dark green: 10.4:1 */
 
   /* Height of the phone tab bar, without the safe area. */
   --tabbar-height: 4rem;
 }
 
-/* Not switched on yet; kept consistent so a later dark mode starts from the same roles. */
+/* Not switched on yet; the same roles on dark surfaces. */
 .dark {
-  --background: #0b0f17;
-  --foreground: #e5e7eb;
-  --card: #111827;
-  --card-foreground: #e5e7eb;
-  --popover: #111827;
-  --popover-foreground: #e5e7eb;
-  --primary: #60a5fa; /* dark text on it 7.4:1; as text on the card 7.0:1 */
-  --primary-hover: #93c5fd;
-  --primary-foreground: #0b1220;
-  --secondary: #111827;
-  --secondary-foreground: #e5e7eb;
-  --muted: #1f2937;
-  --muted-foreground: #a3acb9;
-  --placeholder: #8b94a3;
-  --accent: #172554;
-  --accent-foreground: #bfdbfe;
-  --destructive: #f87171;
-  --destructive-hover: #fca5a5;
-  --border: #2b3544;
-  --border-strong: #6b7280;
-  --input: #6b7280;
-  --ring: #60a5fa;
-  --success: #86efac;
-  --success-subtle: #052e16;
-  --success-border: #166534;
-  --warning: #fcd34d;
-  --warning-subtle: #451a03;
-  --warning-border: #92400e;
-  --danger-subtle: #450a0a;
-  --danger-border: #991b1b;
-  --info: #bfdbfe;
-  --info-subtle: #172554;
-  --info-border: #1e40af;
-  --neutral: #d1d5db;
-  --neutral-subtle: #1f2937;
-  --neutral-border: #374151;
-  --chart-1: #60a5fa;
-  --chart-2: #f87171;
-  --chart-3: #86efac;
-  --chart-4: #fcd34d;
-  --chart-5: #a3acb9;
-  --sidebar: #111827;
-  --sidebar-foreground: #d1d5db;
-  --sidebar-primary: #60a5fa;
-  --sidebar-primary-foreground: #0b1220;
-  --sidebar-accent: #172554;
-  --sidebar-accent-foreground: #bfdbfe;
-  --sidebar-border: #2b3544;
-  --sidebar-ring: #60a5fa;
+  --background: #141a16;
+  --foreground: #eaf3de;
+  --card: #1c241f;
+  --card-foreground: #eaf3de;
+  --popover: #1c241f;
+  --popover-foreground: #eaf3de;
+  --primary: #5fae7e;
+  --primary-hover: #7cc298;
+  --primary-foreground: #10170f;
+  --secondary: #1c241f;
+  --secondary-foreground: #eaf3de;
+  --muted: #26302a;
+  --muted-foreground: #b4b1a6;
+  --accent: #26302a;
+  --accent-foreground: #eaf3de;
+  --destructive: #e07a7a;
+  --destructive-hover: #e99595;
+  --destructive-foreground: #10170f;
+  --border: #3a463e;
+  --input: #3a463e;
+  --ring: #5fae7e;
+  --success: #24361a;
+  --success-foreground: #c0dd97;
+  --warning: #3b2a12;
+  --warning-foreground: #f2cf98;
+  --danger: #3d1a1a;
+  --danger-foreground: #f2b8b8;
+  --neutral: #2a2c28;
+  --neutral-foreground: #d8d5cb;
+  --table-header: #24361a;
+  --table-header-foreground: #c0dd97;
+  --row-hover: #222b25;
+  --sidebar: #10170f;
+  --sidebar-foreground: #c0dd97;
+  --sidebar-title: #eaf3de;
+  --sidebar-primary: #2e7d4f;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1f3d2b;
+  --sidebar-accent-foreground: #eaf3de;
+  --sidebar-border: #1f3d2b;
+  --sidebar-ring: #eaf3de;
 }
 
 @layer base {
@@ -216,7 +210,7 @@
     -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background font-sans text-sm text-foreground;
   }
   /* Everything that can be clicked shows a hand. */
   button:not(:disabled),
@@ -230,8 +224,7 @@
   select:not(:disabled) {
     cursor: pointer;
   }
-  /* A clear focus ring on anything reached with the keyboard. Components with
-     their own focus style (inputs, selects) override it. */
+  /* A 2 px green focus ring with an offset on anything reached with the keyboard. */
   :focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;

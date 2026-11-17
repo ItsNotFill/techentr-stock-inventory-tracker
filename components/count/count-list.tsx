@@ -25,7 +25,7 @@ export function WaitingList({ counts, userId, timeZone }: { counts: CountSummary
         <li key={count.id}>
           <Link
             href={`/count/${count.id}`}
-            className="group flex min-h-16 items-center justify-between gap-3 rounded-xl border border-warning-border bg-card p-4 shadow-xs transition-colors hover:border-primary hover:bg-accent/40"
+            className="group flex min-h-16 items-center justify-between gap-3 rounded-lg border border-warning-border bg-card p-4 shadow-sm transition-colors hover:border-primary hover:bg-row-hover"
           >
             <span className="min-w-0">
               <span className="block font-semibold break-words">{countWho(count, userId)}</span>
@@ -72,7 +72,7 @@ export function RecentCounts({
     <>
       <ul className="flex flex-col gap-3 md:hidden">
         {counts.map((count) => (
-          <li key={count.id} className="rounded-xl border border-border-strong bg-card p-4 shadow-xs">
+          <li key={count.id} className="rounded-lg border border-border bg-card p-4 shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <Link href={`/count/${count.id}`} className="min-w-0 rounded-sm">
                 <span className="block font-semibold break-words">{countWho(count, userId)}</span>

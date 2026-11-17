@@ -29,7 +29,7 @@ export function MenuItemList({ items }: { items: MenuItemSummary[] }) {
         {items.map((item) => (
           <li
             key={item.id}
-            className="relative rounded-xl border border-border-strong bg-card p-4 shadow-xs transition-colors hover:bg-accent/40 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-ring"
+            className="relative rounded-lg border border-border bg-card p-4 shadow-sm transition-colors hover:bg-row-hover has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-ring"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">

@@ -16,6 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { MemberRole } from "@/lib/db/schema/enums";
 import { MAX_PHONE_TABS, NAV_ITEMS } from "./nav-items";
+import { sidebarItemClass } from "./nav-style";
 
 function useVisibleItems(role: MemberRole) {
   const pathname = usePathname();
@@ -25,30 +26,14 @@ function useVisibleItems(role: MemberRole) {
   }));
 }
 
-/** Vertical list for the desktop sidebar. The current page has an accent tint and bar. */
+/** Vertical list for the desktop sidebar. The current page is a filled green pill. */
 export function SidebarLinks({ role }: { role: MemberRole }) {
   const items = useVisibleItems(role);
   return (
-    <nav aria-label="Main" className="flex flex-col gap-0.5">
+    <nav aria-label="Main" className="flex flex-col gap-1">
       {items.map(({ href, label, icon: Icon, active }) => (
-        <Link
-          key={href}
-          href={href}
-          aria-current={active ? "page" : undefined}
-          className={cn(
-            "group relative flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors",
-            active
-              ? "bg-sidebar-accent font-semibold text-sidebar-accent-foreground before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-full before:bg-sidebar-primary"
-              : "text-sidebar-foreground hover:bg-muted hover:text-foreground",
-          )}
-        >
-          <Icon
-            className={cn(
-              "size-[18px] shrink-0",
-              active ? "text-sidebar-primary" : "text-muted-foreground group-hover:text-foreground",
-            )}
-            aria-hidden
-          />
+        <Link key={href} href={href} aria-current={active ? "page" : undefined} className={sidebarItemClass(active)}>
+          <Icon className="size-[18px] shrink-0" aria-hidden />
           {label}
         </Link>
       ))}
@@ -58,19 +43,20 @@ export function SidebarLinks({ role }: { role: MemberRole }) {
 
 const tabClass = (active: boolean) =>
   cn(
-    "group flex h-full w-full min-w-0 cursor-pointer flex-col items-center justify-center gap-1 px-1 text-center text-[0.6875rem] leading-tight font-medium transition-colors",
-    active ? "text-primary" : "text-muted-foreground hover:text-foreground",
+    "group flex h-full w-full min-w-0 cursor-pointer flex-col items-center justify-center gap-1 px-1 text-center text-[0.6875rem] leading-tight font-medium transition-colors focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-sidebar-ring",
+    active ? "text-sidebar-title" : "text-sidebar-foreground hover:text-sidebar-accent-foreground",
   );
 
 const iconPillClass = (active: boolean) =>
   cn(
     "flex h-7 w-12 items-center justify-center rounded-full transition-colors",
-    active ? "bg-accent" : "group-hover:bg-muted",
+    active ? "bg-sidebar-primary text-sidebar-primary-foreground" : "group-hover:bg-sidebar-accent",
   );
 
 /**
- * Tab bar fixed to the bottom of a phone screen. Up to five links fit; with
- * more, four stay as tabs and the rest open from "More" in a sheet.
+ * Tab bar fixed to the bottom of a phone screen, in the sidebar's colours. Up
+ * to five links fit; with more, four stay as tabs and the rest open from
+ * "More" in a sheet.
  */
 export function BottomTabs({ role }: { role: MemberRole }) {
   const items = useVisibleItems(role);
@@ -83,7 +69,7 @@ export function BottomTabs({ role }: { role: MemberRole }) {
   return (
     <nav
       aria-label="Main"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border-strong bg-card pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 bg-sidebar pb-[env(safe-area-inset-bottom)] md:hidden"
     >
       <ul className="flex h-(--tabbar-height)">
         {tabs.map(({ href, label, icon: Icon, active }) => (
@@ -107,9 +93,12 @@ export function BottomTabs({ role }: { role: MemberRole }) {
                   More
                 </button>
               </SheetTrigger>
-              <SheetContent side="bottom" className="rounded-t-2xl pb-[env(safe-area-inset-bottom)]">
+              <SheetContent
+                side="bottom"
+                className="rounded-t-lg border-sidebar-border bg-sidebar pb-[env(safe-area-inset-bottom)] text-sidebar-foreground [&_[data-slot=sheet-close]]:text-sidebar-foreground [&_[data-slot=sheet-close]]:hover:bg-sidebar-accent [&_[data-slot=sheet-close]]:hover:text-sidebar-accent-foreground"
+              >
                 <SheetHeader className="pb-0">
-                  <SheetTitle>More</SheetTitle>
+                  <SheetTitle className="text-sidebar-title">More</SheetTitle>
                   <SheetDescription className="sr-only">The other screens of the app.</SheetDescription>
                 </SheetHeader>
                 <nav aria-label="More" className="px-2 pb-4">
@@ -120,17 +109,9 @@ export function BottomTabs({ role }: { role: MemberRole }) {
                           <Link
                             href={href}
                             aria-current={active ? "page" : undefined}
-                            className={cn(
-                              "flex min-h-12 items-center gap-3 rounded-lg px-3 text-base font-medium transition-colors",
-                              active
-                                ? "bg-accent text-accent-foreground"
-                                : "text-foreground hover:bg-muted",
-                            )}
+                            className={cn(sidebarItemClass(active), "min-h-12 text-base")}
                           >
-                            <Icon
-                              className={cn("size-5", active ? "text-primary" : "text-muted-foreground")}
-                              aria-hidden
-                            />
+                            <Icon className="size-5 shrink-0" aria-hidden />
                             {label}
                           </Link>
                         </SheetClose>

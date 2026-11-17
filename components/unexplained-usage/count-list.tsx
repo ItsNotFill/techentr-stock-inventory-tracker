@@ -37,7 +37,7 @@ export function CountList({ counts, timezone }: { counts: ApprovedCount[]; timez
           <li key={count.sessionId}>
             <Link
               href={`/unexplained-usage/${count.sessionId}`}
-              className="flex items-center gap-3 rounded-xl border border-border-strong bg-card p-4 shadow-xs transition-colors hover:bg-accent/40 active:bg-accent"
+              className="flex items-center gap-3 rounded-lg border border-border bg-card p-4 shadow-sm transition-colors hover:bg-row-hover active:bg-accent"
             >
               <span className="min-w-0 flex-1">
                 <span className="block font-semibold text-primary">{formatter.format(count.submittedAt)}</span>

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 export default function Home() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-8 px-6 py-12 text-center">
-      <span className="flex size-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
+      <span className="flex size-14 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
         <Store className="size-7" aria-hidden />
       </span>
       <div className="flex max-w-md flex-col gap-3">

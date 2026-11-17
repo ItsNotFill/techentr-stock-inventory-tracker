@@ -194,7 +194,7 @@ export function CountSheetForm({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3 rounded-xl border border-border-strong bg-card p-4 shadow-xs">
+      <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-lg font-semibold tabular-nums" aria-live="polite">
             {countedTotal} of {ingredients.length} counted
@@ -228,12 +228,12 @@ export function CountSheetForm({
                   <li
                     key={ingredient.id}
                     className={cn(
-                      "scroll-mt-24 scroll-mb-56 rounded-xl border bg-card p-4 shadow-xs transition-colors",
+                      "scroll-mt-24 scroll-mb-56 rounded-lg border bg-card p-4 shadow-sm transition-colors",
                       status?.state === "error"
                         ? "border-destructive"
                         : counted
                           ? "border-success-border"
-                          : "border-border-strong",
+                          : "border-border",
                     )}
                   >
                     <div className="flex items-center justify-between gap-3">
@@ -331,7 +331,7 @@ export function CountSheetForm({
       </div>
 
       {/* Stays above the phone tab bar while scrolling; at the end of the list it sits in place, so it never covers the last item. */}
-      <div className="sticky bottom-[calc(var(--tabbar-height)+env(safe-area-inset-bottom))] z-10 -mx-4 flex gap-3 border-t border-border-strong bg-card p-4 shadow-[0_-4px_12px_rgb(0_0_0/0.06)] md:bottom-4 md:mx-0 md:rounded-xl md:border">
+      <div className="sticky bottom-[calc(var(--tabbar-height)+env(safe-area-inset-bottom))] z-10 -mx-4 flex gap-3 border-t border-border bg-card p-4 shadow-[0_-4px_12px_rgb(0_0_0/0.06)] md:bottom-4 md:mx-0 md:rounded-lg md:border">
         <Button type="button" variant="outline" size="lg" className="h-12 flex-1 text-base" disabled={saving || pending} onClick={() => void save()}>
           {saving ? "Saving…" : "Save"}
         </Button>

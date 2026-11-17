@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function TableSkeleton({ rows = 6 }: { rows?: number }) {
   return (
     <div
-      className="flex flex-col gap-2 rounded-xl border border-border bg-card p-3"
+      className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3"
       aria-busy="true"
       aria-label="Loading"
     >

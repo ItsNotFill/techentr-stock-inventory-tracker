@@ -28,20 +28,20 @@ export function PageHeader({
         {back ? (
           <Link
             href={back.href}
-            className="-ml-1 mb-2 inline-flex min-h-11 items-center gap-1 rounded-md pr-2 text-sm font-medium text-primary hover:underline hover:underline-offset-4 md:min-h-8"
+            className="-ml-1 mb-2 inline-flex min-h-11 items-center gap-1 rounded-md pr-2 text-sm font-medium text-primary hover:text-primary-hover hover:underline hover:underline-offset-4 md:min-h-8"
           >
             <ChevronLeft className="size-4" aria-hidden />
             {back.label}
           </Link>
         ) : null}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <h1 className="min-w-0 text-2xl font-semibold tracking-tight break-words text-foreground md:text-[1.75rem] md:leading-9">
+          <h1 className="min-w-0 text-2xl font-semibold tracking-tight break-words text-foreground">
             {title}
           </h1>
           {badge}
         </div>
         {description ? (
-          <p className="mt-1.5 max-w-3xl text-sm text-muted-foreground md:text-base">{description}</p>
+          <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{description}</p>
         ) : null}
       </div>
       {children ? (
