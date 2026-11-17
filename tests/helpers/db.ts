@@ -27,23 +27,24 @@ function supabaseAdmin() {
   });
 }
 
-export type TestUser = { id: string; email: string };
+export type TestUser = { id: string; email: string; password: string };
 
 /** Creates a confirmed Supabase Auth user with a throwaway address. No e-mail is sent. */
 export async function createTestUser(label: string): Promise<TestUser> {
   const email = `test-${label}-${randomUUID()}@example.com`;
+  const password = randomUUID();
   const { data, error } = await supabaseAdmin().auth.admin.createUser({
     email,
-    password: randomUUID(),
+    password,
     email_confirm: true,
   });
   if (error || !data.user) {
     throw new Error(`Could not create test user: ${error?.message}`);
   }
-  return { id: data.user.id, email };
+  return { id: data.user.id, email, password };
 }
 
-export async function deleteTestUser(user: TestUser | undefined): Promise<void> {
+export async function deleteTestUser(user: Pick<TestUser, "id"> | undefined): Promise<void> {
   if (!user) return;
   await supabaseAdmin().auth.admin.deleteUser(user.id);
 }

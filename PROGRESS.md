@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 3** (stages 0 to 2 are merged. Open and waiting on Filippo: the stage 0 Vercel task, and the stage 2 AI onboarding tasks, which need `ANTHROPIC_API_KEY`; see `NEXT_STEPS_FOR_FILIPPO.md`)
 
-**Now working on:** Stage 3 screens with two ui-builders, each in its own worktree under `.claude/worktrees/`, branched from `stage-3-sales-import`: (A) the import screen: upload, column mapping, preview with row errors, confirm, history with undo; (B) the "Needs recipe" queue screen and the theoretical stock column on the ingredients screen. All server code for both (lib/imports, lib/ledger, Server Actions, tests) is on the stage branch. Meanwhile the main agent does seed script v3 and the sample CSV.
+**Now working on:** Stage 3 whole-stage review (reviewer sub-agent, read-only, no worktree). Every manual-path task is ticked. Branch `stage-3-sales-import`.
 
 ## Stage 0: Setup
 
@@ -84,17 +84,17 @@ AI onboarding (after the done check) — **parked: waiting for `ANTHROPIC_API_KE
 - [x] `lib/ledger`: append movements, stock now, stock at a time; tests
 - [x] Lock an ingredient's base unit once it has movements (extend `baseUnitLocked` in `lib/ingredients`)
 - [x] Depletion function (sale lines × confirmed recipe lines → movements); tests including the 2,600 g example
-- [ ] CSV upload and parsing with Papa Parse
-- [ ] Column-mapping step, saved per POS in `pos_import_mappings`
-- [ ] Row validation with Zod and a preview table showing errors
-- [ ] Confirm import in one transaction: skip orders already imported, write sales, lines and movements, store the counts
-- [ ] Unknown POS items are created as unmapped menu items; their lines wait with `depleted_at` null
-- [ ] Unmapped items screen: map to a recipe or ignore; mapping back-fills depletion
-- [ ] `undo_sales_import()` database function and the undo button
-- [ ] Import history list with imported, skipped and unmapped counts
+- [x] CSV upload and parsing with Papa Parse
+- [x] Column-mapping step, saved per POS in `pos_import_mappings`
+- [x] Row validation with Zod and a preview table showing errors
+- [x] Confirm import in one transaction: skip orders already imported, write sales, lines and movements, store the counts
+- [x] Unknown POS items are created as unmapped menu items; their lines wait with `depleted_at` null
+- [x] Unmapped items screen: map to a recipe or ignore; mapping back-fills depletion
+- [x] `undo_sales_import()` database function and the undo button
+- [x] Import history list with imported, skipped and unmapped counts
 - [x] Seed script v3: opening stock and a delivery as movements, plus a sample sales CSV for the worked example
-- [ ] Theoretical stock column on the ingredients screen
-- [ ] Integration test: the same CSV twice changes stock once; undo restores it
+- [x] Theoretical stock column on the ingredients screen
+- [x] Integration test: the same CSV twice changes stock once; undo restores it
 
 **Done when:** uploading the same CSV twice changes stock only once, and the mozzarella worked example gives 2,600 g.
 

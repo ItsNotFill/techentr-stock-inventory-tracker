@@ -54,7 +54,7 @@ describe.skipIf(!hasDatabase)("team and restaurant details", () => {
   afterAll(async () => {
     await deleteTestRestaurants(testDb.db, [restaurant, otherRestaurant]);
     await Promise.all([owner, manager, staff, outsider].map(deleteTestUser));
-    if (invitedUserId) await deleteTestUser({ id: invitedUserId, email: "" });
+    if (invitedUserId) await deleteTestUser({ id: invitedUserId });
     await testDb.close();
   });
 
