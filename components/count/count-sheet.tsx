@@ -79,6 +79,8 @@ export function CountSheetForm({
   const unitsRef = useRef(units);
   const dirtyRef = useRef(new Set<string>());
   const savingRef = useRef(false);
+  // A save was asked for while another was running; run it when that one ends.
+  const queuedRef = useRef(false);
 
   function change(id: string, nextValue: string, nextUnit: string) {
     valuesRef.current = { ...valuesRef.current, [id]: nextValue };
@@ -122,7 +124,10 @@ export function CountSheetForm({
   }
 
   async function save(): Promise<boolean> {
-    if (savingRef.current) return false;
+    if (savingRef.current) {
+      queuedRef.current = true;
+      return false;
+    }
     const entries = buildEntries();
     if (entries.length === 0) return true;
     savingRef.current = true;
@@ -139,6 +144,10 @@ export function CountSheetForm({
     } finally {
       savingRef.current = false;
       setSaving(false);
+      if (queuedRef.current) {
+        queuedRef.current = false;
+        void save();
+      }
     }
   }
 
@@ -314,7 +323,7 @@ export function CountSheetForm({
       ) : null}
 
       <div>
-        <Button type="button" variant="destructive" disabled={pending} onClick={() => setDeleteOpen(true)}>
+        <Button type="button" variant="destructive-outline" disabled={pending} onClick={() => setDeleteOpen(true)}>
           <Trash2 aria-hidden />
           Delete draft
         </Button>

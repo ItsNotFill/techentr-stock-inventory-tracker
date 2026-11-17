@@ -147,7 +147,7 @@ function MemberActions({ member, className }: { member: TeamRow; className?: str
       </Button>
       <Button
         type="button"
-        variant="destructive"
+        variant="destructive-outline"
         className="flex-1 md:flex-none"
         onClick={() => setConfirmOpen(true)}
       >
