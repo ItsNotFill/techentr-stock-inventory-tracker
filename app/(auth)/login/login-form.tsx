@@ -6,6 +6,7 @@ import { FormMessage, fieldErrors } from "@/components/form-message";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { useHydrated } from "@/hooks/use-hydrated";
 import { emptyFormState } from "@/lib/validation/form";
 import { login } from "../actions";
 
@@ -14,6 +15,7 @@ export function LoginForm() {
   // forms with the same field ids would cross their labels.
   const uid = useId();
   const [state, formAction, pending] = useActionState(login, emptyFormState);
+  const hydrated = useHydrated();
   // Controlled: React resets uncontrolled fields after every action, which would
   // wipe the address after a wrong password.
   const [email, setEmail] = useState("");
@@ -41,7 +43,7 @@ export function LoginForm() {
           <Input id={`${uid}-password`} name="password" type="password" autoComplete="current-password" required />
           <FieldError errors={fieldErrors(state, "password")} />
         </Field>
-        <Button type="submit" size="lg" disabled={pending}>
+        <Button type="submit" size="lg" disabled={pending || !hydrated}>
           {pending ? "Logging in…" : "Log in"}
         </Button>
         <p className="text-center text-sm text-muted-foreground">
