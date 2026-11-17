@@ -1,8 +1,33 @@
 # Next steps for Filippo
 
-Things only you can do, newest need first. Stage summaries are at the bottom.
+## For teammates
+
+**Live app:** <https://techentr-stock-inventory-tracker.vercel.app>
+
+The app turns a restaurant's sales into the ingredients they should have used, compares that with what staff count on the shelf, and shows the gap in grams and euros as "unexplained usage".
+
+**Demo logins** (restaurant "Pizzeria Demo"). The password is the same for all three; Filippo shares it separately.
+
+| Role | E-mail | Sees |
+| --- | --- | --- |
+| Owner | `owner@pizzeria-demo.example.com` | everything, including settings and team |
+| Manager | `manager@pizzeria-demo.example.com` | ingredients, menu, imports, counts, unexplained usage |
+| Staff | `staff@pizzeria-demo.example.com` | counting only; best on a phone |
+
+Everyone shares the same demo restaurant, so what you change, others see. Undo an import when you are done, and reject a test count instead of approving it.
+
+**A six-step tour** (log in as owner or manager; the Dashboard lists the same steps):
+
+1. **Ingredients.** Everything the pizzeria buys, with cost per kg or unit, pack sizes (a 1 kg bag, a 25 kg sack) and a reorder point. Open Mozzarella to see the details.
+2. **Menu and recipe.** Open **Menu**, then **Margherita**: its recipe says one pizza uses 120 g of mozzarella, 160 g of flour and so on, and shows the ingredient cost per pizza (€1.41).
+3. **Import sales.** Open **Import sales**. The history shows the day already imported from the till's CSV export. To try it yourself, upload `sample-sales-day2.csv` (Filippo sends it with the password): pick the file, check the columns, import. Upload it again and nothing is imported twice. **Undo** in the history takes it back out.
+4. **Stock.** Back on **Ingredients**, the "In stock" column is what should be on the shelf after deliveries, sales and waste. Mozzarella shows **Low**: it is under its reorder point.
+5. **Count.** Log in as staff (on a phone if you can), open **Count**, **Start a count** and type what is on the shelf, by pack or by kg. Each figure saves when you leave the field; **Submit count** at the bottom. Then log in as manager: the count waits under **Count** for approval. Reject it with a note so the demo numbers stay as they are.
+6. **Unexplained usage.** Open **Unexplained usage**, then the count of 16 Nov. Mozzarella should have been 2,400 g, the count found 1,900 g: **−500 g, −€4.00** that no sale, delivery or waste explains. That gap, per ingredient and in euros, is the product.
 
 ## Waiting on you
+
+Things only you can do, newest need first. Stage summaries are at the bottom.
 
 ### 1. Create a Claude API key (5 minutes)
 
@@ -15,17 +40,9 @@ The AI tasks read photos (POS screenshots, end-of-day reports, supplier invoices
 5. In Vercel: **Settings**, **Environment Variables**, add `ANTHROPIC_API_KEY` with the same value (Production ticked), then redeploy with "Use existing Build Cache" unticked.
 6. Start a new session and say the key is there. The parked tasks are listed in `PROGRESS.md` under "AI onboarding", "Sales by photo" and "Restock by invoice photo".
 
-### 2. Move the project out of iCloud Drive (5 minutes, when no session is running)
-
-Your Desktop is synced with iCloud Drive, and iCloud has been making copies of files named "… 2.tsx" (20 of them on 17 Nov, all identical to the originals; deleted, and `.gitignore` now ignores such copies). iCloud can also corrupt the `.git` folder, which holds the project's history.
-
-1. Close VS Code and stop any running `npm run dev`.
-2. In Finder, create a folder outside Desktop and Documents, for example `~/Projects` (in Finder: **Go** → **Home**, then **File** → **New Folder**).
-3. Drag the `ProjectFolder` folder from `Desktop/UniversityCourseMaterial/Period 3-2/Technology Entrepreneurship/` into it.
-4. Open the new location in VS Code. Nothing else changes: GitHub, Vercel and Supabase do not care where the folder lives, and `.env.local` moves with it.
-
 ## Done
 
+- **Project moved out of iCloud Drive** (17 Nov): it now lives in `~/Development/Project_Tech_Entre`. `.gitignore` ignores iCloud conflict copies ("file 2.tsx", "page 3.tsx", ...).
 - **Vercel project** (17 Nov): live at <https://techentr-stock-inventory-tracker.vercel.app/>, deploying `main` automatically. Every pushed branch gets a preview URL.
 - **Supabase URL configuration** (17 Nov): Site URL is the Vercel URL; Redirect URLs are `https://techentr-stock-inventory-tracker.vercel.app/**` and `http://localhost:3000/**`.
 - **Supabase address fixed** (17 Nov): `NEXT_PUBLIC_SUPABASE_URL` ends in `.supabase.co` in `.env.local` and in Vercel. Checked: the demo owner logs in locally and on the live site, and all five browser tests pass against the live site. <https://techentr-stock-inventory-tracker.vercel.app/api/health> shows the live commit and whether Supabase is reachable.
