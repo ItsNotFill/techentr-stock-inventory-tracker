@@ -2,7 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatMoney, formatQty, formatUnitCost, toDecimal } from "@/lib/units";
 import type { ReportLine } from "@/lib/variance";
-import { amountTone } from "./tone";
+import { amountTone } from "@/components/amount-tone";
+import { cn } from "@/lib/utils";
 
 function Name({ line }: { line: ReportLine }) {
   return (
@@ -46,9 +47,9 @@ export function ReportLines({ lines }: { lines: ReportLine[] }) {
               <dt className="text-muted-foreground">Counted</dt>
               <dd className="text-right">{formatQty(line.countedQty, line.baseUnit)}</dd>
               <dt className="text-muted-foreground">Difference</dt>
-              <dd className={`text-right ${amountTone(line.differenceQty)}`}>{formatQty(line.differenceQty, line.baseUnit)}</dd>
+              <dd className={cn("text-right", amountTone(line.differenceQty))}>{formatQty(line.differenceQty, line.baseUnit)}</dd>
               <dt className="text-muted-foreground">Difference in €</dt>
-              <dd className={`text-right font-semibold ${amountTone(line.differenceValue)}`}>{formatMoney(line.differenceValue)}</dd>
+              <dd className={cn("text-right", amountTone(line.differenceValue, { emphasis: true }))}>{formatMoney(line.differenceValue)}</dd>
             </dl>
             <p className="mt-2 text-xs text-muted-foreground">
               Cost used: {formatUnitCost(line.unitCost, line.baseUnit)}
@@ -81,10 +82,10 @@ export function ReportLines({ lines }: { lines: ReportLine[] }) {
                   <LateNote line={line} />
                 </TableCell>
                 <TableCell className="text-right">{formatQty(line.countedQty, line.baseUnit)}</TableCell>
-                <TableCell className={`text-right ${amountTone(line.differenceQty)}`}>
+                <TableCell className={cn("text-right", amountTone(line.differenceQty))}>
                   {formatQty(line.differenceQty, line.baseUnit)}
                 </TableCell>
-                <TableCell className={`text-right font-semibold ${amountTone(line.differenceValue)}`}>
+                <TableCell className={cn("text-right", amountTone(line.differenceValue, { emphasis: true }))}>
                   {formatMoney(line.differenceValue)}
                 </TableCell>
                 <TableCell className="text-right text-muted-foreground">

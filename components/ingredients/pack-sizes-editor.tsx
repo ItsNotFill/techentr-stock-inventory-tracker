@@ -58,7 +58,7 @@ function PackRow({ ingredientId, baseUnit, pack }: { ingredientId: string; baseU
             Make default
           </Button>
         )}
-        <Button type="button" variant="destructive" disabled={pending} onClick={remove}>
+        <Button type="button" variant="destructive-outline" disabled={pending} onClick={remove}>
           Remove
         </Button>
       </div>

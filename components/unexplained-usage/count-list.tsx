@@ -5,7 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { listApprovedCounts } from "@/lib/variance";
 import { formatMoney } from "@/lib/units";
-import { amountTone } from "./tone";
+import { amountTone } from "@/components/amount-tone";
+import { cn } from "@/lib/utils";
 
 type ApprovedCount = Awaited<ReturnType<typeof listApprovedCounts>>[number];
 
@@ -21,7 +22,7 @@ export function CountList({ counts, timezone }: { counts: ApprovedCount[]; timez
           <div className="min-w-0">
             <p className="text-sm text-muted-foreground">{formatter.format(latest.submittedAt)}</p>
             <p className="text-lg font-semibold md:text-xl">
-              Last count: <span className={`tabular-nums ${amountTone(latest.totalValue)}`}>{formatMoney(latest.totalValue)}</span> of
+              Last count: <span className={cn("tabular-nums", amountTone(latest.totalValue, { emphasis: true }))}>{formatMoney(latest.totalValue)}</span> of
               unexplained usage
             </p>
           </div>
@@ -45,7 +46,7 @@ export function CountList({ counts, timezone }: { counts: ApprovedCount[]; timez
                   <span className="text-muted-foreground">
                     {count.lineCount} {count.lineCount === 1 ? "ingredient" : "ingredients"} counted
                   </span>
-                  <span className={`font-semibold tabular-nums ${amountTone(count.totalValue)}`}>
+                  <span className={cn("tabular-nums", amountTone(count.totalValue, { emphasis: true }))}>
                     {formatMoney(count.totalValue)}
                   </span>
                 </span>
@@ -72,7 +73,7 @@ export function CountList({ counts, timezone }: { counts: ApprovedCount[]; timez
               <TableRow key={count.sessionId}>
                 <TableCell className="font-medium">{formatter.format(count.submittedAt)}</TableCell>
                 <TableCell className="text-right">{count.lineCount}</TableCell>
-                <TableCell className={`text-right font-medium ${amountTone(count.totalValue)}`}>
+                <TableCell className={cn("text-right", amountTone(count.totalValue, { emphasis: true }))}>
                   {formatMoney(count.totalValue)}
                 </TableCell>
                 <TableCell className="text-right">

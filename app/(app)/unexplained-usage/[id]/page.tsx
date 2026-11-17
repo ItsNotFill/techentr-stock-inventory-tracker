@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { MetricCard } from "@/components/metric-card";
+import { MetricCard, MetricGrid } from "@/components/metric-card";
 import { PageHeader } from "@/components/page-header";
-import { CardsSkeleton } from "@/components/page-skeleton";
+import { MetricGridSkeleton } from "@/components/page-skeleton";
 import { ReportLines } from "@/components/unexplained-usage/report-lines";
-import { amountTone } from "@/components/unexplained-usage/tone";
+import { amountTone } from "@/components/amount-tone";
 import { requireRole } from "@/lib/auth/membership";
 import { MANAGER_ROLES } from "@/lib/auth/roles";
 import { withUser } from "@/lib/db/client";
@@ -24,7 +24,7 @@ export default function CountReportPage({ params }: PageProps<"/unexplained-usag
       fallback={
         <>
           <PageHeader title="Unexplained usage" description={DESCRIPTION} back={BACK} />
-          <CardsSkeleton cards={3} />
+          <MetricGridSkeleton cards={3} />
         </>
       }
     >
@@ -52,7 +52,7 @@ async function CountReportContent({ params }: { params: PageProps<"/unexplained-
     <>
       <PageHeader title={`Count of ${when}`} description={DESCRIPTION} back={BACK} />
       <div className="flex flex-col gap-6">
-        <div className="grid gap-4 sm:grid-cols-3">
+        <MetricGrid>
           <MetricCard
             label="Unexplained usage"
             value={formatMoney(report.totalValue)}
@@ -60,7 +60,7 @@ async function CountReportContent({ params }: { params: PageProps<"/unexplained-
           />
           <MetricCard label="Lost" value={formatMoney(report.lostValue)} tone={amountTone(report.lostValue)} />
           <MetricCard label="Ingredients counted" value={String(report.lines.length)} />
-        </div>
+        </MetricGrid>
         <p className="text-sm text-muted-foreground">
           Negative numbers are stock that is missing: used without a sale or waste record. Check portion sizes, recipes
           and waste logging first.

@@ -1,14 +1,14 @@
+import { amountTone } from "@/components/amount-tone";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { formatMoney, formatQty, toDecimal } from "@/lib/units";
+import { formatMoney, formatQty } from "@/lib/units";
 import { cn } from "@/lib/utils";
 import type { CountReport } from "@/lib/variance";
 import { ReviewActions } from "./review-actions";
 
-function tone(value: string, muted = false): string {
-  if (muted) return "text-muted-foreground";
-  const decimal = toDecimal(value);
-  return decimal.isNegative() && !decimal.isZero() ? "text-destructive" : "";
+/** Opening counts have nothing to compare against, so their differences stay muted. */
+function tone(value: string, muted: boolean, emphasis = false): string {
+  return muted ? "text-muted-foreground" : amountTone(value, { emphasis });
 }
 
 /** The manager's view of a submitted count: counted against expected, in units and euros. */
@@ -21,7 +21,7 @@ export function CountReview({ report, submittedText, byYou }: { report: CountRep
             Submitted{submittedText ? ` on ${submittedText}` : ""}
             {byYou ? " by you" : ""}.
           </p>
-          <p className={cn("mt-1 text-2xl font-semibold tracking-tight tabular-nums", tone(report.totalValue))}>
+          <p className={cn("mt-1 text-2xl tracking-tight tabular-nums", amountTone(report.totalValue, { emphasis: true }))}>
             Unexplained usage: {formatMoney(report.totalValue)}
           </p>
           <p className="mt-1 max-w-xl text-sm text-muted-foreground">
@@ -45,7 +45,7 @@ export function CountReview({ report, submittedText, byYou }: { report: CountRep
               <dt className="text-muted-foreground">Difference</dt>
               <dd className={cn("text-right", tone(line.differenceQty, line.isOpening))}>{formatQty(line.differenceQty, line.baseUnit)}</dd>
               <dt className="text-muted-foreground">Difference in euros</dt>
-              <dd className={cn("text-right font-medium", tone(line.differenceValue, line.isOpening))}>{formatMoney(line.differenceValue)}</dd>
+              <dd className={cn("text-right", tone(line.differenceValue, line.isOpening, true))}>{formatMoney(line.differenceValue)}</dd>
             </dl>
           </li>
         ))}
@@ -71,7 +71,7 @@ export function CountReview({ report, submittedText, byYou }: { report: CountRep
                   {line.isOpening ? <Badge variant="neutral">First count</Badge> : formatQty(line.expectedQty, line.baseUnit)}
                 </TableCell>
                 <TableCell className={cn("text-right", tone(line.differenceQty, line.isOpening))}>{formatQty(line.differenceQty, line.baseUnit)}</TableCell>
-                <TableCell className={cn("text-right font-medium", tone(line.differenceValue, line.isOpening))}>{formatMoney(line.differenceValue)}</TableCell>
+                <TableCell className={cn("text-right", tone(line.differenceValue, line.isOpening, true))}>{formatMoney(line.differenceValue)}</TableCell>
               </TableRow>
             ))}
           </TableBody>

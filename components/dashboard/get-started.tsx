@@ -24,7 +24,7 @@ export function GetStarted() {
             <li key={step.title}>
               <Link
                 href={step.href}
-                className="group flex min-h-14 cursor-pointer items-center gap-3 rounded-lg px-2 py-2 outline-none transition-colors hover:bg-row-hover focus-visible:ring-3 focus-visible:ring-ring/50"
+                className="group flex min-h-14 cursor-pointer items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-row-hover"
               >
                 <span
                   aria-hidden="true"
