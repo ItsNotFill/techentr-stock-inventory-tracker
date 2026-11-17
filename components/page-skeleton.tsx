@@ -1,3 +1,4 @@
+import { MetricGrid } from "@/components/metric-card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /** Suspense fallback for a screen whose content is a table or list. */
@@ -13,6 +14,20 @@ export function TableSkeleton({ rows = 6 }: { rows?: number }) {
         <Skeleton key={index} className="h-10 w-full" />
       ))}
     </div>
+  );
+}
+
+/**
+ * Suspense fallback for a row of MetricCards: same grid, same card heights, so
+ * nothing jumps when the figures arrive.
+ */
+export function MetricGridSkeleton({ cards = 3 }: { cards?: number }) {
+  return (
+    <MetricGrid aria-busy="true" aria-label="Loading">
+      {Array.from({ length: cards }, (_, index) => (
+        <Skeleton key={index} className="h-21 w-full rounded-lg sm:h-23 lg:h-26" />
+      ))}
+    </MetricGrid>
   );
 }
 
