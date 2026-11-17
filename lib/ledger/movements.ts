@@ -52,6 +52,7 @@ export function sumDeltas(deltas: string[]): string {
 
 const REF_TABLE_FOR_TYPE: Partial<Record<MovementType, MovementRefTable>> = {
   sale: "sale_lines",
+  count_adjust: "count_lines",
 };
 
 /**
@@ -86,6 +87,10 @@ export function checkMovement(movement: NewMovement): NewMovement {
       if (!movement.wasteReason) throw new LedgerError("Waste needs a reason.");
       break;
     case "count_adjust":
+      // An adjustment points at its count line. Opening stock written by the seed has no count behind it.
+      if (movement.refTable && movement.refTable !== REF_TABLE_FOR_TYPE.count_adjust) {
+        throw new LedgerError("A count adjustment can only point at a count line.");
+      }
       break;
   }
   if (movement.type !== "waste" && movement.wasteReason) {

@@ -1,6 +1,6 @@
 import { and, eq, inArray, lte, sql } from "drizzle-orm";
 import type { Tx } from "@/lib/db/rls";
-import { saleLines, stockMovements } from "@/lib/db/schema";
+import { countLines, saleLines, stockMovements } from "@/lib/db/schema";
 import { checkMovement, LedgerError, type MovementRefTable, type NewMovement } from "./movements";
 
 export { checkMovement, depletionDelta, LedgerError, roundQty, sumDeltas } from "./movements";
@@ -40,16 +40,17 @@ async function assertRefsBelongToLocation(tx: Tx, locationId: string, movements:
   }
 
   for (const [table, ids] of idsByTable) {
-    if (table !== "sale_lines") {
-      // delivery_lines and count_lines arrive with their stages.
+    const target = table === "sale_lines" ? saleLines : table === "count_lines" ? countLines : null;
+    if (!target) {
+      // delivery_lines arrive with stage 5.
       throw new LedgerError(`Movements cannot reference ${table} yet.`);
     }
     let found = 0;
     for (const batch of chunks([...ids], INSERT_CHUNK)) {
       const [row] = await tx
         .select({ count: sql<number>`count(*)::int` })
-        .from(saleLines)
-        .where(and(eq(saleLines.locationId, locationId), inArray(saleLines.id, batch)));
+        .from(target)
+        .where(and(eq(target.locationId, locationId), inArray(target.id, batch)));
       found += row.count;
     }
     if (found !== ids.size) {
@@ -58,7 +59,15 @@ async function assertRefsBelongToLocation(tx: Tx, locationId: string, movements:
   }
 }
 
-/** Appends movements to the ledger. Returns the ids of the new rows. */
+/**
+ * Appends movements to the ledger. Returns the ids of the new rows.
+ *
+ * Then applies the late-movement rule (SCHEMA.md, "Ledger rules"): a movement
+ * dated at or before an approved count of the same ingredient gets an
+ * offsetting count adjustment on that count, so stock after the count stays
+ * what was counted. The database function does it, because the person
+ * recording a late delivery may be staff (migration 0011).
+ */
 export async function appendMovements(tx: Tx, locationId: string, movements: NewMovement[]): Promise<string[]> {
   if (movements.length === 0) return [];
   const checked = movements.map(checkMovement);
@@ -84,6 +93,13 @@ export async function appendMovements(tx: Tx, locationId: string, movements: New
       )
       .returning({ id: stockMovements.id });
     ids.push(...inserted.map((row) => row.id));
+  }
+  for (const batch of chunks(ids, INSERT_CHUNK)) {
+    const list = sql.join(
+      batch.map((id) => sql`${id}::uuid`),
+      sql`, `,
+    );
+    await tx.execute(sql`select public.apply_late_corrections(array[${list}])`);
   }
   return ids;
 }

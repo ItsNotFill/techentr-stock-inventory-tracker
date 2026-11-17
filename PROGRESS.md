@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 4** (stages 0 to 3 are merged, manual paths. Waiting on Filippo: the Supabase address fix in Vercel and `.env.local`, and `ANTHROPIC_API_KEY` for the parked AI tasks; see `NEXT_STEPS_FOR_FILIPPO.md`)
 
-**Now working on:** nothing
+**Now working on:** Stage 4: Server Actions for counts and the report, then the screens with ui-builders (count entry and approval; unexplained usage report). Branch `stage-4-count-variance`, main agent.
 
 ## Stage 0: Setup
 
@@ -109,15 +109,15 @@ Sales by photo (after the done check) — **parked: waiting for `ANTHROPIC_API_K
 
 ## Stage 4: Stock count and variance
 
-- [ ] Migration: `count_sessions` and `count_lines` with RLS
-- [ ] `lib/variance`: unexplained usage in units and euros; tests including −500 g and −€4
+- [x] Migration: `count_sessions` and `count_lines` with RLS
+- [x] `lib/variance`: unexplained usage in units and euros; tests including −500 g and −€4
 - [ ] Mobile count screen: ingredients grouped by storage area, large inputs
 - [ ] Count entry by pack or base unit, converted with `lib/units`
-- [ ] Save draft and submit; submit stores the provisional theoretical stock
+- [x] Save draft and submit; submit stores the provisional theoretical stock
 - [ ] Manager approval screen: list of submitted counts, approve or reject with a note
-- [ ] Approval writes `count_adjust` movements as of `submitted_at`; opening counts are flagged
-- [ ] Late-movement correction in `lib/ledger`; tests for late sales, undo after a count, and counts approved out of order
-- [ ] Test: unexplained usage on a line always equals the sum of its `count_adjust` movements
+- [x] Approval writes `count_adjust` movements as of `submitted_at`; opening counts are flagged
+- [x] Late-movement correction in `lib/ledger`; tests for late sales, undo after a count, and counts approved out of order
+- [x] Test: unexplained usage on a line always equals the sum of its `count_adjust` movements
 - [ ] Unexplained usage report: per count, theoretical, counted and difference in units and euros, sorted by euros lost
 - [ ] Seed script v4: the worked example's waste movement and closing count
 

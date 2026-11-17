@@ -36,6 +36,11 @@ export const stockMovements = pgTable(
     /** When it happened. */
     occurredAt: timestamptz("occurred_at").notNull().defaultNow(),
     createdBy: uuid("created_by").references(() => authUsers.id, { onDelete: "set null" }),
+    /**
+     * Set on a late-movement correction: the movement it offsets (no foreign
+     * key: the offset outlives an undone sale). See migration 0011.
+     */
+    correctsMovementId: uuid("corrects_movement_id"),
     /** When it was recorded. */
     createdAt: timestamptz("created_at").notNull().defaultNow(),
   },
@@ -48,6 +53,7 @@ export const stockMovements = pgTable(
     index("stock_movements_ingredient_id_occurred_at_idx").on(t.ingredientId, t.occurredAt),
     index("stock_movements_location_id_type_occurred_at_idx").on(t.locationId, t.type, t.occurredAt),
     index("stock_movements_ref_idx").on(t.refTable, t.refId),
+    index("stock_movements_corrects_movement_id_idx").on(t.correctsMovementId),
     check("stock_movements_qty_not_zero", sql`${t.qtyDelta} <> 0`),
     check("stock_movements_waste_has_reason", sql`(${t.type} = 'waste') = (${t.wasteReason} is not null)`),
     check("stock_movements_ref_is_complete", sql`(${t.refTable} is null) = (${t.refId} is null)`),

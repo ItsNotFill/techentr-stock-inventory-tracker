@@ -104,6 +104,15 @@ A short log of design decisions, so later sessions do not undo earlier choices. 
 | 66 | **File rows match menu items by POS item id first, then by name without regard to case.** Items the app does not know are created without a recipe, and their lines wait. Ignored items never wait and never use stock. The column mapping is saved per `locations.pos_provider` (or "default") after a successful import and reused when the next file has the same columns. | `SCHEMA.md`, `menu_items` and `pos_import_mappings`; `SPEC.md`, "nothing silently lost". |
 | 67 | **The app role may update only the columns it writes:** `sale_lines.depleted_at` and the three counts on `sales_imports`. Undo columns are written by `undo_sales_import()` only. | Raised by the stage 3 review: with a table-wide UPDATE grant, a manager session could change a sold quantity after its stock movements were written. |
 
+## Decided in stage 4 (2026-11-17)
+
+| # | Decision | Reasoning |
+| --- | --- | --- |
+| 68 | **The late-movement rule runs in the database** (`apply_late_corrections`, called by `lib/ledger` after every append; `correct_for_late_movement` does one correction). Offsets carry `stock_movements.corrects_movement_id`. Import undo treats each removed movement as a late movement of the opposite amount. Approvals and corrections take a per-restaurant advisory lock. | The person recording a late delivery may be staff, who cannot write count adjustments; a `SECURITY DEFINER` function can, after checking membership. Treating a removal as an opposite late movement keeps every count right whatever order things happened in, including counts approved out of order. |
+| 69 | **An opening count is an ingredient's first count: no earlier count adjustment of it at or before the count time.** The demo's opening stock, written by the seed as count adjustments, counts as that first count. | `SPEC.md` asks to keep opening balances out of unexplained usage. "No earlier approved count line" would make the demo's closing count an opening count and hide the worked example's −€4. |
+| 70 | **Approved counts are frozen by triggers**: no change to a session, and no change to a line except `late_adjust_qty`, which only the correction function writes. Count lines are writable by their counter while the count is a draft and by owners and managers; the "own draft" check looks up the session inside the policy. Refines entry 14, which avoided joins in policies. | Movements reference count lines; changing a counted figure afterwards would break "unexplained usage = sum of its adjustments". The draft owner lives on the session, so the line policy has to look it up. |
+| 71 | **The count time can be passed in (never in the future).** Screens use "now"; the seed and, later, offline sync pass an earlier moment. | `SCHEMA.md`: an offline count's time is the time on the phone, never later than the sync. |
+
 ## Open questions (from SPEC.md, still open)
 
 - Which restaurant will pilot it, and which POS do they use?

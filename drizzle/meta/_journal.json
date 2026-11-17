@@ -71,6 +71,20 @@
       "when": 1794900496257,
       "tag": "0009_narrow_sales_update_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1794900698163,
+      "tag": "0010_count_sessions_and_lines",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1794900733301,
+      "tag": "0011_late_movement_corrections",
+      "breakpoints": true
     }
   ]
 }
