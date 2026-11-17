@@ -15,6 +15,15 @@ The AI tasks read photos (POS screenshots, end-of-day reports, supplier invoices
 5. In Vercel: **Settings**, **Environment Variables**, add `ANTHROPIC_API_KEY` with the same value (Production ticked), then redeploy with "Use existing Build Cache" unticked.
 6. Start a new session and say the key is there. The parked tasks are listed in `PROGRESS.md` under "AI onboarding", "Sales by photo" and "Restock by invoice photo".
 
+### 2. Move the project out of iCloud Drive (5 minutes, when no session is running)
+
+Your Desktop is synced with iCloud Drive, and iCloud has been making copies of files named "… 2.tsx" (20 of them on 17 Nov, all identical to the originals; deleted, and `.gitignore` now ignores such copies). iCloud can also corrupt the `.git` folder, which holds the project's history.
+
+1. Close VS Code and stop any running `npm run dev`.
+2. In Finder, create a folder outside Desktop and Documents, for example `~/Projects` (in Finder: **Go** → **Home**, then **File** → **New Folder**).
+3. Drag the `ProjectFolder` folder from `Desktop/UniversityCourseMaterial/Period 3-2/Technology Entrepreneurship/` into it.
+4. Open the new location in VS Code. Nothing else changes: GitHub, Vercel and Supabase do not care where the folder lives, and `.env.local` moves with it.
+
 ## Done
 
 - **Vercel project** (17 Nov): live at <https://techentr-stock-inventory-tracker.vercel.app/>, deploying `main` automatically. Every pushed branch gets a preview URL.

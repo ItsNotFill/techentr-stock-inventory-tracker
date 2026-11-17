@@ -42,3 +42,7 @@ yarn-error.log*
 # Claude Code local settings and sub-agent worktrees
 .claude/settings.local.json
 .claude/worktrees/
+
+# Conflict copies made by iCloud Drive or Finder ("file 2.ts")
+* 2
+* 2.*
