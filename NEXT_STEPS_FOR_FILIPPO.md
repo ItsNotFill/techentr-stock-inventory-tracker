@@ -124,3 +124,11 @@ The demo restaurant already holds the worked example from the spec: opening stoc
 - Demo data: the worked example's day (opening stock, delivery, 18 orders) is in the database; `scripts/seed/sample-sales-day2.csv` is there to try the import screen.
 - Not done: "Sales by photo" (needs the Claude API key).
 - Live URL: <https://techentr-stock-inventory-tracker.vercel.app/>. Login there waits for the Supabase address fix (section 0).
+
+### Stage 4: Stock count and unexplained usage, manual path (2026-11-17)
+
+- Built: the count screen for phones (grouped by storage area, by pack or by kg/l, saves as you go), submit, the manager's review with approve or reject, the unexplained usage report, and the late-movement rule (sales or deliveries recorded after a count keep that count right).
+- Done check passes: the demo's closing count shows mozzarella −500 g and −€4.00. Checked by 133 tests against the real database and five browser tests (including staff counting on a phone and an owner approving).
+- The reviewer agent found three ways the numbers could be wrong or forged; all fixed and tested before the merge.
+- Not done: offline counting (stage 4's last block), and nothing of stage 5 yet (deliveries, waste, dashboard, PWA).
+- Live: <https://techentr-stock-inventory-tracker.vercel.app/>; `/api/health` shows whether the live build reaches Supabase.

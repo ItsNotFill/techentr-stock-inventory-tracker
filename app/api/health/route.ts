@@ -30,7 +30,8 @@ export async function GET() {
       reachable = response.ok;
       detail = `HTTP ${response.status}`;
     } catch (error) {
-      detail = error instanceof Error ? `${error.name}: ${error.message}` : "request failed";
+      const message = error instanceof Error ? `${error.name}: ${error.message}` : "request failed";
+      detail = message.split(host).join(masked);
     }
   }
 

@@ -18,9 +18,9 @@ Rules:
 - Every session starts with `git status`, `git worktree list` and the "Now working on" line; half-done work and leftover worktrees are finished or cleaned up first.
 - Things only Filippo can do are listed in `NEXT_STEPS_FOR_FILIPPO.md`.
 
-**Current stage: 4** (stages 0 to 3 are merged, manual paths. Waiting on Filippo: the Supabase address fix in Vercel and `.env.local`, and `ANTHROPIC_API_KEY` for the parked AI tasks; see `NEXT_STEPS_FOR_FILIPPO.md`)
+**Current stage: 5** (stages 0 to 4 are merged, manual paths. Next: the UI design pass on `ui-design-pass`, then stage 5. Parked until `ANTHROPIC_API_KEY` exists: the AI tasks of stages 2 to 5. Offline counting (stage 4) is not done yet)
 
-**Now working on:** Stage 4 whole-stage review (reviewer sub-agent, read-only, no worktree). Every manual-path task is ticked. Branch `stage-4-count-variance`.
+**Now working on:** nothing
 
 ## Stage 0: Setup
 
@@ -123,7 +123,7 @@ Sales by photo (after the done check) — **parked: waiting for `ANTHROPIC_API_K
 
 **Done when:** the worked example's closing count shows −500 g and −€4.
 
-Offline counting (after the done check):
+Offline counting (after the done check) — **not done yet**; picked up after the design pass:
 
 - [ ] Save count drafts to IndexedDB as they are typed
 - [ ] Sync on reconnect, idempotent through `client_id`
