@@ -267,6 +267,14 @@ describe("validating rows and building orders", () => {
     expect(prepared.orders[1].lines[0].qty).toBe("-1.000");
   });
 
+  it("does not trip over a header named like a built-in property", () => {
+    const csv = parseCsv("constructor,Date,Time,Item,Quantity\n1,16/11/2026,12:00,Margherita,1\n");
+    const prepared = prepareImport(csv, { ...map, orderId: "constructor" }, AMSTERDAM);
+    expect(prepared.orders.map((order) => order.posOrderId)).toEqual(["1"]);
+    const missing = prepareImport(parseCsv("A,B\n1,2\n"), { ...map, orderId: "toString", itemName: "valueOf" }, AMSTERDAM);
+    expect(missing.invalidRows[0].errors).toContain("The order number is missing.");
+  });
+
   it("reads item ids and decimal commas when the mapping says so", () => {
     const csv = parseCsv("Bon;Datum;PLU;Artikel;Aantal\n77;2026-11-16 19:30;55;Margherita;1,5\n78;2026-11-16 19:31;;Cola;1\n");
     const prepared = prepareImport(

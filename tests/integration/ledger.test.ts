@@ -232,6 +232,11 @@ describe.skipIf(!hasDatabase)("ledger and depletion", () => {
     expect(await mozzarellaNow()).toBe("2600.000");
   });
 
+  it("sale lines cannot be changed after the fact, except for marking them depleted", async () => {
+    const [line] = await as(owner, (tx) => tx.select({ id: saleLines.id }).from(saleLines).limit(1));
+    await expect(as(owner, (tx) => tx.update(saleLines).set({ qty: "999" }).where(eq(saleLines.id, line.id)))).rejects.toThrow();
+  });
+
   it("lets staff log deliveries and waste, but not sales or count adjustments", async () => {
     const now = new Date();
     await as(staff, (tx) =>

@@ -194,7 +194,9 @@ function rowSchema(map: ColumnMap, timeZone: string) {
 /** Validates every row of the file and groups the good ones into orders. */
 export function prepareImport(csv: ParsedCsv, map: ColumnMap, timeZone: string): PreparedImport {
   const schema = rowSchema(map, timeZone);
-  const cell = (row: Record<string, string>, header: string | null) => (header ? (row[header] ?? "").trim() : "");
+  // Object.hasOwn: a header named "constructor" must not read an inherited property.
+  const cell = (row: Record<string, string>, header: string | null) =>
+    header && Object.hasOwn(row, header) ? (row[header] ?? "").trim() : "";
 
   const valid: SaleRow[] = [];
   const invalidRows: InvalidRow[] = [];

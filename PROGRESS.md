@@ -18,9 +18,9 @@ Rules:
 - Every session starts with `git status`, `git worktree list` and the "Now working on" line; half-done work and leftover worktrees are finished or cleaned up first.
 - Things only Filippo can do are listed in `NEXT_STEPS_FOR_FILIPPO.md`.
 
-**Current stage: 3** (stages 0 to 2 are merged. Open and waiting on Filippo: the stage 0 Vercel task, and the stage 2 AI onboarding tasks, which need `ANTHROPIC_API_KEY`; see `NEXT_STEPS_FOR_FILIPPO.md`)
+**Current stage: 4** (stages 0 to 3 are merged, manual paths. Waiting on Filippo: the Supabase address fix in Vercel and `.env.local`, and `ANTHROPIC_API_KEY` for the parked AI tasks; see `NEXT_STEPS_FOR_FILIPPO.md`)
 
-**Now working on:** Stage 3 whole-stage review (reviewer sub-agent, read-only, no worktree). Every manual-path task is ticked. Branch `stage-3-sales-import`.
+**Now working on:** nothing
 
 ## Stage 0: Setup
 
@@ -98,7 +98,7 @@ AI onboarding (after the done check) — **parked: waiting for `ANTHROPIC_API_KE
 
 **Done when:** uploading the same CSV twice changes stock only once, and the mozzarella worked example gives 2,600 g.
 
-Sales by photo (after the done check):
+Sales by photo (after the done check) — **parked: waiting for `ANTHROPIC_API_KEY`** (DECISIONS.md, entry 57):
 
 - [ ] Zod schema and prompt for end-of-day reports; tests against saved example outputs
 - [ ] Photo upload creates a draft `sales_imports` row with the stored photo

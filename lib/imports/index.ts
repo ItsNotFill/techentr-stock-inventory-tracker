@@ -217,8 +217,13 @@ export async function confirmImport(
   const importId = created.id;
 
   // 1. Orders. The unique key on (location_id, pos_order_id) decides what is new.
+  // Written in a fixed order, so two overlapping imports at once wait for each
+  // other instead of deadlocking.
+  const sortedOrders = [...prepared.orders].sort((a, b) =>
+    a.posOrderId < b.posOrderId ? -1 : a.posOrderId > b.posOrderId ? 1 : 0,
+  );
   const saleIdByOrder = new Map<string, string>();
-  for (const batch of chunks(prepared.orders)) {
+  for (const batch of chunks(sortedOrders)) {
     const inserted = await tx
       .insert(sales)
       .values(batch.map((order) => ({ locationId, importId, posOrderId: order.posOrderId, soldAt: order.soldAt })))

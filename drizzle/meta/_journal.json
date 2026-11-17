@@ -64,6 +64,13 @@
       "when": 1794870495956,
       "tag": "0008_undo_sales_import",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794900496257,
+      "tag": "0009_narrow_sales_update_grants",
+      "breakpoints": true
     }
   ]
 }
