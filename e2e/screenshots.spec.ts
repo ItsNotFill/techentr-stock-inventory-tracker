@@ -234,6 +234,9 @@ for (const viewport of Object.keys(VIEWPORTS) as Viewport[]) {
     const firstInput = staff.locator('input[inputmode="decimal"]').filter({ visible: true }).first();
     await firstInput.fill("2");
     await firstInput.blur();
+    // Wait for the save to finish, so the save bar is not caught mid-transition from its disabled look.
+    await expect(staff.getByText("Saved", { exact: true }).filter({ visible: true })).toBeVisible();
+    await expect(staff.getByRole("button", { name: "Submit count" }).filter({ visible: true })).toBeEnabled();
     await shot(staff, viewport, "92-staff-count-sheet");
     await staff.getByRole("button", { name: "Delete draft" }).click();
     await staff.getByRole("alertdialog").getByRole("button", { name: /delete/i }).click();
