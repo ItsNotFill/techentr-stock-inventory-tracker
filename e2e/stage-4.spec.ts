@@ -93,7 +93,8 @@ test("staff count on a phone, the owner approves, and unexplained usage shows th
     await mozzarella.fill("2");
     await expect(phone.getByText("= 2,000 g")).toBeVisible();
     await mozzarella.blur();
-    await expect(phone.getByText("Saved").first()).toBeVisible();
+    // Exact: the page description also contains the word "saved".
+    await expect(phone.getByText("Saved", { exact: true })).toBeVisible();
 
     // Basil in kg: 0,4 kg = 400 g.
     await phone.getByRole("combobox", { name: "Unit for Basil" }).click();
@@ -103,6 +104,8 @@ test("staff count on a phone, the owner approves, and unexplained usage shows th
     await expect(phone.getByText("= 400 g")).toBeVisible();
     await basil.blur();
     await expect(phone.getByText("2 of 3 counted")).toBeVisible();
+    // Both figures saved before leaving: a reload during the save would lose it.
+    await expect(phone.getByText("Saved", { exact: true })).toHaveCount(2);
 
     // Leaving and coming back keeps what was saved.
     await phone.goto("/count");
