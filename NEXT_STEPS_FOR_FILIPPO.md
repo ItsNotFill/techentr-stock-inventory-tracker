@@ -4,6 +4,19 @@ Things only you can do, newest need first. Stage summaries are at the bottom.
 
 ## Waiting on you
 
+### 0. Fix the Supabase address (3 minutes) — the live login does not work until this is done
+
+`NEXT_PUBLIC_SUPABASE_URL` ends in `.supabase.com`. A project's address ends in **`.supabase.co`** (no "m"). With `.com` the app cannot reach Supabase, so nobody can log in, and the login form says "Wrong e-mail address or password." for every attempt. In `.env.local` the value was changed on 17 November at 07:44; Vercel almost certainly has the same value.
+
+1. Supabase dashboard → your project → **Project Settings** → **API** → copy the **Project URL** (`https://<ref>.supabase.co`).
+2. `.env.local`: set `NEXT_PUBLIC_SUPABASE_URL=` to that value and save.
+3. Vercel → the project → **Settings** → **Environment Variables** → `NEXT_PUBLIC_SUPABASE_URL` → **Edit**, paste the same value, **Save**. While there, check the other Supabase values match `.env.local`.
+4. Vercel → **Deployments** → the newest `main` deployment → **⋯** → **Redeploy**. This step is needed: values starting with `NEXT_PUBLIC_` are built into the app, so a saved change only takes effect after a new build.
+
+Check: open <https://techentr-stock-inventory-tracker.vercel.app/login> and log in as `owner@pizzeria-demo.example.com` (password in `.env.seed.local`). You should land on the dashboard of "Pizzeria Demo".
+
+Also, in Supabase → **Authentication** → **URL Configuration** → **Redirect URLs**: the Vercel entry reads `https://techentr-stock-inventory-tracker.vercel.app//**` (two slashes). That pattern matches nothing the app uses, so a new user's sign-up confirmation link falls back to the home page instead of setup. Tick it, delete it, and **Add URL** `https://techentr-stock-inventory-tracker.vercel.app/**` (one slash). The `http://localhost:3000/**` entry is right. Team invite links are not affected.
+
 ### 1. Create the Vercel project (about 5 minutes)
 
 Stage 0 is finished except for this. The app is on `main` and builds.
@@ -35,7 +48,7 @@ After this, every push to a branch gets its own preview URL. You find it in Verc
 
 **Answers**
 
-- Public URL: _(paste here)_
+- Public URL: <https://techentr-stock-inventory-tracker.vercel.app/> (loads and redirects signed-out visitors to the login page; login waits for step 0)
 
 ### 2. Tell Supabase where the app lives (2 minutes, after step 1)
 

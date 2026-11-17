@@ -1,5 +1,6 @@
 "use server";
 
+import { isAuthRetryableFetchError } from "@supabase/supabase-js";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createRestaurantForUser } from "@/lib/auth/bootstrap";
@@ -9,6 +10,9 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { loginSchema, onboardingSchema, signUpSchema } from "@/lib/validation/auth";
 import { formError, invalidForm, type FormState } from "@/lib/validation/form";
 import { passwordSchema } from "@/lib/validation/team";
+
+const SERVICE_UNREACHABLE =
+  "The login service cannot be reached. Try again in a moment; if it keeps happening, the app's Supabase settings need checking.";
 
 export async function login(_previous: FormState, formData: FormData): Promise<FormState> {
   const parsed = loginSchema.safeParse({
@@ -23,7 +27,12 @@ export async function login(_previous: FormState, formData: FormData): Promise<F
     if (error.code === "email_not_confirmed") {
       return formError("Confirm your e-mail address first. The link is in the e-mail we sent you.");
     }
-    return formError("Wrong e-mail address or password.");
+    if (error.code === "invalid_credentials") return formError("Wrong e-mail address or password.");
+    // Anything else is not the user's fault: say so instead of blaming the password.
+    console.error("Login failed", error.name, error.code, error.status, error.message);
+    return isAuthRetryableFetchError(error)
+      ? formError(SERVICE_UNREACHABLE)
+      : formError("Could not log in right now. Try again in a moment.");
   }
   redirect("/dashboard");
 }
@@ -46,6 +55,8 @@ export async function signUp(_previous: FormState, formData: FormData): Promise<
     if (error.code === "over_email_send_rate_limit") {
       return formError("Too many sign-ups right now. Try again in a few minutes.");
     }
+    console.error("Sign-up failed", error.name, error.code, error.status, error.message);
+    if (isAuthRetryableFetchError(error)) return formError(SERVICE_UNREACHABLE);
     return formError("Could not create the account. Try again.");
   }
 
