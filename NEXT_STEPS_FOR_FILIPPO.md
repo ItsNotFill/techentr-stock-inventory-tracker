@@ -15,6 +15,8 @@ Things only you can do, newest need first. Stage summaries are at the bottom.
 
 Check: open <https://techentr-stock-inventory-tracker.vercel.app/login> and log in as `owner@pizzeria-demo.example.com` (password in `.env.seed.local`). You should land on the dashboard of "Pizzeria Demo".
 
+Status 17 Nov: `.env.local` is fixed (local login works). The live site still cannot reach Supabase. After the stage 4 merge, open <https://techentr-stock-inventory-tracker.vercel.app/api/health>: it shows which commit is live and which Supabase address that build uses (`endsWithSupabaseCo` must be `true`). If it is `false`, the Production build still has the old value: check that `NEXT_PUBLIC_SUPABASE_URL` is under **Settings → Environment Variables** (not Edge Config) with **Production** ticked, then **Redeploy** with "Use existing Build Cache" unticked.
+
 Also, in Supabase → **Authentication** → **URL Configuration** → **Redirect URLs**: the Vercel entry reads `https://techentr-stock-inventory-tracker.vercel.app//**` (two slashes). That pattern matches nothing the app uses, so a new user's sign-up confirmation link falls back to the home page instead of setup. Tick it, delete it, and **Add URL** `https://techentr-stock-inventory-tracker.vercel.app/**` (one slash). The `http://localhost:3000/**` entry is right. Team invite links are not affected.
 
 ### 1. Create the Vercel project (about 5 minutes)

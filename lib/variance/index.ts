@@ -50,7 +50,8 @@ export async function listApprovedCounts(
   locationId: string,
   limit = 50,
 ): Promise<{ sessionId: string; submittedAt: Date; approvedAt: Date | null; lineCount: number; totalValue: string; lostValue: string }[]> {
-  const difference = sql`(${countLines.countedQty} - (${countLines.theoreticalQty} + ${countLines.lateAdjustQty})) * coalesce(${countLines.unitCost}, 0)`;
+  // Rounded to cents per line, as on the detail page, so both show the same total.
+  const difference = sql`round((${countLines.countedQty} - (${countLines.theoreticalQty} + ${countLines.lateAdjustQty})) * coalesce(${countLines.unitCost}, 0), 2)`;
   const rows = await tx
     .select({
       sessionId: countSessions.id,

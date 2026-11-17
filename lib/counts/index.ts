@@ -328,9 +328,9 @@ export type ApprovalResult = { adjustments: number; openingLines: number };
  * As of the count time, per line: theoretical stock, today's cost as the
  * snapshot, the opening flag, and a count_adjust of counted - theoretical.
  *
- * An ingredient's first count (no earlier count adjustment of it) is an
- * opening count: its difference is the starting balance, not unexplained
- * usage (DECISIONS.md 13, 69).
+ * An ingredient's first count (no earlier count adjustment of it, and no line
+ * in an earlier approved count) is an opening count: its difference is the
+ * starting balance, not unexplained usage (DECISIONS.md 13, 69, 72).
  */
 export async function approveCount(tx: Tx, locationId: string, userId: string, sessionId: string): Promise<ApprovalResult> {
   // One approval or late correction at a time per restaurant (see migration 0011).
@@ -372,7 +372,21 @@ export async function approveCount(tx: Tx, locationId: string, userId: string, s
         lte(stockMovements.occurredAt, countTime),
       ),
     );
-  const counted = new Set(earlierCounts.map((row) => row.ingredientId));
+  // A count that matched exactly wrote no adjustment, so earlier approved count lines count too.
+  const earlierLines = await tx
+    .selectDistinct({ ingredientId: countLines.ingredientId })
+    .from(countLines)
+    .innerJoin(countSessions, eq(countSessions.id, countLines.sessionId))
+    .where(
+      and(
+        eq(countLines.locationId, locationId),
+        inArray(countLines.ingredientId, ingredientIds),
+        eq(countSessions.status, "approved"),
+        lte(countSessions.submittedAt, countTime),
+        sql`${countSessions.id} <> ${sessionId}`,
+      ),
+    );
+  const counted = new Set([...earlierCounts, ...earlierLines].map((row) => row.ingredientId));
 
   const movements: NewMovement[] = [];
   let openingLines = 0;

@@ -56,7 +56,9 @@ async function CountDetail({ params }: { params: PageProps<"/count/[id]">["param
         </div>
       );
     }
-    return <CountSheetForm sessionId={sheet.id} ingredients={sheet.ingredients} canApprove={manager} />;
+    // The person counting never gets the expected figures (they would steer the count).
+    const ingredients = sheet.ingredients.map((ingredient) => ({ ...ingredient, theoreticalQty: null }));
+    return <CountSheetForm sessionId={sheet.id} ingredients={ingredients} canApprove={manager} />;
   }
 
   const submittedText = sheet.submittedAt ? formatDateTime(sheet.submittedAt, timeZone) : null;

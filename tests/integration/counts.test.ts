@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { runAsUser } from "@/lib/db/rls";
 import { countLines, countSessions, stockMovements } from "@/lib/db/schema";
@@ -325,6 +325,78 @@ describe.skipIf(!hasDatabase)("stock counts and unexplained usage", () => {
     await as(staff, (tx) => saveCountEntries(tx, loc(), staff.id, draft, [{ ingredientId: basil, amount: "", unit: "g" }]));
     const sheet = await as(staff, (tx) => getCountSheet(tx, loc(), draft));
     expect(sheet?.ingredients.find((entry) => entry.id === basil)?.countedQty).toBeNull();
+  });
+
+  it("nobody can forge a correction from an old movement, or add a line to an approved count", async () => {
+    // The dropped tray was on time (before the closing count's approval). Staff
+    // pointing the correction function at it must change nothing.
+    const [tray] = await as(staff, (tx) =>
+      tx
+        .select({ id: stockMovements.id })
+        .from(stockMovements)
+        .where(and(eq(stockMovements.type, "waste"), eq(stockMovements.ingredientId, mozzarella))),
+    );
+    const before = await line(closingCount, mozzarella);
+    const [result] = await as(staff, (tx) =>
+      tx.execute<{ corrected: number }>(sql`select public.apply_late_corrections(array[${tray.id}::uuid]) as corrected`),
+    );
+    expect(result.corrected).toBe(0);
+    const after = await line(closingCount, mozzarella);
+    expect(after.row.lateAdjustQty).toBe(before.row.lateAdjustQty);
+    expect(after.adjustments).toBe(before.adjustments);
+
+    await expect(
+      as(owner, (tx) =>
+        tx.insert(countLines).values({ locationId: loc(), sessionId: closingCount, ingredientId: basil, countedQty: "1.000" }),
+      ),
+    ).rejects.toThrow();
+  });
+
+  it("a first count that matched exactly still makes the next count a real one", async () => {
+    const day = (hour: number) => new Date(Date.UTC(2026, 10, 13, hour));
+    const oregano = await as(owner, (tx) => createIngredient(tx, loc(), ingredient("Oregano")));
+    // First count: nothing there, nothing expected: no adjustment is written.
+    const first = await count(manager, day(8), [{ ingredientId: oregano, amount: "0", unit: "g" }]);
+    expect(await as(manager, (tx) => approveCount(tx, loc(), manager.id, first))).toEqual({ adjustments: 0, openingLines: 1 });
+    await as(staff, (tx) =>
+      appendMovements(tx, loc(), [
+        { ingredientId: oregano, qtyDelta: "200", type: "delivery", occurredAt: day(10), createdBy: staff.id },
+      ]),
+    );
+    const second = await count(staff, day(20), [{ ingredientId: oregano, amount: "150", unit: "g" }]);
+    expect(await as(manager, (tx) => approveCount(tx, loc(), manager.id, second))).toEqual({ adjustments: 1, openingLines: 0 });
+    const { row, adjustments, reportLine, report } = await line(second, oregano);
+    expect(row.isOpening).toBe(false);
+    expect(reportLine.differenceQty).toBe("-50.000");
+    expect(report.totalValue).toBe("-0.40"); // 50 g at EUR 8 per kg
+    expect(adjustments).toBe(reportLine.differenceQty);
+  });
+
+  it("undoing sales the count saw on time takes them out of its expected stock", async () => {
+    const day = (hour: number) => new Date(Date.UTC(2026, 10, 14, hour));
+    const ricotta = await as(owner, async (tx) => {
+      const id = await createIngredient(tx, loc(), ingredient("Ricotta"));
+      const calzone = await createMenuItem(tx, loc(), item("Calzone"));
+      await saveRecipe(tx, loc(), owner.id, calzone, recipeInputSchema.parse([{ ingredientId: id, amount: "100", unit: "g" }]));
+      return id;
+    });
+    const opening = await count(manager, day(6), [{ ingredientId: ricotta, amount: "1000", unit: "g" }]);
+    await as(manager, (tx) => approveCount(tx, loc(), manager.id, opening));
+    // Two calzones at lunch (12:00 Amsterdam), imported before the evening count.
+    const sale = await importCsv(["9001,14/11/2026,12:00,Calzone,2"]);
+    const evening = await count(staff, day(21), [{ ingredientId: ricotta, amount: "700", unit: "g" }]);
+    await as(manager, (tx) => approveCount(tx, loc(), manager.id, evening));
+    let current = await line(evening, ricotta);
+    expect([current.row.theoreticalQty, current.reportLine.differenceQty]).toEqual(["800.000", "-100.000"]);
+
+    // The sales turn out to be wrong and are undone after the count.
+    await as(owner, (tx) => undoImport(tx, sale.importId));
+    current = await line(evening, ricotta);
+    expect(current.row.lateAdjustQty).toBe("200.000");
+    expect(current.reportLine.expectedQty).toBe("1000.000");
+    expect(current.reportLine.differenceQty).toBe("-300.000");
+    expect(current.adjustments).toBe(current.reportLine.differenceQty);
+    expect(await stock(ricotta)).toBe("700.000");
   });
 
   it("another restaurant sees none of it", async () => {
