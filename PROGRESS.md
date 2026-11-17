@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 5** (stages 0 to 4 are merged, manual paths. Next: the UI design pass on `ui-design-pass`, then stage 5. Parked until `ANTHROPIC_API_KEY` exists: the AI tasks of stages 2 to 5. Offline counting (stage 4) is not done yet)
 
-**Now working on:** nothing
+**Now working on:** UI design pass on branch `ui-design-pass`: BEFORE screenshots are in `docs/screenshots/before`; the `ui-designer` sub-agent works in its own worktree under `.claude/worktrees/`. Then AFTER screenshots, tests, reviewer, merge, live check.
 
 ## Stage 0: Setup
 
