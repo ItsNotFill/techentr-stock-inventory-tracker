@@ -4,71 +4,7 @@ Things only you can do, newest need first. Stage summaries are at the bottom.
 
 ## Waiting on you
 
-### 0. Fix the Supabase address (3 minutes) — the live login does not work until this is done
-
-`NEXT_PUBLIC_SUPABASE_URL` ends in `.supabase.com`. A project's address ends in **`.supabase.co`** (no "m"). With `.com` the app cannot reach Supabase, so nobody can log in, and the login form says "Wrong e-mail address or password." for every attempt. In `.env.local` the value was changed on 17 November at 07:44; Vercel almost certainly has the same value.
-
-1. Supabase dashboard → your project → **Project Settings** → **API** → copy the **Project URL** (`https://<ref>.supabase.co`).
-2. `.env.local`: set `NEXT_PUBLIC_SUPABASE_URL=` to that value and save.
-3. Vercel → the project → **Settings** → **Environment Variables** → `NEXT_PUBLIC_SUPABASE_URL` → **Edit**, paste the same value, **Save**. While there, check the other Supabase values match `.env.local`.
-4. Vercel → **Deployments** → the newest `main` deployment → **⋯** → **Redeploy**. This step is needed: values starting with `NEXT_PUBLIC_` are built into the app, so a saved change only takes effect after a new build.
-
-Check: open <https://techentr-stock-inventory-tracker.vercel.app/login> and log in as `owner@pizzeria-demo.example.com` (password in `.env.seed.local`). You should land on the dashboard of "Pizzeria Demo".
-
-Status 17 Nov: `.env.local` is fixed (local login works). The live site still cannot reach Supabase. After the stage 4 merge, open <https://techentr-stock-inventory-tracker.vercel.app/api/health>: it shows which commit is live and which Supabase address that build uses (`endsWithSupabaseCo` must be `true`). If it is `false`, the Production build still has the old value: check that `NEXT_PUBLIC_SUPABASE_URL` is under **Settings → Environment Variables** (not Edge Config) with **Production** ticked, then **Redeploy** with "Use existing Build Cache" unticked.
-
-Also, in Supabase → **Authentication** → **URL Configuration** → **Redirect URLs**: the Vercel entry reads `https://techentr-stock-inventory-tracker.vercel.app//**` (two slashes). That pattern matches nothing the app uses, so a new user's sign-up confirmation link falls back to the home page instead of setup. Tick it, delete it, and **Add URL** `https://techentr-stock-inventory-tracker.vercel.app/**` (one slash). The `http://localhost:3000/**` entry is right. Team invite links are not affected.
-
-### 1. Create the Vercel project (about 5 minutes)
-
-Stage 0 is finished except for this. The app is on `main` and builds.
-
-1. Go to <https://vercel.com> and log in with the GitHub account that owns the repository.
-2. Click **Add New…** (top right), then **Project**.
-3. Under **Import Git Repository**, find `ItsNotFill/techentr-stock-inventory-tracker` and click **Import**.
-   - If it is not in the list, click **Adjust GitHub App Permissions**, give Vercel access to that repository, and come back.
-4. Leave everything as detected: **Framework Preset** Next.js, **Root Directory** `./`, build and output settings untouched.
-5. Open **Environment Variables** and add the names below. Copy each value from your `.env.local`. Leave the environment selector on all three (Production, Preview, Development).
-   - Shortcut: copy the whole content of `.env.local` and paste it into the first **Key** box. Vercel fills in every row. Then delete the `DATABASE_URL_MIGRATIONS` row and the empty `ANTHROPIC_API_KEY` row.
-6. Click **Deploy** and wait for it to finish (one to two minutes).
-7. Click the screenshot of the site. You should see a page that says "Restaurant Inventory". That is the stage 0 done check.
-8. Paste the public URL under "Answers" at the bottom of this section, commit and push, or tell me the URL in the next session.
-
-Environment variables to add in Vercel:
-
-| Name | Add now? |
-| --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | yes |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | yes |
-| `SUPABASE_SECRET_KEY` | yes |
-| `DATABASE_URL` | yes (the port 6543 one) |
-| `AI_MODEL` | yes (`claude-sonnet-5-5`) |
-| `ANTHROPIC_API_KEY` | later, when you have the key (see below) |
-| `DATABASE_URL_MIGRATIONS` | no. Migrations and the seed run from your computer, not from Vercel |
-
-After this, every push to a branch gets its own preview URL. You find it in Vercel under **Deployments**, or on GitHub next to the commit (the green tick, then **Details**).
-
-**Answers**
-
-- Public URL: <https://techentr-stock-inventory-tracker.vercel.app/> (loads and redirects signed-out visitors to the login page; login waits for step 0)
-
-### 2. Tell Supabase where the app lives (2 minutes, after step 1)
-
-Sign-up sends a confirmation e-mail, and the link in it must point at the app.
-
-1. Open the Supabase dashboard, your project, then **Authentication** in the left menu, then **URL Configuration**.
-2. **Site URL**: put the Vercel URL from step 1, for example `https://your-project.vercel.app`.
-3. **Redirect URLs**: click **Add URL** and add these two, one at a time:
-   - `http://localhost:3000/**`
-   - `https://your-project.vercel.app/**` (your real Vercel URL, with `/**` at the end)
-4. Click **Save**.
-
-Good to know:
-
-- Supabase's built-in e-mail sender allows only a few e-mails per hour. That is enough to try sign-up, not for a pilot. For the pilot, set up your own SMTP sender under **Authentication**, **Emails**, **SMTP Settings**.
-- You can try the app without any of this: the seed data has three ready-made accounts that need no e-mail (see "Try it" below).
-
-### 3. Create a Claude API key (5 minutes)
+### 1. Create a Claude API key (5 minutes)
 
 The AI tasks read photos (POS screenshots, end-of-day reports, supplier invoices) with the Claude API. `ANTHROPIC_API_KEY` in `.env.local` is empty, so those tasks are parked and everything else continues.
 
@@ -76,8 +12,15 @@ The AI tasks read photos (POS screenshots, end-of-day reports, supplier invoices
 2. Open **Settings**, then **Billing**, and add a small amount of credit (5 euros is plenty for building and testing: one photo costs cents).
 3. Open **API keys**, click **Create Key**, name it `restaurant-inventory`, and copy the key. It starts with `sk-ant-` and is shown only once.
 4. Open `.env.local` in the project folder and paste the key after `ANTHROPIC_API_KEY=` on that line. Save. Do not put it anywhere else in the project.
-5. In Vercel (once the project from step 1 exists): **Settings**, **Environment Variables**, add `ANTHROPIC_API_KEY` with the same value, then redeploy.
+5. In Vercel: **Settings**, **Environment Variables**, add `ANTHROPIC_API_KEY` with the same value (Production ticked), then redeploy with "Use existing Build Cache" unticked.
 6. Start a new session and say the key is there. The parked tasks are listed in `PROGRESS.md` under "AI onboarding", "Sales by photo" and "Restock by invoice photo".
+
+## Done
+
+- **Vercel project** (17 Nov): live at <https://techentr-stock-inventory-tracker.vercel.app/>, deploying `main` automatically. Every pushed branch gets a preview URL.
+- **Supabase URL configuration** (17 Nov): Site URL is the Vercel URL; Redirect URLs are `https://techentr-stock-inventory-tracker.vercel.app/**` and `http://localhost:3000/**`.
+- **Supabase address fixed** (17 Nov): `NEXT_PUBLIC_SUPABASE_URL` ends in `.supabase.co` in `.env.local` and in Vercel. Checked: the demo owner logs in locally and on the live site, and all five browser tests pass against the live site. <https://techentr-stock-inventory-tracker.vercel.app/api/health> shows the live commit and whether Supabase is reachable.
+- Good to know: Supabase's built-in e-mail sender allows only a few e-mails per hour. Enough to try sign-up, not for a pilot: set up your own SMTP sender under **Authentication** → **Emails** → **SMTP Settings** before then. Team invites do not need e-mail (they are links).
 
 ## Try it
 
