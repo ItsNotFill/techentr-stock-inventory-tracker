@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 5** (stages 0 to 4 are merged, manual paths. Next: the UI design pass on `ui-design-pass`, then stage 5. Parked until `ANTHROPIC_API_KEY` exists: the AI tasks of stages 2 to 5. Offline counting (stage 4) is not done yet)
 
-**Now working on:** UI design pass (Basil kitchen theme) on branch `ui-design-pass`. Done: theme tokens, page header, metric card, empty state, nav; dashboard "Get started" and the one-line import stepper; design rules in `DECISIONS.md` (73-80) and `CLAUDE.md`. In progress: `ui-designer` in `.claude/worktrees/agent-aca4016971ef9008d` (shared `destructive-outline` button, shared amount colouring, compact metric cards). Next: one `ui-builder` task applying those to the screens, plus the count-sheet fix (a figure left while another save runs is not saved), then AFTER screenshots, tests and e2e, reviewer, merge to `main`, live check, "For teammates" in `NEXT_STEPS_FOR_FILIPPO.md`.
+**Now working on:** UI design pass (Basil kitchen theme) on branch `ui-design-pass`. All design work is merged on the branch (theme, shared components, every screen, dashboard "Get started", count-save fix); no worktrees left. Now: full checks, AFTER screenshots in `docs/screenshots/after`, reviewer, merge to `main`, live check.
 
 ## Stage 0: Setup
 
