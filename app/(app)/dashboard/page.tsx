@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { DashboardMetrics, DashboardNotices } from "@/components/dashboard/dashboard-cards";
 import { GetStarted, StaffStart } from "@/components/dashboard/get-started";
 import { LowStockList } from "@/components/dashboard/low-stock-list";
+import { TopUnexplainedChart } from "@/components/dashboard/top-unexplained-chart";
 import { PageHeader } from "@/components/page-header";
 import { CardsSkeleton } from "@/components/page-skeleton";
 import { Button } from "@/components/ui/button";
@@ -84,6 +85,7 @@ async function DashboardContent() {
             <>
               <DashboardMetrics data={data} timeZone={membership.timezone} />
               <DashboardNotices needsRecipe={data.needsRecipe} countsWaiting={data.countsWaiting} />
+              {data.lastCount ? <TopUnexplainedChart top={data.lastCount.top} /> : null}
               {lowStock}
               <div className="max-w-sm">{details}</div>
             </>
