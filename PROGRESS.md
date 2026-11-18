@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 5** (stages 0 to 4 are merged, manual paths. The UI design pass (Basil kitchen theme) is merged too, 17 Nov. Stage 5 is being built before stage 4's offline-counting block (DECISIONS.md, entry 82). Parked until `ANTHROPIC_API_KEY` exists: the AI tasks of stages 2 to 5)
 
-**Now working on:** stage 5, branch `stage-5-deliveries-pwa`. (1) "Log waste screen": server side done; the screen is with `ui-builder` (worktree `.claude/worktrees/agent-a65021129d26cc317`). (2) "Stock history screen": query done; the screen is with a second `ui-builder` in its own worktree under `.claude/worktrees/`. (3) "Service worker with Serwist": main agent, main checkout (WIP commit pushed).
+**Now working on:** stage 5, branch `stage-5-deliveries-pwa`. (1) "Stock history screen": built by `ui-builder` (worktree `.claude/worktrees/agent-a3ac8226431a9ecbd`), one fix requested before the merge. (2) "Dashboard" (cards, then the chart): with `ui-builder` in worktree `.claude/worktrees/agent-a65021129d26cc317`; the queries are done.
 
 ## Stage 0: Setup
 
@@ -133,7 +133,7 @@ Offline counting (after the done check) — **not done yet**; picked up after th
 
 - [x] Migration: `deliveries` and `delivery_lines` with RLS
 - [x] Log delivery screen (mobile): ingredient, pack, quantity; writes a confirmed delivery and its movements
-- [ ] Log waste screen (mobile): ingredient, quantity, reason
+- [x] Log waste screen (mobile): ingredient, quantity, reason
 - [x] Low-stock query: theoretical stock below reorder point (at or below, as the Ingredients badge: DECISIONS.md, entry 86)
 - [ ] Dashboard: low-stock list, last import, last count's total unexplained usage in euros
 - [ ] Dashboard: top five unexplained-usage ingredients chart with Recharts
