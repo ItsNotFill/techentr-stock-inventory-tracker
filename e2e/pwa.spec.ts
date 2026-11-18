@@ -152,6 +152,18 @@ test("the manifest and its icons are served", async ({ request }) => {
   expect(worker.headers()["content-type"]).toContain("javascript");
 });
 
+test("Chrome finds nothing that stops the app from being installed", async ({ browser }) => {
+  const context = await browser.newContext(PHONE);
+  const page = await context.newPage();
+  await page.goto(`${BASE}/login`);
+  await waitForServiceWorker(page);
+  // What Chrome checks before it offers "Install app" / "Add to Home screen".
+  const cdp = await context.newCDPSession(page);
+  const { installabilityErrors } = await cdp.send("Page.getInstallabilityErrors");
+  expect(installabilityErrors).toEqual([]);
+  await context.close();
+});
+
 test("the app shell opens offline and logging out removes the offline copies", async ({ browser }) => {
   const context = await browser.newContext(PHONE);
   const page = await context.newPage();
