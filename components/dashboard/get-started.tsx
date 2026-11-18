@@ -49,15 +49,38 @@ export function GetStarted() {
   );
 }
 
+const STAFF_JOBS = [
+  { href: "/count", title: "Count", text: "Count what is on the shelf. A manager approves it afterwards." },
+  { href: "/deliveries", title: "Log delivery", text: "Add what a supplier brought. Stock goes up when you save." },
+  { href: "/waste", title: "Log waste", text: "Record what was thrown away and why. Stock goes down when you save." },
+];
+
+/** What staff can do from their phone: count, log a delivery, log waste. */
 export function StaffStart() {
   return (
-    <Card className="max-w-xl">
+    <Card>
       <CardHeader>
-        <CardTitle>Count the stock</CardTitle>
-        <CardDescription>
-          Count what is on the shelf with the Count stock button above. A manager approves it afterwards.
-        </CardDescription>
+        <CardTitle>What to do</CardTitle>
+        <CardDescription>Three jobs, all from your phone.</CardDescription>
       </CardHeader>
+      <CardContent>
+        <ul className="-mx-2 flex flex-col">
+          {STAFF_JOBS.map((job) => (
+            <li key={job.href}>
+              <Link
+                href={job.href}
+                className="group flex min-h-14 cursor-pointer items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-row-hover"
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-medium">{job.title}</span>
+                  <span className="block text-sm text-muted-foreground">{job.text}</span>
+                </span>
+                <ChevronRight aria-hidden="true" className="size-5 shrink-0 text-muted-foreground group-hover:text-foreground" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
     </Card>
   );
 }
