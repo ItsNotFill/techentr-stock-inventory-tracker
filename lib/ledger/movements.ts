@@ -22,6 +22,8 @@ export type NewMovement = {
   /** When it happened (the sale's time, the delivery's time, the count's submit time). */
   occurredAt: Date;
   createdBy: string | null;
+  /** Made on the phone for a movement logged directly (waste): unique per restaurant. */
+  clientId?: string | null;
 };
 
 export class LedgerError extends Error {

@@ -297,8 +297,10 @@ Indexes: `(sale_id)`; `(menu_item_id)` where `depleted_at is null`, which is the
 | `occurred_at` | timestamptz, not null, default now | when it happened |
 | `created_by` | uuid, nullable | |
 | `created_at` | timestamptz, not null, default now | when it was recorded |
+| `corrects_movement_id` | uuid, nullable | set on a late-movement correction (DECISIONS.md 68) |
+| `client_id` | uuid, nullable | made on the phone for waste; unique per location where set (DECISIONS.md 85) |
 
-Indexes: `(ingredient_id, occurred_at)`, `(location_id, type, occurred_at)`, `(ref_table, ref_id)`.
+Indexes: `(ingredient_id, occurred_at)`, `(location_id, type, occurred_at)`, `(ref_table, ref_id)`. Unique: `(location_id, client_id)` where `client_id is not null`.
 
 | `type` | `ref_table` | `occurred_at` |
 | --- | --- | --- |

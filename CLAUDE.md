@@ -64,6 +64,8 @@ lib/
     admin.ts            admin connection: migrations, seed, sign-up bootstrap only
   ledger/               append movements, stock queries, depletion, late-movement correction (with migrations 0011, 0012)
   counts/               stock counts: start, save, submit, approve, reject
+  deliveries/           log a delivery (draft, lines, confirm, movements), delivery list
+  waste/                log waste, recent waste
   units/                base-unit and pack conversion
   variance/             unexplained-usage maths
   imports/              CSV parsing, column mapping, idempotent import, undo

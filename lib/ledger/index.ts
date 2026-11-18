@@ -86,6 +86,7 @@ export async function appendMovements(tx: Tx, locationId: string, movements: New
           note: movement.note ?? null,
           occurredAt: movement.occurredAt,
           createdBy: movement.createdBy,
+          clientId: movement.clientId ?? null,
         })),
       )
       .returning({ id: stockMovements.id });

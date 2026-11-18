@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { WasteReason } from "@/lib/db/schema/enums";
 import { optionalText } from "./quantity";
 
 /**
@@ -39,3 +40,25 @@ export const deliveryInputSchema = z.object({
 });
 
 export type DeliveryInput = z.infer<typeof deliveryInputSchema>;
+
+export const WASTE_REASONS = ["expired", "dropped", "burnt", "other"] as const satisfies readonly WasteReason[];
+
+export const WASTE_REASON_LABELS: Record<WasteReason, string> = {
+  expired: "Expired",
+  dropped: "Dropped",
+  burnt: "Burnt",
+  other: "Other",
+};
+
+export const wasteInputSchema = z.object({
+  /** crypto.randomUUID() made when the form opens: a retried submit stays one movement. */
+  clientId: z.uuid(),
+  ingredientId: stockEntrySchema.shape.ingredientId,
+  amount: stockEntrySchema.shape.amount,
+  unit: stockEntrySchema.shape.unit,
+  reason: z.enum(WASTE_REASONS, "Choose why it was thrown away."),
+  note: optionalText(200),
+  occurredAt: enteredTime,
+});
+
+export type WasteInput = z.infer<typeof wasteInputSchema>;
