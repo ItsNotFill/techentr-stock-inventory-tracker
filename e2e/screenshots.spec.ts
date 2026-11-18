@@ -184,6 +184,10 @@ for (const viewport of Object.keys(VIEWPORTS) as Viewport[]) {
     await shot(page, viewport, "20-ingredients");
     await openFirst(page, 'a[href^="/ingredients/"]:has-text("Mozzarella")', /\/ingredients\/[0-9a-f-]{36}$/);
     await shot(page, viewport, "21-ingredient-edit");
+    await page.locator('a[href^="/history?ingredient="]').filter({ visible: true }).first().click();
+    await expect(page).toHaveURL(/\/history\?ingredient=[0-9a-f-]{36}$/);
+    await expect(page.getByRole("heading", { name: "Mozzarella" }).filter({ visible: true })).toBeVisible();
+    await shot(page, viewport, "25-stock-history");
     await page.goto("/ingredients/new");
     await shot(page, viewport, "22-ingredient-new");
     await page.getByRole("button", { name: "Add ingredient" }).click();
