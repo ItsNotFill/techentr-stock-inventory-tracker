@@ -241,6 +241,10 @@ for (const viewport of Object.keys(VIEWPORTS) as Viewport[]) {
     await staff.getByRole("button", { name: "Delete draft" }).click();
     await staff.getByRole("alertdialog").getByRole("button", { name: /delete/i }).click();
     await expect(staff).toHaveURL(/\/count$/);
+    // Log delivery: read only, nothing is submitted.
+    await staff.goto("/deliveries");
+    await expect(staff.getByRole("button", { name: "Log delivery" }).filter({ visible: true })).toBeVisible();
+    await shot(staff, viewport, "93-staff-deliveries");
     await staff.context().close();
 
     // A manager reviewing a submitted count (throwaway restaurant).
