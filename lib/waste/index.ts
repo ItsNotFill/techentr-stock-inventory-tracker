@@ -46,9 +46,6 @@ export type LoggedWaste = {
 };
 
 export async function logWaste(tx: Tx, locationId: string, userId: string, waste: NewWaste): Promise<LoggedWaste> {
-  const timeProblem = enteredTimeProblem(waste.occurredAt, MAX_DAYS_BACK);
-  if (timeProblem) throw new WasteError(timeProblem, "occurredAt");
-
   const [ingredient] = await tx
     .select({ id: ingredients.id, name: ingredients.name, baseUnit: ingredients.baseUnit, isActive: ingredients.isActive })
     .from(ingredients)
@@ -72,6 +69,9 @@ export async function logWaste(tx: Tx, locationId: string, userId: string, waste
     };
   }
 
+  // Checked after the retry lookup, so a retried submit always gets its first result.
+  const timeProblem = enteredTimeProblem(waste.occurredAt, MAX_DAYS_BACK);
+  if (timeProblem) throw new WasteError(timeProblem, "occurredAt");
   if (!ingredient.isActive) {
     throw new WasteError(`${ingredient.name} is archived. Restore it before logging waste.`, "ingredientId");
   }

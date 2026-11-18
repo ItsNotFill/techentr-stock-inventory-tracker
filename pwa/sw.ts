@@ -43,7 +43,8 @@ const runtimeCaching: RuntimeCaching[] = [
     }),
   },
   {
-    matcher: ({ sameOrigin, request }) => sameOrigin && (request.destination === "image" || request.destination === "font"),
+    matcher: ({ sameOrigin, request, url }) =>
+      sameOrigin && (request.destination === "image" || request.destination === "font") && !isUncachedPath(url.pathname),
     handler: new StaleWhileRevalidate({
       cacheName: "static-assets",
       plugins: [new ExpirationPlugin({ maxEntries: 100, maxAgeSeconds: 30 * DAY })],

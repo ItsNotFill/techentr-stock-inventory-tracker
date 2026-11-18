@@ -16,7 +16,7 @@ The app turns a restaurant's sales into the ingredients they should have used, c
 
 Everyone shares the same demo restaurant, so what you change, others see. Undo an import when you are done, and reject a test count instead of approving it.
 
-**A six-step tour** (log in as owner or manager; the Dashboard lists the same steps):
+**A short tour** (log in as owner or manager; a new restaurant's Dashboard lists the first six steps):
 
 1. **Ingredients.** Everything the pizzeria buys, with cost per kg or unit, pack sizes (a 1 kg bag, a 25 kg sack) and a reorder point. Open Mozzarella to see the details.
 2. **Menu and recipe.** Open **Menu**, then **Margherita**: its recipe says one pizza uses 120 g of mozzarella, 160 g of flour and so on, and shows the ingredient cost per pizza (€1.41).
@@ -24,6 +24,8 @@ Everyone shares the same demo restaurant, so what you change, others see. Undo a
 4. **Stock.** Back on **Ingredients**, the "In stock" column is what should be on the shelf after deliveries, sales and waste. Mozzarella shows **Low**: it is under its reorder point.
 5. **Count.** Log in as staff (on a phone if you can), open **Count**, **Start a count** and type what is on the shelf, by pack or by kg. Each figure saves when you leave the field; **Submit count** at the bottom. Then log in as manager: the count waits under **Count** for approval. Reject it with a note so the demo numbers stay as they are.
 6. **Unexplained usage.** Open **Unexplained usage**, then the count of 16 Nov. Mozzarella should have been 2,400 g, the count found 1,900 g: **−500 g, −€4.00** that no sale, delivery or waste explains. That gap, per ingredient and in euros, is the product.
+7. **Deliveries and waste (staff, on a phone).** As staff, **Deliveries**: pick an ingredient, the pack ("Bag 1 kg") and how many, **Log delivery**; stock goes up at once. **Waste** works the same way with a reason (expired, dropped, burnt). Both show in an ingredient's **Stock history** (owners and managers: Ingredients, open one, **Stock history**), with the stock after every movement.
+8. **Dashboard and the app on your phone.** The dashboard shows what is low, the last import and the last count's unexplained usage with the five biggest losses. On a phone, "Install app" (Android) or "Add to Home Screen" (iPhone) puts **Inventory** on the home screen; screens you opened before still open without signal.
 
 ## Waiting on you
 
@@ -126,3 +128,11 @@ The demo restaurant already holds the worked example from the spec: opening stoc
 - Checked: 138 tests, five browser tests, type check, lint and build pass; the reviewer agent returned OK. Before and after screenshots of every screen, desktop and phone: `docs/screenshots/before` and `docs/screenshots/after`.
 - Rules for later screens: "Design rules" in `CLAUDE.md`; the palette and reasons in `DECISIONS.md`, entries 73 to 81.
 - Live: <https://techentr-stock-inventory-tracker.vercel.app>. Open point: input borders (`#D9D4C7`) are 1.5:1 against white, below the 3:1 WCAG asks for form fields; say if you want them darker.
+
+### Stage 5: Deliveries, waste, dashboard, PWA (2026-11-18)
+
+- Built: Log delivery and Log waste for phones (by pack or by kg; a retried tap is saved once), the real dashboard (low stock, last import, last count's unexplained usage, top five chart), Stock history per ingredient, and the installable app (manifest, icons, a service worker: screens opened before work offline).
+- Done check: Chrome finds nothing that stops the install, and a staff member logs a delivery on a phone-sized screen (179 tests, nine new browser tests). The real phone is yours: section 1.
+- The reviewer agent returned OK; its four small notes are fixed or written down (DECISIONS.md, entry 90).
+- Good to know: `npm run build` now also builds the service worker (Serwist); the demo dashboard shows +€753.40 because of today's drinks count (section 1). Offline counting is next for the agents.
+- Live: <https://techentr-stock-inventory-tracker.vercel.app> once Vercel has deployed `main`; the branch preview is in the Vercel dashboard.

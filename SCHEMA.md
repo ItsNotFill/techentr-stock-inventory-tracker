@@ -363,7 +363,7 @@ Unexplained usage for a line = `counted_qty − (theoretical_qty + late_adjust_q
 | `location_id` | uuid, not null | |
 | `client_id` | uuid, not null, default random | made on the phone; a retried "Log delivery" stays one delivery (DECISIONS.md 83) |
 | `source` | `delivery_source`, not null | `manual` or `invoice_photo` |
-| `status` | `delivery_status`, not null | **AI flag.** Manual deliveries are created `confirmed`. Invoice photos are created `draft` |
+| `status` | `delivery_status`, not null | **AI flag.** Manual deliveries are written as a draft, given their lines and confirmed in the same transaction (DECISIONS.md 83). Invoice photos stay `draft` until a manager or owner confirms them |
 | `supplier_name` | text, nullable | |
 | `invoice_number` | text, nullable | |
 | `delivered_at` | timestamptz, not null, default now | |
