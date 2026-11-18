@@ -48,3 +48,7 @@ yarn-error.log*
 * [0-9].*
 * [0-9][0-9]
 * [0-9][0-9].*
+
+# Serwist: the service worker is built by `npm run build` (serwist.config.mjs)
+public/sw.js
+public/sw.js.map

@@ -16,6 +16,8 @@ const eslintConfig = defineConfig([
     ".claude/**",
     "test-results/**",
     "playwright-report/**",
+    // Built by `serwist build` from pwa/sw.ts.
+    "public/sw.js",
   ]),
 ]);
 

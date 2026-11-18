@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { ClearOfflinePages } from "@/components/pwa/clear-offline-pages";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoginForm } from "./login-form";
@@ -23,6 +24,7 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
           <Notice searchParams={searchParams} />
         </Suspense>
         <LoginForm />
+        <ClearOfflinePages />
       </CardContent>
     </Card>
   );
