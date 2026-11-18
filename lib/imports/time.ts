@@ -86,3 +86,32 @@ export function localDateOf(instant: Date, timeZone: string): string {
   );
   return `${parts.year}-${parts.month}-${parts.day}`;
 }
+
+/**
+ * The value of an `<input type="datetime-local">` ("2026-11-18T09:30",
+ * seconds optional) as a local date and time, or null when it is not one.
+ */
+export function parseDateTimeInput(value: string): LocalDateTime | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(value.trim());
+  if (!match) return null;
+  const [year, month, day, hour, minute, second = "0"] = match.slice(1);
+  const local = {
+    year: Number(year),
+    month: Number(month),
+    day: Number(day),
+    hour: Number(hour),
+    minute: Number(minute),
+    second: Number(second),
+  };
+  return isValidLocalDateTime(local) ? local : null;
+}
+
+/** An instant as an `<input type="datetime-local">` value in a timezone: "2026-11-18T09:30". */
+export function toDateTimeInput(instant: Date, timeZone: string): string {
+  const parts = Object.fromEntries(
+    formatterFor(timeZone)
+      .formatToParts(instant)
+      .map((part) => [part.type, part.value]),
+  );
+  return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`;
+}

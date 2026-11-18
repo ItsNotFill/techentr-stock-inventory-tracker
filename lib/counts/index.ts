@@ -10,8 +10,9 @@ import {
   type CountStatus,
 } from "@/lib/db/schema";
 import { appendMovements, stockAt, stockOf, type NewMovement } from "@/lib/ledger";
-import { DISPLAY_UNITS, packsToBase, parseQuantityInput, toBaseUnits, toDbQty, toDecimal } from "@/lib/units";
-import { PACK_UNIT_PREFIX, type CountEntry } from "@/lib/validation/counts";
+import { parseQuantityInput, toDbQty, toDecimal } from "@/lib/units";
+import { EntryError, resolveEntry } from "@/lib/units/entry";
+import type { CountEntry } from "@/lib/validation/counts";
 
 /**
  * Stock counts. Every function takes a transaction from `withUser`, so RLS
@@ -235,7 +236,6 @@ export async function saveCountEntries(
     .select({ id: packSizes.id, ingredientId: packSizes.ingredientId, qtyInBaseUnit: packSizes.qtyInBaseUnit })
     .from(packSizes)
     .where(and(eq(packSizes.locationId, locationId), inArray(packSizes.ingredientId, ids)));
-  const packById = new Map(packRows.map((row) => [row.id, row]));
 
   const upserts: { ingredientId: string; countedQty: string }[] = [];
   const removals: string[] = [];
@@ -250,20 +250,12 @@ export async function saveCountEntries(
     const amount = parseQuantityInput(entry.amount);
     if (!amount) throw new CountError(`"${entry.amount}" is not a number.`, field);
     if (amount.isNegative()) throw new CountError("A count cannot be below zero.", field);
-
-    let countedQty: string;
-    if (entry.unit.startsWith(PACK_UNIT_PREFIX)) {
-      const pack = packById.get(entry.unit.slice(PACK_UNIT_PREFIX.length));
-      if (!pack || pack.ingredientId !== entry.ingredientId) throw new CountError("This pack size no longer exists.", field);
-      countedQty = toDbQty(packsToBase(amount, pack.qtyInBaseUnit));
-    } else {
-      if (!DISPLAY_UNITS[ingredient.baseUnit].some((unit) => unit.unit === entry.unit)) {
-        throw new CountError("This unit does not match the ingredient.", field);
-      }
-      countedQty = toDbQty(toBaseUnits(amount, entry.unit, ingredient.baseUnit));
+    try {
+      upserts.push({ ingredientId: entry.ingredientId, countedQty: resolveEntry(ingredient, packRows, amount, entry.unit).qtyBase });
+    } catch (error) {
+      if (error instanceof EntryError) throw new CountError(error.message, field);
+      throw error;
     }
-    if (toDecimal(countedQty).gt("99999999999")) throw new CountError("That number is too large.", field);
-    upserts.push({ ingredientId: entry.ingredientId, countedQty });
   });
 
   if (removals.length > 0) {

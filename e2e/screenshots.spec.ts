@@ -184,6 +184,10 @@ for (const viewport of Object.keys(VIEWPORTS) as Viewport[]) {
     await shot(page, viewport, "20-ingredients");
     await openFirst(page, 'a[href^="/ingredients/"]:has-text("Mozzarella")', /\/ingredients\/[0-9a-f-]{36}$/);
     await shot(page, viewport, "21-ingredient-edit");
+    await page.locator('a[href^="/history?ingredient="]').filter({ visible: true }).first().click();
+    await expect(page).toHaveURL(/\/history\?ingredient=[0-9a-f-]{36}$/);
+    await expect(page.getByRole("heading", { name: "Mozzarella" }).filter({ visible: true })).toBeVisible();
+    await shot(page, viewport, "25-stock-history");
     await page.goto("/ingredients/new");
     await shot(page, viewport, "22-ingredient-new");
     await page.getByRole("button", { name: "Add ingredient" }).click();
@@ -241,6 +245,13 @@ for (const viewport of Object.keys(VIEWPORTS) as Viewport[]) {
     await staff.getByRole("button", { name: "Delete draft" }).click();
     await staff.getByRole("alertdialog").getByRole("button", { name: /delete/i }).click();
     await expect(staff).toHaveURL(/\/count$/);
+    // Log delivery: read only, nothing is submitted.
+    await staff.goto("/deliveries");
+    await expect(staff.getByRole("button", { name: "Log delivery" }).filter({ visible: true })).toBeVisible();
+    await shot(staff, viewport, "93-staff-deliveries");
+    await staff.goto("/waste");
+    await expect(staff.getByRole("button", { name: "Log waste" }).filter({ visible: true })).toBeVisible();
+    await shot(staff, viewport, "94-staff-waste");
     await staff.context().close();
 
     // A manager reviewing a submitted count (throwaway restaurant).

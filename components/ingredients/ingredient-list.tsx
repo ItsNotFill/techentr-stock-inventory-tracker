@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { IngredientWithPacks } from "@/lib/ingredients";
+import { isLowStock } from "@/lib/ingredients/stock";
 import { formatQty, formatUnitCost, toDecimal } from "@/lib/units";
 import { ArchiveButton } from "./archive-button";
 
@@ -18,7 +19,7 @@ function reorderPoint(ingredient: IngredientWithPacks): string {
 }
 
 function isLow(ingredient: IngredientWithPacks, stock: string): boolean {
-  return ingredient.reorderPoint !== null && toDecimal(stock).lte(toDecimal(ingredient.reorderPoint));
+  return isLowStock(stock, ingredient.reorderPoint);
 }
 
 /** Theoretical stock; red when negative, with a "Low" badge at or below the reorder point. */

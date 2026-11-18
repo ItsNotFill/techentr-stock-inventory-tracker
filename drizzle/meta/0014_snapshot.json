@@ -1,0 +1,3237 @@
+{
+  "id": "df7d283e-45ba-4cad-8939-3d9fd354309f",
+  "prevId": "00f447bc-d51a-4e01-b098-131366adce67",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.ingredients": {
+      "name": "ingredients",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "base_unit": {
+          "name": "base_unit",
+          "type": "base_unit",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cost_per_base_unit": {
+          "name": "cost_per_base_unit",
+          "type": "numeric(12, 6)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "par_level": {
+          "name": "par_level",
+          "type": "numeric(14, 3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reorder_point": {
+          "name": "reorder_point",
+          "type": "numeric(14, 3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "storage_area": {
+          "name": "storage_area",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "ingredients_location_id_lower_name_key": {
+          "name": "ingredients_location_id_lower_name_key",
+          "columns": [
+            {
+              "expression": "location_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "lower(\"name\")",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "ingredients_location_id_storage_area_idx": {
+          "name": "ingredients_location_id_storage_area_idx",
+          "columns": [
+            {
+              "expression": "location_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "storage_area",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "ingredients_location_id_locations_id_fk": {
+          "name": "ingredients_location_id_locations_id_fk",
+          "tableFrom": "ingredients",
+          "tableTo": "locations",
+          "columnsFrom": [
+            "location_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "ingredients_id_location_id_key": {
+          "name": "ingredients_id_location_id_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "location_id"
+          ]
+        }
+      },
+      "policies": {
+        "ingredients_select_member": {
+          "name": "ingredients_select_member",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.is_member(location_id)"
+        },
+        "ingredients_insert_role": {
+          "name": "ingredients_insert_role",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "app_user"
+          ],
+          "withCheck": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "ingredients_update_role": {
+          "name": "ingredients_update_role",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])",
+          "withCheck": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "ingredients_delete_role": {
+          "name": "ingredients_delete_role",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        }
+      },
+      "checkConstraints": {
+        "ingredients_cost_not_negative": {
+          "name": "ingredients_cost_not_negative",
+          "value": "\"ingredients\".\"cost_per_base_unit\" >= 0"
+        },
+        "ingredients_par_level_not_negative": {
+          "name": "ingredients_par_level_not_negative",
+          "value": "\"ingredients\".\"par_level\" is null or \"ingredients\".\"par_level\" >= 0"
+        },
+        "ingredients_reorder_point_not_negative": {
+          "name": "ingredients_reorder_point_not_negative",
+          "value": "\"ingredients\".\"reorder_point\" is null or \"ingredients\".\"reorder_point\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.pack_sizes": {
+      "name": "pack_sizes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ingredient_id": {
+          "name": "ingredient_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "qty_in_base_unit": {
+          "name": "qty_in_base_unit",
+          "type": "numeric(14, 3)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_default": {
+          "name": "is_default",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "pack_sizes_one_default_per_ingredient": {
+          "name": "pack_sizes_one_default_per_ingredient",
+          "columns": [
+            {
+              "expression": "ingredient_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"pack_sizes\".\"is_default\"",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "pack_sizes_location_id_locations_id_fk": {
+          "name": "pack_sizes_location_id_locations_id_fk",
+          "tableFrom": "pack_sizes",
+          "tableTo": "locations",
+          "columnsFrom": [
+            "location_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pack_sizes_ingredient_fk": {
+          "name": "pack_sizes_ingredient_fk",
+          "tableFrom": "pack_sizes",
+          "tableTo": "ingredients",
+          "columnsFrom": [
+            "ingredient_id",
+            "location_id"
+          ],
+          "columnsTo": [
+            "id",
+            "location_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "pack_sizes_id_location_id_key": {
+          "name": "pack_sizes_id_location_id_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "location_id"
+          ]
+        },
+        "pack_sizes_ingredient_id_label_key": {
+          "name": "pack_sizes_ingredient_id_label_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "ingredient_id",
+            "label"
+          ]
+        }
+      },
+      "policies": {
+        "pack_sizes_select_member": {
+          "name": "pack_sizes_select_member",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.is_member(location_id)"
+        },
+        "pack_sizes_insert_role": {
+          "name": "pack_sizes_insert_role",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "app_user"
+          ],
+          "withCheck": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "pack_sizes_update_role": {
+          "name": "pack_sizes_update_role",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])",
+          "withCheck": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "pack_sizes_delete_role": {
+          "name": "pack_sizes_delete_role",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        }
+      },
+      "checkConstraints": {
+        "pack_sizes_qty_positive": {
+          "name": "pack_sizes_qty_positive",
+          "value": "\"pack_sizes\".\"qty_in_base_unit\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.count_lines": {
+      "name": "count_lines",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "session_id": {
+          "name": "session_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ingredient_id": {
+          "name": "ingredient_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "counted_qty": {
+          "name": "counted_qty",
+          "type": "numeric(14, 3)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "theoretical_qty": {
+          "name": "theoretical_qty",
+          "type": "numeric(14, 3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "late_adjust_qty": {
+          "name": "late_adjust_qty",
+          "type": "numeric(14, 3)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "unit_cost": {
+          "name": "unit_cost",
+          "type": "numeric(12, 6)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_opening": {
+          "name": "is_opening",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "count_lines_ingredient_id_idx": {
+          "name": "count_lines_ingredient_id_idx",
+          "columns": [
+            {
+              "expression": "ingredient_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "count_lines_location_id_locations_id_fk": {
+          "name": "count_lines_location_id_locations_id_fk",
+          "tableFrom": "count_lines",
+          "tableTo": "locations",
+          "columnsFrom": [
+            "location_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "count_lines_session_fk": {
+          "name": "count_lines_session_fk",
+          "tableFrom": "count_lines",
+          "tableTo": "count_sessions",
+          "columnsFrom": [
+            "session_id",
+            "location_id"
+          ],
+          "columnsTo": [
+            "id",
+            "location_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "count_lines_ingredient_fk": {
+          "name": "count_lines_ingredient_fk",
+          "tableFrom": "count_lines",
+          "tableTo": "ingredients",
+          "columnsFrom": [
+            "ingredient_id",
+            "location_id"
+          ],
+          "columnsTo": [
+            "id",
+            "location_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "count_lines_id_location_id_key": {
+          "name": "count_lines_id_location_id_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "location_id"
+          ]
+        },
+        "count_lines_session_id_ingredient_id_key": {
+          "name": "count_lines_session_id_ingredient_id_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "session_id",
+            "ingredient_id"
+          ]
+        }
+      },
+      "policies": {
+        "count_lines_select_member": {
+          "name": "count_lines_select_member",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.is_member(location_id)"
+        },
+        "count_lines_insert": {
+          "name": "count_lines_insert",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "app_user"
+          ],
+          "withCheck": "(public.has_role(location_id, array['owner', 'manager', 'staff']::public.member_role[]) and exists (select 1 from public.count_sessions s where s.id = \"count_lines\".\"session_id\" and s.location_id = \"count_lines\".\"location_id\" and s.status = 'draft' and s.counted_by = public.current_user_id())) or public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "count_lines_update": {
+          "name": "count_lines_update",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "app_user"
+          ],
+          "using": "(public.has_role(location_id, array['owner', 'manager', 'staff']::public.member_role[]) and exists (select 1 from public.count_sessions s where s.id = \"count_lines\".\"session_id\" and s.location_id = \"count_lines\".\"location_id\" and s.status = 'draft' and s.counted_by = public.current_user_id())) or public.has_role(location_id, array['owner', 'manager']::public.member_role[])",
+          "withCheck": "(public.has_role(location_id, array['owner', 'manager', 'staff']::public.member_role[]) and exists (select 1 from public.count_sessions s where s.id = \"count_lines\".\"session_id\" and s.location_id = \"count_lines\".\"location_id\" and s.status = 'draft' and s.counted_by = public.current_user_id())) or public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "count_lines_delete": {
+          "name": "count_lines_delete",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "app_user"
+          ],
+          "using": "(public.has_role(location_id, array['owner', 'manager', 'staff']::public.member_role[]) and exists (select 1 from public.count_sessions s where s.id = \"count_lines\".\"session_id\" and s.location_id = \"count_lines\".\"location_id\" and s.status = 'draft' and s.counted_by = public.current_user_id())) or (public.has_role(location_id, array['owner', 'manager']::public.member_role[]) and exists (select 1 from public.count_sessions s where s.id = \"count_lines\".\"session_id\" and s.location_id = \"count_lines\".\"location_id\" and s.status <> 'approved'))"
+        }
+      },
+      "checkConstraints": {
+        "count_lines_counted_not_negative": {
+          "name": "count_lines_counted_not_negative",
+          "value": "\"count_lines\".\"counted_qty\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.count_sessions": {
+      "name": "count_sessions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "count_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'draft'"
+        },
+        "counted_by": {
+          "name": "counted_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "submitted_at": {
+          "name": "submitted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "approved_by": {
+          "name": "approved_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "approved_at": {
+          "name": "approved_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "review_note": {
+          "name": "review_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "count_sessions_location_id_status_idx": {
+          "name": "count_sessions_location_id_status_idx",
+          "columns": [
+            {
+              "expression": "location_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "count_sessions_location_id_submitted_at_idx": {
+          "name": "count_sessions_location_id_submitted_at_idx",
+          "columns": [
+            {
+              "expression": "location_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "submitted_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "count_sessions_location_id_locations_id_fk": {
+          "name": "count_sessions_location_id_locations_id_fk",
+          "tableFrom": "count_sessions",
+          "tableTo": "locations",
+          "columnsFrom": [
+            "location_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "count_sessions_counted_by_users_id_fk": {
+          "name": "count_sessions_counted_by_users_id_fk",
+          "tableFrom": "count_sessions",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "counted_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "count_sessions_approved_by_users_id_fk": {
+          "name": "count_sessions_approved_by_users_id_fk",
+          "tableFrom": "count_sessions",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "approved_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "count_sessions_client_id_unique": {
+          "name": "count_sessions_client_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "client_id"
+          ]
+        },
+        "count_sessions_id_location_id_key": {
+          "name": "count_sessions_id_location_id_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "location_id"
+          ]
+        }
+      },
+      "policies": {
+        "count_sessions_select_member": {
+          "name": "count_sessions_select_member",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.is_member(location_id)"
+        },
+        "count_sessions_insert_own": {
+          "name": "count_sessions_insert_own",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "app_user"
+          ],
+          "withCheck": "public.has_role(location_id, array['owner', 'manager', 'staff']::public.member_role[]) and \"count_sessions\".\"counted_by\" = public.current_user_id() and \"count_sessions\".\"status\" in ('draft', 'submitted') and \"count_sessions\".\"approved_by\" is null"
+        },
+        "count_sessions_update_own_draft": {
+          "name": "count_sessions_update_own_draft",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager', 'staff']::public.member_role[]) and \"count_sessions\".\"counted_by\" = public.current_user_id() and \"count_sessions\".\"status\" = 'draft'",
+          "withCheck": "\"count_sessions\".\"counted_by\" = public.current_user_id() and \"count_sessions\".\"status\" in ('draft', 'submitted') and \"count_sessions\".\"approved_by\" is null"
+        },
+        "count_sessions_update_manager": {
+          "name": "count_sessions_update_manager",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])",
+          "withCheck": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "count_sessions_delete_draft": {
+          "name": "count_sessions_delete_draft",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "app_user"
+          ],
+          "using": "\"count_sessions\".\"status\" = 'draft' and ((public.has_role(location_id, array['owner', 'manager', 'staff']::public.member_role[]) and \"count_sessions\".\"counted_by\" = public.current_user_id()) or public.has_role(location_id, array['owner', 'manager']::public.member_role[]))"
+        }
+      },
+      "checkConstraints": {
+        "count_sessions_submitted_has_time": {
+          "name": "count_sessions_submitted_has_time",
+          "value": "\"count_sessions\".\"status\" = 'draft' or \"count_sessions\".\"submitted_at\" is not null"
+        },
+        "count_sessions_reviewed_has_reviewer": {
+          "name": "count_sessions_reviewed_has_reviewer",
+          "value": "\"count_sessions\".\"status\" not in ('approved', 'rejected') or \"count_sessions\".\"approved_at\" is not null"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.deliveries": {
+      "name": "deliveries",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "source": {
+          "name": "source",
+          "type": "delivery_source",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "delivery_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "supplier_name": {
+          "name": "supplier_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "invoice_number": {
+          "name": "invoice_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "delivered_at": {
+          "name": "delivered_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "photo_path": {
+          "name": "photo_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ai_extraction_id": {
+          "name": "ai_extraction_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "confirmed_by": {
+          "name": "confirmed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "confirmed_at": {
+          "name": "confirmed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "deliveries_location_id_delivered_at_idx": {
+          "name": "deliveries_location_id_delivered_at_idx",
+          "columns": [
+            {
+              "expression": "location_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "delivered_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "deliveries_location_id_supplier_invoice_idx": {
+          "name": "deliveries_location_id_supplier_invoice_idx",
+          "columns": [
+            {
+              "expression": "location_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "supplier_name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "invoice_number",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "deliveries_location_id_locations_id_fk": {
+          "name": "deliveries_location_id_locations_id_fk",
+          "tableFrom": "deliveries",
+          "tableTo": "locations",
+          "columnsFrom": [
+            "location_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "deliveries_created_by_users_id_fk": {
+          "name": "deliveries_created_by_users_id_fk",
+          "tableFrom": "deliveries",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "deliveries_confirmed_by_users_id_fk": {
+          "name": "deliveries_confirmed_by_users_id_fk",
+          "tableFrom": "deliveries",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "confirmed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "deliveries_id_location_id_key": {
+          "name": "deliveries_id_location_id_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "location_id"
+          ]
+        },
+        "deliveries_location_id_client_id_key": {
+          "name": "deliveries_location_id_client_id_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "location_id",
+            "client_id"
+          ]
+        }
+      },
+      "policies": {
+        "deliveries_select_member": {
+          "name": "deliveries_select_member",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.is_member(location_id)"
+        },
+        "deliveries_insert_own_draft": {
+          "name": "deliveries_insert_own_draft",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "app_user"
+          ],
+          "withCheck": "public.has_role(location_id, array['owner', 'manager', 'staff']::public.member_role[]) and \"deliveries\".\"created_by\" = public.current_user_id() and \"deliveries\".\"status\" = 'draft' and \"deliveries\".\"confirmed_by\" is null and \"deliveries\".\"confirmed_at\" is null"
+        },
+        "deliveries_update_own_draft": {
+          "name": "deliveries_update_own_draft",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager', 'staff']::public.member_role[]) and \"deliveries\".\"created_by\" = public.current_user_id() and \"deliveries\".\"status\" = 'draft'",
+          "withCheck": "\"deliveries\".\"created_by\" = public.current_user_id() and (\"deliveries\".\"status\" in ('draft', 'discarded') or (\"deliveries\".\"status\" = 'confirmed' and \"deliveries\".\"source\" = 'manual' and \"deliveries\".\"confirmed_by\" = public.current_user_id()))"
+        },
+        "deliveries_update_manager": {
+          "name": "deliveries_update_manager",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager']::public.member_role[]) and \"deliveries\".\"status\" = 'draft'",
+          "withCheck": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "deliveries_delete_unconfirmed": {
+          "name": "deliveries_delete_unconfirmed",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "app_user"
+          ],
+          "using": "\"deliveries\".\"status\" in ('draft', 'discarded') and ((public.has_role(location_id, array['owner', 'manager', 'staff']::public.member_role[]) and \"deliveries\".\"created_by\" = public.current_user_id()) or public.has_role(location_id, array['owner', 'manager']::public.member_role[]))"
+        }
+      },
+      "checkConstraints": {
+        "deliveries_invoice_has_photo": {
+          "name": "deliveries_invoice_has_photo",
+          "value": "\"deliveries\".\"source\" <> 'invoice_photo' or \"deliveries\".\"photo_path\" is not null"
+        },
+        "deliveries_confirmed_has_time": {
+          "name": "deliveries_confirmed_has_time",
+          "value": "\"deliveries\".\"status\" <> 'confirmed' or \"deliveries\".\"confirmed_at\" is not null"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.delivery_lines": {
+      "name": "delivery_lines",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "delivery_id": {
+          "name": "delivery_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ingredient_id": {
+          "name": "ingredient_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pack_size_id": {
+          "name": "pack_size_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pack_count": {
+          "name": "pack_count",
+          "type": "numeric(14, 3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "qty_base_unit": {
+          "name": "qty_base_unit",
+          "type": "numeric(14, 3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "line_total": {
+          "name": "line_total",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "unit_cost": {
+          "name": "unit_cost",
+          "type": "numeric(12, 6)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "update_cost": {
+          "name": "update_cost",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "raw_text": {
+          "name": "raw_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "delivery_lines_delivery_id_idx": {
+          "name": "delivery_lines_delivery_id_idx",
+          "columns": [
+            {
+              "expression": "delivery_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "delivery_lines_ingredient_id_idx": {
+          "name": "delivery_lines_ingredient_id_idx",
+          "columns": [
+            {
+              "expression": "ingredient_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "delivery_lines_location_id_locations_id_fk": {
+          "name": "delivery_lines_location_id_locations_id_fk",
+          "tableFrom": "delivery_lines",
+          "tableTo": "locations",
+          "columnsFrom": [
+            "location_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "delivery_lines_delivery_fk": {
+          "name": "delivery_lines_delivery_fk",
+          "tableFrom": "delivery_lines",
+          "tableTo": "deliveries",
+          "columnsFrom": [
+            "delivery_id",
+            "location_id"
+          ],
+          "columnsTo": [
+            "id",
+            "location_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "delivery_lines_ingredient_fk": {
+          "name": "delivery_lines_ingredient_fk",
+          "tableFrom": "delivery_lines",
+          "tableTo": "ingredients",
+          "columnsFrom": [
+            "ingredient_id",
+            "location_id"
+          ],
+          "columnsTo": [
+            "id",
+            "location_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "delivery_lines_pack_size_fk": {
+          "name": "delivery_lines_pack_size_fk",
+          "tableFrom": "delivery_lines",
+          "tableTo": "pack_sizes",
+          "columnsFrom": [
+            "pack_size_id",
+            "location_id"
+          ],
+          "columnsTo": [
+            "id",
+            "location_id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "delivery_lines_select_member": {
+          "name": "delivery_lines_select_member",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.is_member(location_id)"
+        },
+        "delivery_lines_insert_draft": {
+          "name": "delivery_lines_insert_draft",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "app_user"
+          ],
+          "withCheck": "public.has_role(location_id, array['owner', 'manager', 'staff']::public.member_role[]) and exists (select 1 from public.deliveries d where d.id = \"delivery_lines\".\"delivery_id\" and d.location_id = \"delivery_lines\".\"location_id\" and d.status = 'draft' and (d.created_by = public.current_user_id() or public.has_role(d.location_id, array['owner', 'manager']::public.member_role[])))"
+        },
+        "delivery_lines_update_draft": {
+          "name": "delivery_lines_update_draft",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager', 'staff']::public.member_role[]) and exists (select 1 from public.deliveries d where d.id = \"delivery_lines\".\"delivery_id\" and d.location_id = \"delivery_lines\".\"location_id\" and d.status = 'draft' and (d.created_by = public.current_user_id() or public.has_role(d.location_id, array['owner', 'manager']::public.member_role[])))",
+          "withCheck": "public.has_role(location_id, array['owner', 'manager', 'staff']::public.member_role[]) and exists (select 1 from public.deliveries d where d.id = \"delivery_lines\".\"delivery_id\" and d.location_id = \"delivery_lines\".\"location_id\" and d.status = 'draft' and (d.created_by = public.current_user_id() or public.has_role(d.location_id, array['owner', 'manager']::public.member_role[])))"
+        },
+        "delivery_lines_delete_draft": {
+          "name": "delivery_lines_delete_draft",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager', 'staff']::public.member_role[]) and exists (select 1 from public.deliveries d where d.id = \"delivery_lines\".\"delivery_id\" and d.location_id = \"delivery_lines\".\"location_id\" and d.status = 'draft' and (d.created_by = public.current_user_id() or public.has_role(d.location_id, array['owner', 'manager']::public.member_role[])))"
+        }
+      },
+      "checkConstraints": {
+        "delivery_lines_pack_count_positive": {
+          "name": "delivery_lines_pack_count_positive",
+          "value": "\"delivery_lines\".\"pack_count\" is null or \"delivery_lines\".\"pack_count\" > 0"
+        },
+        "delivery_lines_qty_positive": {
+          "name": "delivery_lines_qty_positive",
+          "value": "\"delivery_lines\".\"qty_base_unit\" is null or \"delivery_lines\".\"qty_base_unit\" > 0"
+        },
+        "delivery_lines_line_total_not_negative": {
+          "name": "delivery_lines_line_total_not_negative",
+          "value": "\"delivery_lines\".\"line_total\" is null or \"delivery_lines\".\"line_total\" >= 0"
+        },
+        "delivery_lines_unit_cost_not_negative": {
+          "name": "delivery_lines_unit_cost_not_negative",
+          "value": "\"delivery_lines\".\"unit_cost\" is null or \"delivery_lines\".\"unit_cost\" >= 0"
+        },
+        "delivery_lines_pack_has_ingredient": {
+          "name": "delivery_lines_pack_has_ingredient",
+          "value": "\"delivery_lines\".\"pack_size_id\" is null or \"delivery_lines\".\"ingredient_id\" is not null"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.stock_movements": {
+      "name": "stock_movements",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ingredient_id": {
+          "name": "ingredient_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "qty_delta": {
+          "name": "qty_delta",
+          "type": "numeric(14, 3)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "movement_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ref_table": {
+          "name": "ref_table",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ref_id": {
+          "name": "ref_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "waste_reason": {
+          "name": "waste_reason",
+          "type": "waste_reason",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "occurred_at": {
+          "name": "occurred_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "corrects_movement_id": {
+          "name": "corrects_movement_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "stock_movements_ingredient_id_occurred_at_idx": {
+          "name": "stock_movements_ingredient_id_occurred_at_idx",
+          "columns": [
+            {
+              "expression": "ingredient_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "occurred_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "stock_movements_location_id_type_occurred_at_idx": {
+          "name": "stock_movements_location_id_type_occurred_at_idx",
+          "columns": [
+            {
+              "expression": "location_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "occurred_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "stock_movements_ref_idx": {
+          "name": "stock_movements_ref_idx",
+          "columns": [
+            {
+              "expression": "ref_table",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "ref_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "stock_movements_corrects_movement_id_idx": {
+          "name": "stock_movements_corrects_movement_id_idx",
+          "columns": [
+            {
+              "expression": "corrects_movement_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "stock_movements_location_id_client_id_key": {
+          "name": "stock_movements_location_id_client_id_key",
+          "columns": [
+            {
+              "expression": "location_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "client_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"stock_movements\".\"client_id\" is not null",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "stock_movements_location_id_locations_id_fk": {
+          "name": "stock_movements_location_id_locations_id_fk",
+          "tableFrom": "stock_movements",
+          "tableTo": "locations",
+          "columnsFrom": [
+            "location_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "stock_movements_created_by_users_id_fk": {
+          "name": "stock_movements_created_by_users_id_fk",
+          "tableFrom": "stock_movements",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "stock_movements_ingredient_fk": {
+          "name": "stock_movements_ingredient_fk",
+          "tableFrom": "stock_movements",
+          "tableTo": "ingredients",
+          "columnsFrom": [
+            "ingredient_id",
+            "location_id"
+          ],
+          "columnsTo": [
+            "id",
+            "location_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "stock_movements_select_member": {
+          "name": "stock_movements_select_member",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.is_member(location_id)"
+        },
+        "stock_movements_insert_by_type": {
+          "name": "stock_movements_insert_by_type",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "app_user"
+          ],
+          "withCheck": "(type in ('sale', 'count_adjust') and public.has_role(location_id, array['owner', 'manager']::public.member_role[])) or (type in ('delivery', 'waste') and public.has_role(location_id, array['owner', 'manager', 'staff']::public.member_role[]))"
+        }
+      },
+      "checkConstraints": {
+        "stock_movements_qty_not_zero": {
+          "name": "stock_movements_qty_not_zero",
+          "value": "\"stock_movements\".\"qty_delta\" <> 0"
+        },
+        "stock_movements_waste_has_reason": {
+          "name": "stock_movements_waste_has_reason",
+          "value": "(\"stock_movements\".\"type\" = 'waste') = (\"stock_movements\".\"waste_reason\" is not null)"
+        },
+        "stock_movements_ref_is_complete": {
+          "name": "stock_movements_ref_is_complete",
+          "value": "(\"stock_movements\".\"ref_table\" is null) = (\"stock_movements\".\"ref_id\" is null)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.menu_items": {
+      "name": "menu_items",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pos_item_id": {
+          "name": "pos_item_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pos_name": {
+          "name": "pos_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "menu_item_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'item'"
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "price": {
+          "name": "price",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_mapped": {
+          "name": "is_mapped",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "is_ignored": {
+          "name": "is_ignored",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "ai_extraction_id": {
+          "name": "ai_extraction_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "menu_items_location_id_pos_item_id_key": {
+          "name": "menu_items_location_id_pos_item_id_key",
+          "columns": [
+            {
+              "expression": "location_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "pos_item_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"menu_items\".\"pos_item_id\" is not null",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "menu_items_location_id_lower_pos_name_key": {
+          "name": "menu_items_location_id_lower_pos_name_key",
+          "columns": [
+            {
+              "expression": "location_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "lower(\"pos_name\")",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"menu_items\".\"pos_item_id\" is null",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "menu_items_unmapped_idx": {
+          "name": "menu_items_unmapped_idx",
+          "columns": [
+            {
+              "expression": "location_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "not \"menu_items\".\"is_mapped\" and not \"menu_items\".\"is_ignored\"",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "menu_items_location_id_locations_id_fk": {
+          "name": "menu_items_location_id_locations_id_fk",
+          "tableFrom": "menu_items",
+          "tableTo": "locations",
+          "columnsFrom": [
+            "location_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "menu_items_id_location_id_key": {
+          "name": "menu_items_id_location_id_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "location_id"
+          ]
+        }
+      },
+      "policies": {
+        "menu_items_select_member": {
+          "name": "menu_items_select_member",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.is_member(location_id)"
+        },
+        "menu_items_insert_role": {
+          "name": "menu_items_insert_role",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "app_user"
+          ],
+          "withCheck": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "menu_items_update_role": {
+          "name": "menu_items_update_role",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])",
+          "withCheck": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "menu_items_delete_role": {
+          "name": "menu_items_delete_role",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        }
+      },
+      "checkConstraints": {
+        "menu_items_price_not_negative": {
+          "name": "menu_items_price_not_negative",
+          "value": "\"menu_items\".\"price\" is null or \"menu_items\".\"price\" >= 0"
+        },
+        "menu_items_mapped_or_ignored": {
+          "name": "menu_items_mapped_or_ignored",
+          "value": "not (\"menu_items\".\"is_mapped\" and \"menu_items\".\"is_ignored\")"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.recipe_lines": {
+      "name": "recipe_lines",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "menu_item_id": {
+          "name": "menu_item_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ingredient_id": {
+          "name": "ingredient_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "draft_ingredient_name": {
+          "name": "draft_ingredient_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "draft_base_unit": {
+          "name": "draft_base_unit",
+          "type": "base_unit",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "qty_base_unit": {
+          "name": "qty_base_unit",
+          "type": "numeric(14, 3)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source": {
+          "name": "source",
+          "type": "recipe_line_source",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'manual'"
+        },
+        "confirmed_at": {
+          "name": "confirmed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "confirmed_by": {
+          "name": "confirmed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "recipe_lines_ingredient_id_idx": {
+          "name": "recipe_lines_ingredient_id_idx",
+          "columns": [
+            {
+              "expression": "ingredient_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "recipe_lines_location_id_locations_id_fk": {
+          "name": "recipe_lines_location_id_locations_id_fk",
+          "tableFrom": "recipe_lines",
+          "tableTo": "locations",
+          "columnsFrom": [
+            "location_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "recipe_lines_confirmed_by_users_id_fk": {
+          "name": "recipe_lines_confirmed_by_users_id_fk",
+          "tableFrom": "recipe_lines",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "confirmed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "recipe_lines_menu_item_fk": {
+          "name": "recipe_lines_menu_item_fk",
+          "tableFrom": "recipe_lines",
+          "tableTo": "menu_items",
+          "columnsFrom": [
+            "menu_item_id",
+            "location_id"
+          ],
+          "columnsTo": [
+            "id",
+            "location_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "recipe_lines_ingredient_fk": {
+          "name": "recipe_lines_ingredient_fk",
+          "tableFrom": "recipe_lines",
+          "tableTo": "ingredients",
+          "columnsFrom": [
+            "ingredient_id",
+            "location_id"
+          ],
+          "columnsTo": [
+            "id",
+            "location_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "recipe_lines_menu_item_id_ingredient_id_key": {
+          "name": "recipe_lines_menu_item_id_ingredient_id_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "menu_item_id",
+            "ingredient_id"
+          ]
+        }
+      },
+      "policies": {
+        "recipe_lines_select_member": {
+          "name": "recipe_lines_select_member",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.is_member(location_id)"
+        },
+        "recipe_lines_insert_role": {
+          "name": "recipe_lines_insert_role",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "app_user"
+          ],
+          "withCheck": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "recipe_lines_update_role": {
+          "name": "recipe_lines_update_role",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])",
+          "withCheck": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "recipe_lines_delete_role": {
+          "name": "recipe_lines_delete_role",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        }
+      },
+      "checkConstraints": {
+        "recipe_lines_qty_positive": {
+          "name": "recipe_lines_qty_positive",
+          "value": "\"recipe_lines\".\"qty_base_unit\" > 0"
+        },
+        "recipe_lines_confirmed_has_ingredient": {
+          "name": "recipe_lines_confirmed_has_ingredient",
+          "value": "\"recipe_lines\".\"confirmed_at\" is null or \"recipe_lines\".\"ingredient_id\" is not null"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.pos_import_mappings": {
+      "name": "pos_import_mappings",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pos_provider": {
+          "name": "pos_provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "column_map": {
+          "name": "column_map",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "pos_import_mappings_location_id_locations_id_fk": {
+          "name": "pos_import_mappings_location_id_locations_id_fk",
+          "tableFrom": "pos_import_mappings",
+          "tableTo": "locations",
+          "columnsFrom": [
+            "location_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pos_import_mappings_updated_by_users_id_fk": {
+          "name": "pos_import_mappings_updated_by_users_id_fk",
+          "tableFrom": "pos_import_mappings",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "updated_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "pos_import_mappings_location_id_pos_provider_key": {
+          "name": "pos_import_mappings_location_id_pos_provider_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "location_id",
+            "pos_provider"
+          ]
+        }
+      },
+      "policies": {
+        "pos_import_mappings_select_member": {
+          "name": "pos_import_mappings_select_member",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.is_member(location_id)"
+        },
+        "pos_import_mappings_insert_role": {
+          "name": "pos_import_mappings_insert_role",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "app_user"
+          ],
+          "withCheck": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "pos_import_mappings_update_role": {
+          "name": "pos_import_mappings_update_role",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])",
+          "withCheck": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "pos_import_mappings_delete_role": {
+          "name": "pos_import_mappings_delete_role",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.sale_lines": {
+      "name": "sale_lines",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sale_id": {
+          "name": "sale_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "menu_item_id": {
+          "name": "menu_item_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "qty": {
+          "name": "qty",
+          "type": "numeric(14, 3)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "depleted_at": {
+          "name": "depleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "sale_lines_sale_id_idx": {
+          "name": "sale_lines_sale_id_idx",
+          "columns": [
+            {
+              "expression": "sale_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "sale_lines_undepleted_idx": {
+          "name": "sale_lines_undepleted_idx",
+          "columns": [
+            {
+              "expression": "menu_item_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"sale_lines\".\"depleted_at\" is null",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "sale_lines_location_id_locations_id_fk": {
+          "name": "sale_lines_location_id_locations_id_fk",
+          "tableFrom": "sale_lines",
+          "tableTo": "locations",
+          "columnsFrom": [
+            "location_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sale_lines_sale_fk": {
+          "name": "sale_lines_sale_fk",
+          "tableFrom": "sale_lines",
+          "tableTo": "sales",
+          "columnsFrom": [
+            "sale_id",
+            "location_id"
+          ],
+          "columnsTo": [
+            "id",
+            "location_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sale_lines_menu_item_fk": {
+          "name": "sale_lines_menu_item_fk",
+          "tableFrom": "sale_lines",
+          "tableTo": "menu_items",
+          "columnsFrom": [
+            "menu_item_id",
+            "location_id"
+          ],
+          "columnsTo": [
+            "id",
+            "location_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "sale_lines_select_member": {
+          "name": "sale_lines_select_member",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.is_member(location_id)"
+        },
+        "sale_lines_insert_role": {
+          "name": "sale_lines_insert_role",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "app_user"
+          ],
+          "withCheck": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "sale_lines_update_role": {
+          "name": "sale_lines_update_role",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])",
+          "withCheck": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "sale_lines_delete_role": {
+          "name": "sale_lines_delete_role",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        }
+      },
+      "checkConstraints": {
+        "sale_lines_qty_not_zero": {
+          "name": "sale_lines_qty_not_zero",
+          "value": "\"sale_lines\".\"qty\" <> 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.sales": {
+      "name": "sales",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "import_id": {
+          "name": "import_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pos_order_id": {
+          "name": "pos_order_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sold_at": {
+          "name": "sold_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "sales_location_id_sold_at_idx": {
+          "name": "sales_location_id_sold_at_idx",
+          "columns": [
+            {
+              "expression": "location_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "sold_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "sales_import_id_idx": {
+          "name": "sales_import_id_idx",
+          "columns": [
+            {
+              "expression": "import_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "sales_location_id_locations_id_fk": {
+          "name": "sales_location_id_locations_id_fk",
+          "tableFrom": "sales",
+          "tableTo": "locations",
+          "columnsFrom": [
+            "location_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sales_import_fk": {
+          "name": "sales_import_fk",
+          "tableFrom": "sales",
+          "tableTo": "sales_imports",
+          "columnsFrom": [
+            "import_id",
+            "location_id"
+          ],
+          "columnsTo": [
+            "id",
+            "location_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "sales_location_id_pos_order_id_key": {
+          "name": "sales_location_id_pos_order_id_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "location_id",
+            "pos_order_id"
+          ]
+        },
+        "sales_id_location_id_key": {
+          "name": "sales_id_location_id_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "location_id"
+          ]
+        }
+      },
+      "policies": {
+        "sales_select_member": {
+          "name": "sales_select_member",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.is_member(location_id)"
+        },
+        "sales_insert_role": {
+          "name": "sales_insert_role",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "app_user"
+          ],
+          "withCheck": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "sales_update_role": {
+          "name": "sales_update_role",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])",
+          "withCheck": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "sales_delete_role": {
+          "name": "sales_delete_role",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.sales_imports": {
+      "name": "sales_imports",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source": {
+          "name": "source",
+          "type": "import_source",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "import_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "file_name": {
+          "name": "file_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "photo_path": {
+          "name": "photo_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ai_extraction_id": {
+          "name": "ai_extraction_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "business_date": {
+          "name": "business_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "imported_by": {
+          "name": "imported_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "row_count": {
+          "name": "row_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "skipped_count": {
+          "name": "skipped_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "unmapped_count": {
+          "name": "unmapped_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "confirmed_by": {
+          "name": "confirmed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "confirmed_at": {
+          "name": "confirmed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "undone_by": {
+          "name": "undone_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "undone_at": {
+          "name": "undone_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "sales_imports_location_id_created_at_idx": {
+          "name": "sales_imports_location_id_created_at_idx",
+          "columns": [
+            {
+              "expression": "location_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "sales_imports_location_id_locations_id_fk": {
+          "name": "sales_imports_location_id_locations_id_fk",
+          "tableFrom": "sales_imports",
+          "tableTo": "locations",
+          "columnsFrom": [
+            "location_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sales_imports_imported_by_users_id_fk": {
+          "name": "sales_imports_imported_by_users_id_fk",
+          "tableFrom": "sales_imports",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "imported_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "sales_imports_confirmed_by_users_id_fk": {
+          "name": "sales_imports_confirmed_by_users_id_fk",
+          "tableFrom": "sales_imports",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "confirmed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "sales_imports_undone_by_users_id_fk": {
+          "name": "sales_imports_undone_by_users_id_fk",
+          "tableFrom": "sales_imports",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "undone_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "sales_imports_id_location_id_key": {
+          "name": "sales_imports_id_location_id_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "location_id"
+          ]
+        }
+      },
+      "policies": {
+        "sales_imports_select_member": {
+          "name": "sales_imports_select_member",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.is_member(location_id)"
+        },
+        "sales_imports_insert_role": {
+          "name": "sales_imports_insert_role",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "app_user"
+          ],
+          "withCheck": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "sales_imports_update_role": {
+          "name": "sales_imports_update_role",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])",
+          "withCheck": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        },
+        "sales_imports_delete_role": {
+          "name": "sales_imports_delete_role",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner', 'manager']::public.member_role[])"
+        }
+      },
+      "checkConstraints": {
+        "sales_imports_photo_has_path_and_date": {
+          "name": "sales_imports_photo_has_path_and_date",
+          "value": "\"sales_imports\".\"source\" <> 'photo' or (\"sales_imports\".\"photo_path\" is not null and \"sales_imports\".\"business_date\" is not null)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.setup_check": {
+      "name": "setup_check",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.locations": {
+      "name": "locations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pos_provider": {
+          "name": "pos_provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "timezone": {
+          "name": "timezone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "locations_org_id_idx": {
+          "name": "locations_org_id_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "locations_org_id_organizations_id_fk": {
+          "name": "locations_org_id_organizations_id_fk",
+          "tableFrom": "locations",
+          "tableTo": "organizations",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "locations_select_member": {
+          "name": "locations_select_member",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.is_member(id)"
+        },
+        "locations_update_owner": {
+          "name": "locations_update_owner",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(id, array['owner']::public.member_role[])",
+          "withCheck": "public.has_role(id, array['owner']::public.member_role[])"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.memberships": {
+      "name": "memberships",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "member_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "memberships_location_id_idx": {
+          "name": "memberships_location_id_idx",
+          "columns": [
+            {
+              "expression": "location_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "memberships_user_id_users_id_fk": {
+          "name": "memberships_user_id_users_id_fk",
+          "tableFrom": "memberships",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "memberships_location_id_locations_id_fk": {
+          "name": "memberships_location_id_locations_id_fk",
+          "tableFrom": "memberships",
+          "tableTo": "locations",
+          "columnsFrom": [
+            "location_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "memberships_user_id_location_id_pk": {
+          "name": "memberships_user_id_location_id_pk",
+          "columns": [
+            "user_id",
+            "location_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {
+        "memberships_select_member": {
+          "name": "memberships_select_member",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.is_member(location_id)"
+        },
+        "memberships_insert_owner": {
+          "name": "memberships_insert_owner",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "app_user"
+          ],
+          "withCheck": "public.has_role(location_id, array['owner']::public.member_role[])"
+        },
+        "memberships_update_owner": {
+          "name": "memberships_update_owner",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner']::public.member_role[])",
+          "withCheck": "public.has_role(location_id, array['owner']::public.member_role[])"
+        },
+        "memberships_delete_owner": {
+          "name": "memberships_delete_owner",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "app_user"
+          ],
+          "using": "public.has_role(location_id, array['owner']::public.member_role[])"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.organizations": {
+      "name": "organizations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "plan": {
+          "name": "plan",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pilot'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "organizations_select_member": {
+          "name": "organizations_select_member",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "app_user"
+          ],
+          "using": "exists (select 1 from public.locations l where l.org_id = organizations.id and public.is_member(l.id))"
+        },
+        "organizations_update_owner": {
+          "name": "organizations_update_owner",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "app_user"
+          ],
+          "using": "exists (select 1 from public.locations l where l.org_id = organizations.id and public.has_role(l.id, array['owner']::public.member_role[]))",
+          "withCheck": "exists (select 1 from public.locations l where l.org_id = organizations.id and public.has_role(l.id, array['owner']::public.member_role[]))"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.ai_extraction_kind": {
+      "name": "ai_extraction_kind",
+      "schema": "public",
+      "values": [
+        "menu_screenshot",
+        "recipe_draft",
+        "eod_report",
+        "supplier_invoice"
+      ]
+    },
+    "public.ai_extraction_status": {
+      "name": "ai_extraction_status",
+      "schema": "public",
+      "values": [
+        "draft",
+        "confirmed",
+        "discarded",
+        "failed"
+      ]
+    },
+    "public.base_unit": {
+      "name": "base_unit",
+      "schema": "public",
+      "values": [
+        "g",
+        "ml",
+        "unit"
+      ]
+    },
+    "public.count_status": {
+      "name": "count_status",
+      "schema": "public",
+      "values": [
+        "draft",
+        "submitted",
+        "approved",
+        "rejected"
+      ]
+    },
+    "public.delivery_source": {
+      "name": "delivery_source",
+      "schema": "public",
+      "values": [
+        "manual",
+        "invoice_photo"
+      ]
+    },
+    "public.delivery_status": {
+      "name": "delivery_status",
+      "schema": "public",
+      "values": [
+        "draft",
+        "confirmed",
+        "discarded"
+      ]
+    },
+    "public.import_source": {
+      "name": "import_source",
+      "schema": "public",
+      "values": [
+        "csv",
+        "photo"
+      ]
+    },
+    "public.import_status": {
+      "name": "import_status",
+      "schema": "public",
+      "values": [
+        "draft",
+        "confirmed",
+        "undone"
+      ]
+    },
+    "public.member_role": {
+      "name": "member_role",
+      "schema": "public",
+      "values": [
+        "owner",
+        "manager",
+        "staff"
+      ]
+    },
+    "public.menu_item_kind": {
+      "name": "menu_item_kind",
+      "schema": "public",
+      "values": [
+        "item",
+        "modifier"
+      ]
+    },
+    "public.movement_type": {
+      "name": "movement_type",
+      "schema": "public",
+      "values": [
+        "sale",
+        "delivery",
+        "waste",
+        "count_adjust"
+      ]
+    },
+    "public.recipe_line_source": {
+      "name": "recipe_line_source",
+      "schema": "public",
+      "values": [
+        "manual",
+        "ai"
+      ]
+    },
+    "public.waste_reason": {
+      "name": "waste_reason",
+      "schema": "public",
+      "values": [
+        "expired",
+        "dropped",
+        "burnt",
+        "other"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { check, foreignKey, index, pgPolicy, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { check, foreignKey, index, pgPolicy, pgTable, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { authUsers } from "drizzle-orm/supabase";
 import { ingredients } from "./catalogue";
 import { qty, timestamptz } from "./columns";
@@ -41,6 +41,11 @@ export const stockMovements = pgTable(
      * key: the offset outlives an undone sale). See migration 0011.
      */
     correctsMovementId: uuid("corrects_movement_id"),
+    /**
+     * Made on the phone for movements a person logs directly (waste), so a
+     * retried submit is one movement. Null for everything else (migration 0014).
+     */
+    clientId: uuid("client_id"),
     /** When it was recorded. */
     createdAt: timestamptz("created_at").notNull().defaultNow(),
   },
@@ -54,6 +59,9 @@ export const stockMovements = pgTable(
     index("stock_movements_location_id_type_occurred_at_idx").on(t.locationId, t.type, t.occurredAt),
     index("stock_movements_ref_idx").on(t.refTable, t.refId),
     index("stock_movements_corrects_movement_id_idx").on(t.correctsMovementId),
+    uniqueIndex("stock_movements_location_id_client_id_key")
+      .on(t.locationId, t.clientId)
+      .where(sql`${t.clientId} is not null`),
     check("stock_movements_qty_not_zero", sql`${t.qtyDelta} <> 0`),
     check("stock_movements_waste_has_reason", sql`(${t.type} = 'waste') = (${t.wasteReason} is not null)`),
     check("stock_movements_ref_is_complete", sql`(${t.refTable} is null) = (${t.refId} is null)`),

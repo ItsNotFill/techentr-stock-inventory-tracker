@@ -52,6 +52,9 @@ app/
     settings/           restaurant details and team
   api/                  route handlers (uploads, AI reads)
   manifest.ts           PWA manifest
+  ~offline/             static screen the service worker shows offline
+pwa/
+  sw.ts                 service worker source (own tsconfig); built into public/sw.js by `npm run build`
 proxy.ts                session refresh and sign-in redirects (Next.js 16 name for middleware)
 components/
   ui/                   shadcn/ui components
@@ -64,6 +67,10 @@ lib/
     admin.ts            admin connection: migrations, seed, sign-up bootstrap only
   ledger/               append movements, stock queries, depletion, late-movement correction (with migrations 0011, 0012)
   counts/               stock counts: start, save, submit, approve, reject
+  deliveries/           log a delivery (draft, lines, confirm, movements), delivery list
+  waste/                log waste, recent waste
+  dashboard/            everything the dashboard shows, in one read
+  pwa/                  cache names shared by the service worker and the screens
   units/                base-unit and pack conversion
   variance/             unexplained-usage maths
   imports/              CSV parsing, column mapping, idempotent import, undo
@@ -92,6 +99,7 @@ These scripts are created in stage 0. Keep the names.
 | Type check | `npm run typecheck` |
 | Tests | `npm test` |
 | End-to-end tests in a headless browser | `npm run test:e2e` |
+| Offline and install checks (production build, own server on port 3220) | `npm run build && E2E_PWA=1 E2E_BASE_URL=http://localhost:3220 npx playwright test pwa` |
 | Generate a migration from schema changes | `npm run db:generate` |
 | Apply migrations | `npm run db:migrate` |
 | Seed the pizzeria data | `npm run db:seed` |
@@ -187,6 +195,7 @@ This is not the Next.js of older tutorials. `AGENTS.md` says the same: read the 
   - A "new item" form empties itself after a successful create (reset its state before `router.push`), otherwise the next visit shows the last entry.
   - End-to-end tests use role-based locators (`getByRole`) or filter by `visible`, because hidden copies of a screen are still in the DOM.
 - **Form fields are controlled.** React resets uncontrolled fields after every Server Action, failed ones included, which wipes what the user typed. Keep each field in `useState` (`value` and `onChange`), as `components/ingredients/ingredient-form.tsx` does. Passwords are the exception.
+- **Service worker.** Only a production build has one (`npm run build` runs `serwist build` after `next build`); `next dev` and the e2e tests run without it. Change caching only in `pwa/sw.ts` and keep its rules: never cache data, Server Actions, `/api` or other origins (DECISIONS.md, entry 87).
 - **shadcn/ui** is the Radix base, Nova preset. Forms use the `field` components (`components/ui/field.tsx`); there is no `form` component.
 
 ## How the rules apply in code

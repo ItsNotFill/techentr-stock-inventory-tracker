@@ -297,8 +297,10 @@ Indexes: `(sale_id)`; `(menu_item_id)` where `depleted_at is null`, which is the
 | `occurred_at` | timestamptz, not null, default now | when it happened |
 | `created_by` | uuid, nullable | |
 | `created_at` | timestamptz, not null, default now | when it was recorded |
+| `corrects_movement_id` | uuid, nullable | set on a late-movement correction (DECISIONS.md 68) |
+| `client_id` | uuid, nullable | made on the phone for waste; unique per location where set (DECISIONS.md 85) |
 
-Indexes: `(ingredient_id, occurred_at)`, `(location_id, type, occurred_at)`, `(ref_table, ref_id)`.
+Indexes: `(ingredient_id, occurred_at)`, `(location_id, type, occurred_at)`, `(ref_table, ref_id)`. Unique: `(location_id, client_id)` where `client_id is not null`.
 
 | `type` | `ref_table` | `occurred_at` |
 | --- | --- | --- |
@@ -359,8 +361,9 @@ Unexplained usage for a line = `counted_qty − (theoretical_qty + late_adjust_q
 | --- | --- | --- |
 | `id` | uuid PK | |
 | `location_id` | uuid, not null | |
+| `client_id` | uuid, not null, default random | made on the phone; a retried "Log delivery" stays one delivery (DECISIONS.md 83) |
 | `source` | `delivery_source`, not null | `manual` or `invoice_photo` |
-| `status` | `delivery_status`, not null | **AI flag.** Manual deliveries are created `confirmed`. Invoice photos are created `draft` |
+| `status` | `delivery_status`, not null | **AI flag.** Manual deliveries are written as a draft, given their lines and confirmed in the same transaction (DECISIONS.md 83). Invoice photos stay `draft` until a manager or owner confirms them |
 | `supplier_name` | text, nullable | |
 | `invoice_number` | text, nullable | |
 | `delivered_at` | timestamptz, not null, default now | |
@@ -370,7 +373,7 @@ Unexplained usage for a line = `counted_qty − (theoretical_qty + late_adjust_q
 | `created_at` | timestamptz | |
 | `confirmed_by`, `confirmed_at` | uuid, timestamptz, nullable | |
 
-Check: `source <> 'invoice_photo' or photo_path is not null`. Unique: `(id, location_id)`. Indexes: `(location_id, delivered_at)`; `(location_id, supplier_name, invoice_number)`, not unique, used to warn about an invoice entered twice.
+Check: `source <> 'invoice_photo' or photo_path is not null`. Unique: `(id, location_id)`; `(location_id, client_id)`. Indexes: `(location_id, delivered_at)`; `(location_id, supplier_name, invoice_number)`, not unique, used to warn about an invoice entered twice.
 
 #### `delivery_lines`
 
@@ -389,7 +392,7 @@ Check: `source <> 'invoice_photo' or photo_path is not null`. Unique: `(id, loca
 | `raw_text` | text, nullable | the line as read from the invoice |
 | `created_at` | timestamptz | |
 
-Index: `(delivery_id)`. On confirmation, each line writes one `delivery` movement.
+Index: `(delivery_id)`. On confirmation, each line writes one `delivery` movement. Lines change only while the delivery is a draft; a confirmed delivery and its lines are frozen by triggers (DECISIONS.md 83).
 
 The pack size key names its column in the delete action because a plain `SET NULL` on a composite key would also null `location_id`, which is not allowed. This form needs Postgres 15 or later and may have to be hand-written in the migration SQL. If it cannot be used, fall back to `on delete restrict`.
 

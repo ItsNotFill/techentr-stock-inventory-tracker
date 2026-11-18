@@ -92,6 +92,20 @@
       "when": 1794902355987,
       "tag": "0012_harden_count_corrections",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1794999034408,
+      "tag": "0013_deliveries_and_delivery_lines",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1794999763403,
+      "tag": "0014_stock_movement_client_id",
+      "breakpoints": true
     }
   ]
 }

@@ -18,9 +18,9 @@ Rules:
 - Every session starts with `git status`, `git worktree list` and the "Now working on" line; half-done work and leftover worktrees are finished or cleaned up first.
 - Things only Filippo can do are listed in `NEXT_STEPS_FOR_FILIPPO.md`.
 
-**Current stage: 5** (stages 0 to 4 are merged, manual paths. The UI design pass (Basil kitchen theme) is merged too, 17 Nov. Next: offline counting (end of stage 4), then stage 5. Parked until `ANTHROPIC_API_KEY` exists: the AI tasks of stages 2 to 5)
+**Current stage: 6 (Pilot)** (stages 0 to 5 are merged, 18 Nov: the MVP's manual paths are complete. Still open from earlier stages: stage 5's real-phone install check, which waits for Filippo (`NEXT_STEPS_FOR_FILIPPO.md`, section 1; DECISIONS.md, entry 89); stage 4's offline-counting block, next for the agents; the AI blocks of stages 2, 3 and 5, parked until `ANTHROPIC_API_KEY` exists)
 
-**Now working on:** nothing. The UI design pass is merged into `main`; the next task is the first offline-counting task below.
+**Now working on:** nothing. Stage 5 is merged into `main`; the next task is the first offline-counting task (end of stage 4), on a new branch from `main`.
 
 ## Stage 0: Setup
 
@@ -123,7 +123,7 @@ Sales by photo (after the done check) — **parked: waiting for `ANTHROPIC_API_K
 
 **Done when:** the worked example's closing count shows −500 g and −€4.
 
-Offline counting (after the done check) — **not done yet**; picked up after the design pass:
+Offline counting (after the done check) — **not done yet**; next, after stage 5 (DECISIONS.md, entry 82). The service worker it needs exists since stage 5:
 
 - [ ] Save count drafts to IndexedDB as they are typed
 - [ ] Sync on reconnect, idempotent through `client_id`
@@ -131,16 +131,16 @@ Offline counting (after the done check) — **not done yet**; picked up after th
 
 ## Stage 5: Deliveries, waste, dashboard, PWA
 
-- [ ] Migration: `deliveries` and `delivery_lines` with RLS
-- [ ] Log delivery screen (mobile): ingredient, pack, quantity; writes a confirmed delivery and its movements
-- [ ] Log waste screen (mobile): ingredient, quantity, reason
-- [ ] Low-stock query: theoretical stock below reorder point
-- [ ] Dashboard: low-stock list, last import, last count's total unexplained usage in euros
-- [ ] Dashboard: top five unexplained-usage ingredients chart with Recharts
-- [ ] Stock history screen: every movement for one ingredient, filtered by type and date
-- [ ] PWA manifest and icons
-- [ ] Service worker with Serwist; app shell loads offline
-- [ ] Install on a real phone and log a delivery from the home-screen icon
+- [x] Migration: `deliveries` and `delivery_lines` with RLS
+- [x] Log delivery screen (mobile): ingredient, pack, quantity; writes a confirmed delivery and its movements
+- [x] Log waste screen (mobile): ingredient, quantity, reason
+- [x] Low-stock query: theoretical stock below reorder point (at or below, as the Ingredients badge: DECISIONS.md, entry 86)
+- [x] Dashboard: low-stock list, last import, last count's total unexplained usage in euros
+- [x] Dashboard: top five unexplained-usage ingredients chart with Recharts
+- [x] Stock history screen: every movement for one ingredient, filtered by type and date
+- [x] PWA manifest and icons (Chrome reports no installability errors: `e2e/pwa.spec.ts`)
+- [x] Service worker with Serwist; app shell loads offline (`e2e/pwa.spec.ts`, production build: a screen opened before and the offline screen both open with the server down)
+- [ ] Install on a real phone and log a delivery from the home-screen icon — **waits for Filippo** (`NEXT_STEPS_FOR_FILIPPO.md`, section 1). Covered automatically so far: no installability errors, offline shell, delivery on a phone-sized screen
 
 **Done when:** a staff member can log a delivery from a phone home-screen icon. **MVP complete.**
 
