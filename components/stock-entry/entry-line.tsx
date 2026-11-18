@@ -23,6 +23,7 @@ export type EntryLineErrors = { ingredientId?: string; amount?: string; unit?: s
  */
 export function EntryLine({
   number,
+  title,
   groups,
   options,
   value,
@@ -32,6 +33,8 @@ export function EntryLine({
 }: {
   /** 1-based, for the card title. */
   number: number;
+  /** Replaces "Item N" (a screen with a single line). */
+  title?: string;
   groups: [string, EntryOption[]][];
   options: EntryOption[];
   value: EntryValue;
@@ -48,7 +51,7 @@ export function EntryLine({
   return (
     <li className={cn("flex flex-col gap-3 rounded-lg border bg-card p-4 shadow-sm", hasError ? "border-destructive" : "border-border")}>
       <div className="flex items-center justify-between gap-3">
-        <h3 className="text-base font-semibold">Item {number}</h3>
+        <h3 className="text-base font-semibold">{title ?? `Item ${number}`}</h3>
         {onRemove ? (
           <Button type="button" variant="destructive-outline" size="icon" onClick={onRemove}>
             <Trash2 aria-hidden />
