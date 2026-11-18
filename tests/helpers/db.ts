@@ -82,6 +82,7 @@ export async function deleteRestaurantData(db: Database, locationIds: string[], 
     // Children first: several keys are RESTRICT and would stop the cascade from the location.
     await tx.delete(schema.stockMovements).where(inArray(schema.stockMovements.locationId, locationIds));
     await tx.delete(schema.salesImports).where(inArray(schema.salesImports.locationId, locationIds));
+    await tx.delete(schema.deliveries).where(inArray(schema.deliveries.locationId, locationIds));
     await tx.delete(schema.menuItems).where(inArray(schema.menuItems.locationId, locationIds));
     await tx.delete(schema.locations).where(inArray(schema.locations.id, locationIds));
     if (organizationIds.length > 0) {

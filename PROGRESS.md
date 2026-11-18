@@ -18,9 +18,9 @@ Rules:
 - Every session starts with `git status`, `git worktree list` and the "Now working on" line; half-done work and leftover worktrees are finished or cleaned up first.
 - Things only Filippo can do are listed in `NEXT_STEPS_FOR_FILIPPO.md`.
 
-**Current stage: 5** (stages 0 to 4 are merged, manual paths. The UI design pass (Basil kitchen theme) is merged too, 17 Nov. Next: offline counting (end of stage 4), then stage 5. Parked until `ANTHROPIC_API_KEY` exists: the AI tasks of stages 2 to 5)
+**Current stage: 5** (stages 0 to 4 are merged, manual paths. The UI design pass (Basil kitchen theme) is merged too, 17 Nov. Stage 5 is being built before stage 4's offline-counting block (DECISIONS.md, entry 82). Parked until `ANTHROPIC_API_KEY` exists: the AI tasks of stages 2 to 5)
 
-**Now working on:** nothing. The UI design pass is merged into `main`; the next task is the first offline-counting task below.
+**Now working on:** stage 5, "Log delivery screen": `lib/deliveries` and its Server Action (main agent, main checkout); the screen goes to `ui-builder` once they exist. Branch `stage-5-deliveries-pwa`.
 
 ## Stage 0: Setup
 
@@ -131,7 +131,7 @@ Offline counting (after the done check) — **not done yet**; picked up after th
 
 ## Stage 5: Deliveries, waste, dashboard, PWA
 
-- [ ] Migration: `deliveries` and `delivery_lines` with RLS
+- [x] Migration: `deliveries` and `delivery_lines` with RLS
 - [ ] Log delivery screen (mobile): ingredient, pack, quantity; writes a confirmed delivery and its movements
 - [ ] Log waste screen (mobile): ingredient, quantity, reason
 - [ ] Low-stock query: theoretical stock below reorder point

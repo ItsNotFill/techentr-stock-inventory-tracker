@@ -128,6 +128,13 @@ A short log of design decisions, so later sessions do not undo earlier choices. 
 | 80 | **The dashboard shows "Get started" until stage 5** (six steps with links for owners and managers; for staff the page header's "Count stock" is the one button, with a short card explaining it). The real dashboard (low stock, last import, unexplained usage) replaces it in stage 5. | A bare card on the first screen told new users nothing; the steps double as the demo tour. |
 | 81 | **Sub-agent worktrees start from `main`, not from the stage branch.** Every brief tells the agent to check `HEAD` and `git reset --hard <stage branch>` in its fresh worktree before working. In a worktree, `.env.local` is loaded with `node --env-file=<main checkout>/.env.local` for Vitest and Playwright; `next dev` needs `process.loadEnvFile` in a small wrapper instead, because Next.js passes `--env-file` to its workers through `NODE_OPTIONS` and Node refuses it there. `npm run build` needs no env. | Found in the design pass: one agent built on the pre-theme code and its work had to be redone. |
 
+## Decided in stage 5 (2026-11-18)
+
+| # | Decision | Reasoning |
+| --- | --- | --- |
+| 82 | **Stage 5 is built before stage 4's offline-counting block.** Offline counting stays unticked in `PROGRESS.md` and follows stage 5 on its own branch. | Filippo asked for stage 5. Offline counting is "after the done check" work, like the AI blocks (entry 57), so nothing in stage 5 depends on it; and it builds on stage 5's service worker. |
+| 83 | **Deliveries are written as a draft, given their lines, then confirmed**, in one transaction for a manual delivery; lines can be written only while their delivery is a draft. `deliveries.client_id` (made on the phone, unique per restaurant) makes a retried "Log delivery" one delivery. A confirmed delivery and its lines are frozen by triggers for every role; the one change allowed is `pack_size_id` going to null when a pack size is deleted. Staff may confirm only manual deliveries. Adds `client_id` to `SCHEMA.md`, `deliveries`. | One path (draft, lines, confirm) serves manual deliveries now and invoice photos later. Movements point at delivery lines, so a line that changed after confirmation would break the ledger's audit trail. A phone with bad signal retries; without the key a retry would add the stock twice. |
+
 ## Open questions (from SPEC.md, still open)
 
 - Which restaurant will pilot it, and which POS do they use?

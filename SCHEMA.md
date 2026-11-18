@@ -359,6 +359,7 @@ Unexplained usage for a line = `counted_qty − (theoretical_qty + late_adjust_q
 | --- | --- | --- |
 | `id` | uuid PK | |
 | `location_id` | uuid, not null | |
+| `client_id` | uuid, not null, default random | made on the phone; a retried "Log delivery" stays one delivery (DECISIONS.md 83) |
 | `source` | `delivery_source`, not null | `manual` or `invoice_photo` |
 | `status` | `delivery_status`, not null | **AI flag.** Manual deliveries are created `confirmed`. Invoice photos are created `draft` |
 | `supplier_name` | text, nullable | |
@@ -370,7 +371,7 @@ Unexplained usage for a line = `counted_qty − (theoretical_qty + late_adjust_q
 | `created_at` | timestamptz | |
 | `confirmed_by`, `confirmed_at` | uuid, timestamptz, nullable | |
 
-Check: `source <> 'invoice_photo' or photo_path is not null`. Unique: `(id, location_id)`. Indexes: `(location_id, delivered_at)`; `(location_id, supplier_name, invoice_number)`, not unique, used to warn about an invoice entered twice.
+Check: `source <> 'invoice_photo' or photo_path is not null`. Unique: `(id, location_id)`; `(location_id, client_id)`. Indexes: `(location_id, delivered_at)`; `(location_id, supplier_name, invoice_number)`, not unique, used to warn about an invoice entered twice.
 
 #### `delivery_lines`
 
@@ -389,7 +390,7 @@ Check: `source <> 'invoice_photo' or photo_path is not null`. Unique: `(id, loca
 | `raw_text` | text, nullable | the line as read from the invoice |
 | `created_at` | timestamptz | |
 
-Index: `(delivery_id)`. On confirmation, each line writes one `delivery` movement.
+Index: `(delivery_id)`. On confirmation, each line writes one `delivery` movement. Lines change only while the delivery is a draft; a confirmed delivery and its lines are frozen by triggers (DECISIONS.md 83).
 
 The pack size key names its column in the delete action because a plain `SET NULL` on a composite key would also null `location_id`, which is not allowed. This form needs Postgres 15 or later and may have to be hand-written in the migration SQL. If it cannot be used, fall back to `on delete restrict`.
 

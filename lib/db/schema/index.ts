@@ -1,5 +1,6 @@
 export * from "./catalogue";
 export * from "./counts";
+export * from "./deliveries";
 export * from "./enums";
 export * from "./ledger";
 export * from "./menu";
