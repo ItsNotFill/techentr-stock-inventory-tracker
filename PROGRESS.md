@@ -138,7 +138,7 @@ Offline counting (after the done check) — **not done yet**; picked up after th
 - [x] Dashboard: low-stock list, last import, last count's total unexplained usage in euros
 - [x] Dashboard: top five unexplained-usage ingredients chart with Recharts
 - [x] Stock history screen: every movement for one ingredient, filtered by type and date
-- [ ] PWA manifest and icons
+- [x] PWA manifest and icons (Chrome reports no installability errors: `e2e/pwa.spec.ts`)
 - [x] Service worker with Serwist; app shell loads offline (`e2e/pwa.spec.ts`, production build: a screen opened before and the offline screen both open with the server down)
 - [ ] Install on a real phone and log a delivery from the home-screen icon
 
