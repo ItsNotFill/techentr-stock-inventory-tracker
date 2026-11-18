@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { DashboardMetrics, DashboardNotices } from "@/components/dashboard/dashboard-cards";
 import { GetStarted, StaffStart } from "@/components/dashboard/get-started";
+import { LowStockList } from "@/components/dashboard/low-stock-list";
 import { PageHeader } from "@/components/page-header";
 import { CardsSkeleton } from "@/components/page-skeleton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireMembership } from "@/lib/auth/membership";
-import { canManage, ROLE_LABELS } from "@/lib/auth/roles";
+import { canManage, canSeeMoney, ROLE_LABELS } from "@/lib/auth/roles";
+import { getDashboard } from "@/lib/dashboard";
+import { withUser } from "@/lib/db/client";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
@@ -19,7 +23,7 @@ export default function DashboardPage() {
       fallback={
         <>
           <PageHeader title="Dashboard" description={DESCRIPTION} />
-          <CardsSkeleton cards={2} />
+          <CardsSkeleton cards={3} />
         </>
       }
     >
@@ -30,10 +34,11 @@ export default function DashboardPage() {
 
 async function DashboardContent() {
   const membership = await requireMembership();
-  // The main action follows the role: managers import sales, staff count.
-  const action = canManage(membership.role)
-    ? { href: "/import", label: "Import sales" }
-    : { href: "/count", label: "Count stock" };
+  const manager = canManage(membership.role);
+  const data = await withUser((tx) => getDashboard(tx, membership.locationId, { withMoney: canSeeMoney(membership.role) }));
+  // A restaurant with no data yet gets the "Get started" steps instead of empty figures.
+  const isNew = !data.lastImport && !data.lastCount && data.lowStock.length === 0 && data.countsWaiting === 0;
+
   const details = (
     <Card size="sm">
       <CardContent className="flex flex-col gap-1 text-sm">
@@ -43,22 +48,52 @@ async function DashboardContent() {
       </CardContent>
     </Card>
   );
+  const lowStock = (
+    <section className="flex flex-col gap-3">
+      <h2 className="text-lg font-semibold tracking-tight">Low stock</h2>
+      <LowStockList items={data.lowStock} linkToIngredients={manager} />
+    </section>
+  );
+
   return (
     <>
       <PageHeader title="Dashboard" description={DESCRIPTION}>
-        <Button asChild size="lg">
-          <Link href={action.href}>{action.label}</Link>
-        </Button>
+        {manager ? (
+          <Button asChild size="lg">
+            <Link href="/import">Import sales</Link>
+          </Button>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            <Button asChild size="lg">
+              <Link href="/deliveries">Log delivery</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline">
+              <Link href="/count">Count stock</Link>
+            </Button>
+          </div>
+        )}
       </PageHeader>
-      {canManage(membership.role) ? (
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:items-start">
-          <GetStarted />
-          {details}
+      {manager ? (
+        <div className="flex flex-col gap-8">
+          {isNew ? (
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:items-start">
+              <GetStarted />
+              {details}
+            </div>
+          ) : (
+            <>
+              <DashboardMetrics data={data} timeZone={membership.timezone} />
+              <DashboardNotices needsRecipe={data.needsRecipe} countsWaiting={data.countsWaiting} />
+              {lowStock}
+              <div className="max-w-sm">{details}</div>
+            </>
+          )}
         </div>
       ) : (
-        <div className="flex max-w-xl flex-col gap-4">
-          {details}
+        <div className="flex flex-col gap-8">
           <StaffStart />
+          {lowStock}
+          <div className="max-w-sm">{details}</div>
         </div>
       )}
     </>
