@@ -25,7 +25,7 @@ function Details({ row }: { row: HistoryRow }) {
   if (row.isCorrection) {
     lines.push(
       <span key="correction">
-        Correction: a movement before this count was recorded after it
+        Correction: a movement dated before this count was recorded after it was approved
         {source?.kind === "count" ? (
           <>
             {" · "}
@@ -63,7 +63,8 @@ function Details({ row }: { row: HistoryRow }) {
   } else if (row.type === "waste" && row.wasteReason) {
     lines.push(<span key="reason">{WASTE_REASON_LABELS[row.wasteReason]}</span>);
   }
-  if (row.note) {
+  // A correction's own note (written by the database) says the same as the line above.
+  if (row.note && !row.isCorrection) {
     lines.push(
       <span key="note" className={lines.length > 0 ? "text-muted-foreground" : undefined}>
         {row.note}

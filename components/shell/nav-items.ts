@@ -3,6 +3,7 @@ import {
   CircleHelp,
   ClipboardList,
   FileUp,
+  History,
   LayoutDashboard,
   Settings,
   Trash2,
@@ -32,6 +33,7 @@ export type NavItem = {
 export const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ALL_ROLES, phoneTab: true },
   { href: "/ingredients", label: "Ingredients", icon: Carrot, roles: MANAGER_ROLES },
+  { href: "/history", label: "Stock history", icon: History, roles: MANAGER_ROLES },
   { href: "/menu", label: "Menu", icon: UtensilsCrossed, roles: MANAGER_ROLES },
   { href: "/import", label: "Import sales", icon: FileUp, roles: MANAGER_ROLES },
   { href: "/unmapped", label: "Needs recipe", icon: CircleHelp, roles: MANAGER_ROLES },

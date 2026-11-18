@@ -100,7 +100,7 @@ test("the owner reads an ingredient's movements and filters them", async ({ brow
 
   await test.step("open the history from the ingredient", async () => {
     await desk.goto(`/ingredients/${mozzarellaId}`);
-    await shown(desk.getByRole("link", { name: "Stock history" })).click();
+    await shown(desk.locator('a[href^="/history?ingredient="]')).click();
     await expect(desk).toHaveURL(new RegExp(`/history\\?ingredient=${mozzarellaId}$`));
     await expect(shown(desk.getByRole("heading", { name: "Mozzarella" }))).toBeVisible();
   });
