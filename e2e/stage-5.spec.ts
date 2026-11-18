@@ -122,3 +122,39 @@ test("staff log a delivery on a phone and stock goes up", async ({ browser }) =>
 
   await phone.context().close();
 });
+
+test("staff log waste on a phone: reason required, then stock goes down", async ({ browser }) => {
+  const phone = await logIn(browser, staff);
+  const before = await stockOf(mozzarellaId);
+
+  await shown(phone.getByRole("link", { name: "Waste" })).click();
+  await expect(phone).toHaveURL(/\/waste$/);
+  await expect(shown(phone.getByRole("heading", { name: "Log waste" }))).toBeVisible();
+
+  await test.step("no reason: the error shows and nothing is written", async () => {
+    await shown(phone.getByLabel("Ingredient")).selectOption({ label: "Mozzarella" });
+    await shown(phone.getByLabel("Unit", { exact: true })).selectOption("g");
+    await shown(phone.getByRole("textbox", { name: "Amount" })).fill("200");
+    await shown(phone.getByRole("button", { name: "Log waste" })).click();
+    await expect(shown(phone.getByText("Choose why it was thrown away."))).toBeVisible();
+    expect((await stockOf(mozzarellaId)).eq(before)).toBe(true);
+    await expect(shown(phone.getByText("No waste logged yet"))).toBeVisible();
+  });
+
+  await test.step("200 g dropped, with a note", async () => {
+    await shown(phone.getByRole("button", { name: "Dropped" })).click();
+    await shown(phone.getByRole("textbox", { name: "Note (optional)" })).fill("dropped tray");
+    await shown(phone.getByRole("button", { name: "Log waste" })).click();
+    await expect(shown(phone.getByText("Waste logged: 200 g of Mozzarella."))).toBeVisible();
+    await expect(shown(phone.getByText("dropped tray"))).toBeVisible();
+    await expect(shown(phone.getByText("−200 g"))).toBeVisible();
+    await expect(shown(phone.getByRole("textbox", { name: "Amount" }))).toHaveValue("");
+    await expect(phone.getByText(/€/)).toHaveCount(0);
+  });
+
+  await test.step("stock went down by exactly 200 g", async () => {
+    expect((await stockOf(mozzarellaId)).eq(before.minus(200))).toBe(true);
+  });
+
+  await phone.context().close();
+});

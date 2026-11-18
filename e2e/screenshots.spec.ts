@@ -245,6 +245,9 @@ for (const viewport of Object.keys(VIEWPORTS) as Viewport[]) {
     await staff.goto("/deliveries");
     await expect(staff.getByRole("button", { name: "Log delivery" }).filter({ visible: true })).toBeVisible();
     await shot(staff, viewport, "93-staff-deliveries");
+    await staff.goto("/waste");
+    await expect(staff.getByRole("button", { name: "Log waste" }).filter({ visible: true })).toBeVisible();
+    await shot(staff, viewport, "94-staff-waste");
     await staff.context().close();
 
     // A manager reviewing a submitted count (throwaway restaurant).

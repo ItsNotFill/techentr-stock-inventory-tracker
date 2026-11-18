@@ -5,6 +5,7 @@ import {
   FileUp,
   LayoutDashboard,
   Settings,
+  Trash2,
   Truck,
   TrendingDown,
   UtensilsCrossed,
@@ -36,6 +37,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/unmapped", label: "Needs recipe", icon: CircleHelp, roles: MANAGER_ROLES },
   { href: "/count", label: "Count", icon: ClipboardList, roles: ALL_ROLES, phoneTab: true },
   { href: "/deliveries", label: "Deliveries", icon: Truck, roles: ALL_ROLES, phoneTab: true },
+  { href: "/waste", label: "Waste", icon: Trash2, roles: ALL_ROLES },
   { href: "/unexplained-usage", label: "Unexplained usage", icon: TrendingDown, roles: MANAGER_ROLES, phoneTab: true },
   { href: "/settings", label: "Settings", icon: Settings, roles: OWNER_ROLES },
 ];
