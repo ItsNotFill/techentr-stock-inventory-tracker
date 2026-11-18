@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 5** (stages 0 to 4 are merged, manual paths. The UI design pass (Basil kitchen theme) is merged too, 17 Nov. Stage 5 is being built before stage 4's offline-counting block (DECISIONS.md, entry 82). Parked until `ANTHROPIC_API_KEY` exists: the AI tasks of stages 2 to 5)
 
-**Now working on:** stage 5, branch `stage-5-deliveries-pwa`. (1) "Stock history screen": built by `ui-builder` (worktree `.claude/worktrees/agent-a3ac8226431a9ecbd`), one fix requested before the merge. (2) "Dashboard" (cards, then the chart): with `ui-builder` in worktree `.claude/worktrees/agent-a65021129d26cc317`; the queries are done.
+**Now working on:** stage 5, branch `stage-5-deliveries-pwa`. (1) "Dashboard" (cards, then the chart): with `ui-builder` in worktree `.claude/worktrees/agent-a65021129d26cc317`. (2) "PWA manifest and icons": with `ui-builder` in worktree `.claude/worktrees/agent-a3ac8226431a9ecbd`.
 
 ## Stage 0: Setup
 
@@ -137,7 +137,7 @@ Offline counting (after the done check) — **not done yet**; picked up after th
 - [x] Low-stock query: theoretical stock below reorder point (at or below, as the Ingredients badge: DECISIONS.md, entry 86)
 - [ ] Dashboard: low-stock list, last import, last count's total unexplained usage in euros
 - [ ] Dashboard: top five unexplained-usage ingredients chart with Recharts
-- [ ] Stock history screen: every movement for one ingredient, filtered by type and date
+- [x] Stock history screen: every movement for one ingredient, filtered by type and date
 - [ ] PWA manifest and icons
 - [x] Service worker with Serwist; app shell loads offline (`e2e/pwa.spec.ts`, production build: a screen opened before and the offline screen both open with the server down)
 - [ ] Install on a real phone and log a delivery from the home-screen icon
