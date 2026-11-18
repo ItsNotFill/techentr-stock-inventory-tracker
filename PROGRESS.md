@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 5** (stages 0 to 4 are merged, manual paths. The UI design pass (Basil kitchen theme) is merged too, 17 Nov. Stage 5 is being built before stage 4's offline-counting block (DECISIONS.md, entry 82). Parked until `ANTHROPIC_API_KEY` exists: the AI tasks of stages 2 to 5)
 
-**Now working on:** stage 5, branch `stage-5-deliveries-pwa`. "PWA manifest and icons": with `ui-builder` in worktree `.claude/worktrees/agent-a3ac8226431a9ecbd`. After it: the whole-stage review, then the hand-off for "Install on a real phone" (needs Filippo).
+**Now working on:** stage 5 whole-stage review (`reviewer` sub-agent, read-only, main checkout), branch `stage-5-deliveries-pwa`. All tasks are ticked except "Install on a real phone", which waits for Filippo (`NEXT_STEPS_FOR_FILIPPO.md`, section 1; DECISIONS.md, entry 89).
 
 ## Stage 0: Setup
 

@@ -29,7 +29,24 @@ Everyone shares the same demo restaurant, so what you change, others see. Undo a
 
 Things only you can do, newest need first. Stage summaries are at the bottom.
 
-### 1. Create a Claude API key (5 minutes)
+### 1. Install the app on a phone and log a delivery (10 minutes): the stage 5 done check
+
+Stage 5's done check is "a staff member can log a delivery from a phone home-screen icon". Everything up to the phone is checked automatically: Chrome reports nothing that stops the install, the app opens offline, and a staff member logs a delivery on a phone-sized screen. Only a real phone is missing.
+
+1. On the phone, open <https://techentr-stock-inventory-tracker.vercel.app> (the live site has stage 5 once it is merged; until then use the branch's preview link from the Vercel dashboard, project "techentr-stock-inventory-tracker", branch `stage-5-deliveries-pwa`).
+2. Install it:
+   - **Android (Chrome):** menu (⋮), then **Install app** (or **Add to Home screen**).
+   - **iPhone (Safari):** Share button, then **Add to Home Screen**, then **Add**.
+3. Close the browser. Open **Inventory** from the home screen. It should open full screen, without the browser's address bar.
+4. Log in as `staff@pizzeria-demo.example.com` (password in `.env.seed.local`).
+5. Tap **Deliveries**, pick **Mozzarella**, keep "Bag 1 kg", type **1**, tap **Log delivery**. You should see "Delivery logged: 1 item added to stock." and the delivery under "Recent deliveries".
+6. So the demo numbers stay the same: tap **Waste**, pick Mozzarella, **1** × Bag 1 kg, reason **Other**, note "install test", **Log waste**.
+7. Optional: switch on airplane mode and open the app again from the icon. Screens you opened before still show; a screen you never opened shows "No connection".
+8. Tell the next session it worked (or what went wrong). It then ticks "Install on a real phone" in `PROGRESS.md`.
+
+**Good to know about the demo restaurant:** a count of three drinks (house red wine, cola, beer) was submitted and approved by the demo owner on 18 Nov at 12:50, probably while you tried the app. It is now the newest count, so the dashboard shows **+€753.40** for "Unexplained usage, last count" instead of the worked example's −€4.00 (cola: 1,080 cans counted against 87 expected). The −€4.00 is still there under **Unexplained usage**, count of 16 Nov. Approved counts cannot be changed. If you want the dashboard to show the worked example again for a demo, say so: a new count of those three drinks at their real levels can be entered and approved, and it then becomes the newest count.
+
+### 2. Create a Claude API key (5 minutes)
 
 The AI tasks read photos (POS screenshots, end-of-day reports, supplier invoices) with the Claude API. `ANTHROPIC_API_KEY` in `.env.local` is empty, so those tasks are parked and everything else continues.
 
