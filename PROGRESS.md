@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 5** (stages 0 to 4 are merged, manual paths. The UI design pass (Basil kitchen theme) is merged too, 17 Nov. Stage 5 is being built before stage 4's offline-counting block (DECISIONS.md, entry 82). Parked until `ANTHROPIC_API_KEY` exists: the AI tasks of stages 2 to 5)
 
-**Now working on:** stage 5, "Log delivery screen": `lib/deliveries` and its Server Action (main agent, main checkout); the screen goes to `ui-builder` once they exist. Branch `stage-5-deliveries-pwa`.
+**Now working on:** stage 5, branch `stage-5-deliveries-pwa`. (1) "Log delivery screen": server side done and pushed; the screen is with `ui-builder` in its own worktree under `.claude/worktrees/`. (2) "Log waste screen": main agent, main checkout, server side first (migration 0014 for `stock_movements.client_id`, `lib/waste`).
 
 ## Stage 0: Setup
 
