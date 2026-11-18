@@ -52,6 +52,7 @@ export function sumDeltas(deltas: string[]): string {
 
 const REF_TABLE_FOR_TYPE: Partial<Record<MovementType, MovementRefTable>> = {
   sale: "sale_lines",
+  delivery: "delivery_lines",
   count_adjust: "count_lines",
 };
 
@@ -81,10 +82,15 @@ export function checkMovement(movement: NewMovement): NewMovement {
       break;
     case "delivery":
       if (delta.isNegative()) throw new LedgerError("A delivery adds stock: its quantity must be positive.");
+      // A delivery points at its delivery line. Stock written by the seed before stage 5 has none.
+      if (movement.refTable && movement.refTable !== REF_TABLE_FOR_TYPE.delivery) {
+        throw new LedgerError("A delivery can only point at a delivery line.");
+      }
       break;
     case "waste":
       if (!delta.isNegative()) throw new LedgerError("Waste removes stock: its quantity must be negative.");
       if (!movement.wasteReason) throw new LedgerError("Waste needs a reason.");
+      if (movement.refTable) throw new LedgerError("A waste movement points at nothing.");
       break;
     case "count_adjust":
       // An adjustment points at its count line. Opening stock written by the seed has no count behind it.
@@ -97,4 +103,20 @@ export function checkMovement(movement: NewMovement): NewMovement {
     throw new LedgerError("Only waste movements have a waste reason.");
   }
   return { ...movement, qtyDelta };
+}
+
+const MINUTE_MS = 60_000;
+const DAY_MS = 24 * 60 * MINUTE_MS;
+
+/**
+ * Checks a time a person typed for a delivery or waste: not in the future
+ * (a minute of clock drift is allowed) and at most `maxDaysBack` days ago, so
+ * a mistyped year cannot reach back into old counts. Returns a message for the
+ * person, or null when the time is fine.
+ */
+export function enteredTimeProblem(at: Date, maxDaysBack: number, now: Date = new Date()): string | null {
+  if (Number.isNaN(at.getTime())) return "Enter a valid date and time.";
+  if (at.getTime() > now.getTime() + MINUTE_MS) return "The time cannot be in the future.";
+  if (at.getTime() < now.getTime() - maxDaysBack * DAY_MS) return `The time can be at most ${maxDaysBack} days ago.`;
+  return null;
 }

@@ -21,4 +21,4 @@ export const reviewNoteSchema = z
   .max(500, "Use at most 500 characters.")
   .transform((value) => (value === "" ? null : value));
 
-export const PACK_UNIT_PREFIX = "pack:";
+export { PACK_UNIT_PREFIX } from "@/lib/units/entry";

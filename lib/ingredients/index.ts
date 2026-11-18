@@ -52,6 +52,32 @@ export async function listIngredients(
   return rows.map((row) => ({ ...row, packSizes: packsByIngredient.get(row.id) ?? [] }));
 }
 
+/** An ingredient as the phone screens (delivery, waste) offer it: no costs, which staff do not see. */
+export type EntryOption = {
+  id: string;
+  name: string;
+  baseUnit: Ingredient["baseUnit"];
+  storageArea: string | null;
+  packSizes: { id: string; label: string; qtyInBaseUnit: string; isDefault: boolean }[];
+};
+
+/** Active ingredients by name, with their pack sizes (smallest first). */
+export async function listEntryOptions(tx: Tx, locationId: string): Promise<EntryOption[]> {
+  const rows = await listIngredients(tx, locationId);
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    baseUnit: row.baseUnit,
+    storageArea: row.storageArea,
+    packSizes: row.packSizes.map((pack) => ({
+      id: pack.id,
+      label: pack.label,
+      qtyInBaseUnit: pack.qtyInBaseUnit,
+      isDefault: pack.isDefault,
+    })),
+  }));
+}
+
 export async function getIngredient(tx: Tx, locationId: string, id: string): Promise<IngredientWithPacks | null> {
   const [row] = await tx
     .select()

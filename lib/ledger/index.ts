@@ -1,9 +1,9 @@
 import { and, eq, inArray, lte, sql } from "drizzle-orm";
 import type { Tx } from "@/lib/db/rls";
-import { countLines, saleLines, stockMovements } from "@/lib/db/schema";
+import { countLines, deliveryLines, saleLines, stockMovements } from "@/lib/db/schema";
 import { checkMovement, LedgerError, type MovementRefTable, type NewMovement } from "./movements";
 
-export { checkMovement, depletionDelta, LedgerError, roundQty, sumDeltas } from "./movements";
+export { checkMovement, depletionDelta, enteredTimeProblem, LedgerError, roundQty, sumDeltas } from "./movements";
 export type { MovementRefTable, NewMovement } from "./movements";
 
 /**
@@ -39,12 +39,9 @@ async function assertRefsBelongToLocation(tx: Tx, locationId: string, movements:
     idsByTable.set(movement.refTable, ids);
   }
 
+  const tables = { sale_lines: saleLines, count_lines: countLines, delivery_lines: deliveryLines } as const;
   for (const [table, ids] of idsByTable) {
-    const target = table === "sale_lines" ? saleLines : table === "count_lines" ? countLines : null;
-    if (!target) {
-      // delivery_lines arrive with stage 5.
-      throw new LedgerError(`Movements cannot reference ${table} yet.`);
-    }
+    const target = tables[table];
     let found = 0;
     for (const batch of chunks([...ids], INSERT_CHUNK)) {
       const [row] = await tx
