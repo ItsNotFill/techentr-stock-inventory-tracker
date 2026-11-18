@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { History } from "lucide-react";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ArchiveButton } from "@/components/ingredients/archive-button";
@@ -8,6 +10,7 @@ import { DEFAULT_DISPLAY_UNIT } from "@/components/ingredients/units";
 import { PageHeader } from "@/components/page-header";
 import { CardsSkeleton } from "@/components/page-skeleton";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth/membership";
 import { MANAGER_ROLES } from "@/lib/auth/roles";
@@ -79,7 +82,12 @@ async function EditIngredientContent({ params }: { params: PageProps<"/ingredien
         description={DESCRIPTION}
         back={BACK}
         badge={ingredient.isActive ? null : <Badge variant="neutral">Archived</Badge>}
-      />
+      >
+        <Link href={`/history?ingredient=${ingredient.id}`} className={buttonVariants({ variant: "outline" })}>
+          <History aria-hidden />
+          Stock history
+        </Link>
+      </PageHeader>
       <div className="flex max-w-2xl flex-col gap-6">
         <Card>
           <CardContent>
