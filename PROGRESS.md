@@ -134,7 +134,7 @@ Offline counting (after the done check) — **not done yet**; picked up after th
 - [x] Migration: `deliveries` and `delivery_lines` with RLS
 - [ ] Log delivery screen (mobile): ingredient, pack, quantity; writes a confirmed delivery and its movements
 - [ ] Log waste screen (mobile): ingredient, quantity, reason
-- [ ] Low-stock query: theoretical stock below reorder point
+- [x] Low-stock query: theoretical stock below reorder point (at or below, as the Ingredients badge: DECISIONS.md, entry 86)
 - [ ] Dashboard: low-stock list, last import, last count's total unexplained usage in euros
 - [ ] Dashboard: top five unexplained-usage ingredients chart with Recharts
 - [ ] Stock history screen: every movement for one ingredient, filtered by type and date

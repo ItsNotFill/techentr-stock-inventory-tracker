@@ -3,6 +3,7 @@ import type { Tx } from "@/lib/db/rls";
 import { ingredients, packSizes, recipeLines, type Ingredient, type PackSize } from "@/lib/db/schema";
 import { hasMovements } from "@/lib/ledger";
 import { costPerBaseUnit, toBaseUnits, toDbQty, toDbUnitCost, DISPLAY_UNITS } from "@/lib/units";
+import { quantityToPar } from "./stock";
 import type { IngredientFormValues, PackSizeFormValues } from "@/lib/validation/ingredients";
 
 /**
@@ -75,6 +76,60 @@ export async function listEntryOptions(tx: Tx, locationId: string): Promise<Entr
       qtyInBaseUnit: pack.qtyInBaseUnit,
       isDefault: pack.isDefault,
     })),
+  }));
+}
+
+export type LowStockItem = {
+  id: string;
+  name: string;
+  baseUnit: Ingredient["baseUnit"];
+  storageArea: string | null;
+  /** Theoretical stock now, in base units. */
+  stock: string;
+  reorderPoint: string;
+  parLevel: string | null;
+  /** Par level minus stock, when a par level is set and stock is under it. */
+  toPar: string | null;
+};
+
+/**
+ * The low-stock list: active ingredients whose theoretical stock is at or
+ * below their reorder point (`isLowStock`, DECISIONS.md 86). The emptiest
+ * first, measured against the reorder point, so grams and bottles compare.
+ */
+export async function listLowStock(tx: Tx, locationId: string): Promise<LowStockItem[]> {
+  const rows = await tx.execute<{
+    id: string;
+    name: string;
+    base_unit: Ingredient["baseUnit"];
+    storage_area: string | null;
+    stock: string;
+    reorder_point: string;
+    par_level: string | null;
+  }>(sql`
+    with stock as (
+      select i.id, i.name, i.base_unit, i.storage_area, i.reorder_point, i.par_level,
+             coalesce(sum(sm.qty_delta), 0)::numeric(14, 3) as stock
+      from public.ingredients i
+      left join public.stock_movements sm on sm.ingredient_id = i.id and sm.location_id = i.location_id
+      where i.location_id = ${locationId}::uuid and i.is_active and i.reorder_point is not null
+      group by i.id
+    )
+    select id, name, base_unit, storage_area, stock::text as stock, reorder_point::text as reorder_point,
+           par_level::text as par_level
+    from stock
+    where stock <= reorder_point
+    order by case when reorder_point = 0 then stock else stock / reorder_point end, lower(name)
+  `);
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    baseUnit: row.base_unit,
+    storageArea: row.storage_area,
+    stock: row.stock,
+    reorderPoint: row.reorder_point,
+    parLevel: row.par_level,
+    toPar: quantityToPar(row.stock, row.par_level),
   }));
 }
 
