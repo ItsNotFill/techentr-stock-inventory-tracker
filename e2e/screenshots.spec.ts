@@ -218,6 +218,10 @@ for (const viewport of Object.keys(VIEWPORTS) as Viewport[]) {
     await expect(page.getByText("No suppliers yet").filter({ visible: true })).toBeVisible();
     await shot(page, viewport, "35-suppliers");
 
+    await page.goto("/orders");
+    await expect(page.getByRole("heading", { name: "Suggested orders" }).filter({ visible: true })).toBeVisible();
+    await shot(page, viewport, "36-orders");
+
     await page.goto("/unmapped");
     await shot(page, viewport, "40-needs-recipe");
 

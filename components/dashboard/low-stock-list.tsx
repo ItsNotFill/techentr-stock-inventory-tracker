@@ -2,6 +2,7 @@ import { PackageCheck } from "lucide-react";
 import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { LowStockItem } from "@/lib/ingredients";
 import { formatQty, toDecimal } from "@/lib/units";
@@ -28,6 +29,13 @@ export function LowStockList({ items, linkToIngredients }: { items: LowStockItem
   }
   return (
     <>
+      {linkToIngredients ? (
+        <div>
+          <Link href="/orders" className={buttonVariants({ variant: "outline" })}>
+            Order what is low
+          </Link>
+        </div>
+      ) : null}
       <ul className="flex flex-col gap-3 md:hidden">
         {items.map((item) => (
           <li key={item.id} className="flex flex-col gap-1 rounded-lg border border-border bg-card p-4 text-sm shadow-sm">
