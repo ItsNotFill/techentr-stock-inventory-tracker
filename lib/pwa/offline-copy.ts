@@ -32,3 +32,16 @@ export async function keepOfflineCopy(path: string): Promise<void> {
     // No signal right now: the copy kept earlier, if any, stays.
   }
 }
+
+/**
+ * Deletes every offline copy of a screen. Used when the screens' data changes
+ * hands: on the login page, and after switching or adding a location
+ * (DECISIONS.md 98). Never throws.
+ */
+export async function clearOfflinePages(): Promise<void> {
+  try {
+    if (typeof caches !== "undefined") await caches.delete(PAGES_CACHE);
+  } catch {
+    // Storage blocked (private window): nothing was kept either.
+  }
+}

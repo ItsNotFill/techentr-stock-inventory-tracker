@@ -1,9 +1,10 @@
 "use server";
 
 import { isAuthRetryableFetchError } from "@supabase/supabase-js";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createRestaurantForUser } from "@/lib/auth/bootstrap";
+import { LOCATION_COOKIE } from "@/lib/auth/locations";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getAdminDb } from "@/lib/db/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -74,6 +75,8 @@ export async function signUp(_previous: FormState, formData: FormData): Promise<
 export async function signOut(): Promise<void> {
   const supabase = await createSupabaseServerClient();
   await supabase.auth.signOut();
+  // The chosen location belongs to this person (DECISIONS.md 98).
+  (await cookies()).delete(LOCATION_COOKIE);
   redirect("/login");
 }
 

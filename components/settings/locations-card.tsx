@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PAGES_CACHE } from "@/lib/pwa/caches";
+import { clearOfflinePages } from "@/lib/pwa/offline-copy";
 import { emptyFormState, type FormState } from "@/lib/validation/form";
 import { locationFormSchema } from "@/lib/validation/locations";
 
@@ -55,14 +55,11 @@ export function LocationsCard({
       return;
     }
     startAdding(async () => {
-      try {
-        if ("caches" in window) await caches.delete(PAGES_CACHE);
-      } catch {
-        // Storage blocked: nothing was kept either.
-      }
       const result = await addLocationAction(parsed.data);
       setState(result);
       if (result.ok) {
+        // The new location is now the chosen one: the offline copies belong to the old one.
+        await clearOfflinePages();
         setName("");
         toast.success(result.message ?? "Location added.");
         router.push("/dashboard");

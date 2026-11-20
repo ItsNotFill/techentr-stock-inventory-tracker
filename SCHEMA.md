@@ -59,6 +59,8 @@ Because the search path is empty, every name in their bodies is schema-qualified
 | `is_member(loc uuid)` | the signed-in user has any membership for that location |
 | `has_role(loc uuid, roles member_role[])` | the signed-in user's role for that location is in the list |
 
+Stage 7 adds `create_location(org, name, tz)` (SECURITY DEFINER, empty search path, executable by `app_user` only): an owner of a location in the organization adds a location to it and becomes its owner; the name (1 to 80 characters) and the timezone (`pg_timezone_names`) are checked (DECISIONS.md 98).
+
 Policy shape used by every tenant table:
 
 - **Select:** `is_member(location_id)`.

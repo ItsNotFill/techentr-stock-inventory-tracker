@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 6 (Pilot)** (stages 0 to 5 are merged, 18 Nov: the MVP's manual paths are complete; stage 4's offline counting is merged too, 20 Nov. Stage 6's "Before the pilot" block is merged; its other tasks wait for a pilot restaurant (`NEXT_STEPS_FOR_FILIPPO.md`, section 1). Still open: stage 5's real-phone install check (section 2); the AI blocks of stages 2, 3 and 5, parked until `ANTHROPIC_API_KEY` exists)
 
-**Now working on:** review of stage 7's multiple-locations block (`reviewer`, read-only, main checkout), branch `stage-7-locations`.
+**Now working on:** nothing. Multiple locations are merged into `main`; next, stage 7 "E-mails" on a new branch `stage-7-emails` from `main`.
 
 ## Stage 0: Setup
 
@@ -191,7 +191,7 @@ Suppliers and purchase orders, branch `stage-7-suppliers` — **done, merged 20 
 - [x] Suppliers screen; purchase order screen (from the suggestions, edit, mark as sent, text to send)
 - [x] Receiving a purchase order logs its delivery
 
-Multiple locations, branch `stage-7-locations`:
+Multiple locations, branch `stage-7-locations` — **done, merged 20 Nov**:
 
 - [x] The chosen location per user (switcher in the shell for people with more than one)
 - [x] An owner adds a location to the organization; team per location
