@@ -13,6 +13,7 @@ import { MANAGER_ROLES } from "@/lib/auth/roles";
 import { withUser } from "@/lib/db/client";
 import { listIngredients } from "@/lib/ingredients";
 import { getMenuItem, type MenuItemDetail } from "@/lib/menu";
+import { listPrepOptions } from "@/lib/sub-recipes";
 import { toDecimal } from "@/lib/units";
 import { idSchema } from "@/lib/validation/ingredients";
 
@@ -54,9 +55,10 @@ async function MenuItemContent({ params }: { params: PageProps<"/menu/[id]">["pa
   // A malformed id can never match; real database errors still reach the error screen.
   const parsedId = idSchema.safeParse(id);
   if (!parsedId.success) notFound();
-  const { item, ingredients } = await withUser(async (tx) => ({
+  const { item, ingredients, prepOptions } = await withUser(async (tx) => ({
     item: await getMenuItem(tx, membership.locationId, parsedId.data),
     ingredients: await listIngredients(tx, membership.locationId),
+    prepOptions: await listPrepOptions(tx, membership.locationId),
   }));
   if (!item) notFound();
 
@@ -67,25 +69,35 @@ async function MenuItemContent({ params }: { params: PageProps<"/menu/[id]">["pa
     costPerBaseUnit: ingredient.costPerBaseUnit,
     archived: false,
   }));
+  const preps: RecipeIngredientOption[] = prepOptions.map((prep) => ({
+    id: prep.id,
+    name: prep.name,
+    baseUnit: prep.baseUnit,
+    costPerBaseUnit: prep.costPerUnit ?? "0",
+    archived: false,
+  }));
   const rows: RecipeRow[] = [];
   let suggestionsWithoutIngredient = 0;
   for (const line of item.lines) {
-    if (line.ingredientId === null || line.baseUnit === null) {
+    const prepLine = line.subRecipeId !== null;
+    const refId = line.subRecipeId ?? line.ingredientId;
+    if (refId === null || line.baseUnit === null) {
       if (!line.confirmed) suggestionsWithoutIngredient += 1;
       continue;
     }
-    if (!options.some((option) => option.id === line.ingredientId)) {
-      // An archived ingredient stays visible on its row.
-      options.push({
-        id: line.ingredientId,
-        name: line.ingredientName ?? "Unknown ingredient",
+    const list = prepLine ? preps : options;
+    if (!list.some((option) => option.id === refId)) {
+      // An archived ingredient or prep recipe stays visible on its row.
+      list.push({
+        id: refId,
+        name: (prepLine ? line.subRecipeName : line.ingredientName) ?? (prepLine ? "Unknown prep recipe" : "Unknown ingredient"),
         baseUnit: line.baseUnit,
         costPerBaseUnit: line.costPerBaseUnit ?? "0",
         archived: line.ingredientActive === false,
       });
     }
     rows.push({
-      ingredientId: line.ingredientId,
+      choice: `${prepLine ? "prep" : "ingredient"}:${refId}`,
       amount: toDecimal(line.qtyBaseUnit).toFixed(),
       unit: line.baseUnit,
       draft: !line.confirmed,
@@ -104,9 +116,10 @@ async function MenuItemContent({ params }: { params: PageProps<"/menu/[id]">["pa
         </Card>
         {item.isIgnored ? null : (
           <RecipeEditor
-            key={JSON.stringify([rows, options])}
+            key={JSON.stringify([rows, options, preps])}
             menuItemId={item.id}
             ingredients={options}
+            preps={preps}
             initialRows={rows}
             hasRecipe={item.isMapped}
             suggestionsWithoutIngredient={suggestionsWithoutIngredient}
