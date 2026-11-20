@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const STEPS = [
-  { href: "/ingredients", title: "Ingredients", text: "What you buy, with cost and pack sizes." },
+  { href: "/ingredients", title: "Ingredients", text: "What you buy, with cost and pack sizes. Have a spreadsheet? Import it." },
   { href: "/menu", title: "Menu and recipes", text: "Give each item the ingredients one sale uses." },
   { href: "/import", title: "Import sales", text: "Upload the sales CSV from your POS." },
   { href: "/ingredients", title: "Stock", text: 'The "In stock" column shows what should be on the shelf.' },
