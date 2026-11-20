@@ -6,6 +6,8 @@ import { CardsSkeleton } from "@/components/page-skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth/membership";
 import { MANAGER_ROLES } from "@/lib/auth/roles";
+import { withUser } from "@/lib/db/client";
+import { listSupplierOptions } from "@/lib/purchasing";
 
 export const metadata: Metadata = { title: "Add ingredient" };
 
@@ -25,12 +27,13 @@ export default function NewIngredientPage() {
 }
 
 async function NewIngredientContent() {
-  await requireRole(MANAGER_ROLES);
+  const membership = await requireRole(MANAGER_ROLES);
+  const suppliers = await withUser((tx) => listSupplierOptions(tx, membership.locationId));
   return (
     <div className="flex max-w-2xl flex-col gap-4">
       <Card>
         <CardContent>
-          <IngredientForm defaults={NEW_INGREDIENT_DEFAULTS} />
+          <IngredientForm defaults={NEW_INGREDIENT_DEFAULTS} suppliers={suppliers} />
         </CardContent>
       </Card>
     </div>
