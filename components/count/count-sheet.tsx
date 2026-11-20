@@ -17,6 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { SyncStatus } from "@/components/count/sync-status";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -71,7 +72,7 @@ export function CountSheetForm({
   const [submitOpen, setSubmitOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [pending, startTransition] = useTransition();
-  // Figures are kept on the phone and sent when there is signal (DECISIONS.md 93).
+  // Figures are kept on the phone and sent when there is signal (DECISIONS.md 94).
   const sync = useCountSync(sessionId);
   const { state: syncState } = sync;
 
@@ -149,7 +150,6 @@ export function CountSheetForm({
   }
 
   const saving = syncState.syncing;
-  const waitingCount = syncState.pending.length;
 
   const isCounted = (id: string) => parseQuantityInput(values[id] ?? "") !== null;
   const countedTotal = ingredients.filter((i) => isCounted(i.id)).length;
@@ -181,13 +181,7 @@ export function CountSheetForm({
             Show only not counted
           </label>
         </div>
-        {syncState.unreachable || syncState.submitWaiting ? (
-          <p className="text-sm font-medium text-warning-foreground" role="status">
-            {syncState.submitWaiting
-              ? "No connection. The count is kept on this phone and is submitted as soon as there is signal."
-              : `No connection. ${waitingCount} ${waitingCount === 1 ? "figure is" : "figures are"} kept on this phone and sent as soon as there is signal.`}
-          </p>
-        ) : syncState.message ? (
+        {syncState.message ? (
           <p className="text-sm font-medium text-destructive" role="alert">
             {syncState.message}
           </p>
@@ -281,7 +275,9 @@ export function CountSheetForm({
                               ? "text-destructive"
                               : status.state === "saved"
                                 ? "text-success-foreground"
-                                : "text-muted-foreground",
+                                : status.state === "kept"
+                                  ? "text-warning-foreground"
+                                  : "text-muted-foreground",
                           )}
                           role={status.state === "error" ? "alert" : undefined}
                         >
@@ -315,13 +311,16 @@ export function CountSheetForm({
       </div>
 
       {/* Stays above the phone tab bar while scrolling; at the end of the list it sits in place, so it never covers the last item. */}
-      <div className="sticky bottom-[calc(var(--tabbar-height)+env(safe-area-inset-bottom))] z-10 -mx-4 flex gap-3 border-t border-border bg-card p-4 md:bottom-4 md:mx-0 md:rounded-lg md:border">
-        <Button type="button" variant="outline" size="lg" className="h-12 flex-1 text-base" disabled={saving || pending} onClick={save}>
-          {saving ? "Saving…" : "Save"}
-        </Button>
-        <Button type="button" size="lg" className="h-12 flex-1 text-base" disabled={saving || pending} onClick={() => setSubmitOpen(true)}>
-          Submit count
-        </Button>
+      <div className="sticky bottom-[calc(var(--tabbar-height)+env(safe-area-inset-bottom))] z-10 -mx-4 flex flex-col gap-3 border-t border-border bg-card p-4 md:bottom-4 md:mx-0 md:rounded-lg md:border">
+        <SyncStatus state={syncState} className="empty:hidden" />
+        <div className="flex gap-3">
+          <Button type="button" variant="outline" size="lg" className="h-12 flex-1 text-base" disabled={saving || pending} onClick={save}>
+            {saving ? "Saving…" : "Save"}
+          </Button>
+          <Button type="button" size="lg" className="h-12 flex-1 text-base" disabled={saving || pending} onClick={() => setSubmitOpen(true)}>
+            Submit count
+          </Button>
+        </div>
       </div>
 
       <AlertDialog open={submitOpen} onOpenChange={setSubmitOpen}>
