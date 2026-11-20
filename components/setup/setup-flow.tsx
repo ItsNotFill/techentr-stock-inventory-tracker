@@ -2,14 +2,13 @@
 
 import { CircleCheck, TriangleAlert } from "lucide-react";
 import Link from "next/link";
-import { useId, useRef, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { checkSetupFilesAction, importSetupFilesAction } from "@/app/(app)/setup/actions";
+import { FileDropZone } from "@/components/file-drop-zone";
 import { plural } from "@/components/import/format";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import type { SetupPlan, SheetIssue } from "@/lib/setup-import";
 import { SetupPreview } from "./setup-preview";
 
@@ -62,9 +61,6 @@ export function IssueAlerts({ issues }: { issues: SheetIssue[] }) {
 }
 
 export function SetupFlow() {
-  const uid = useId();
-  const ingredientsInput = useRef<HTMLInputElement>(null);
-  const recipesInput = useRef<HTMLInputElement>(null);
   const [pending, startTransition] = useTransition();
   const [files, setFiles] = useState<{ ingredients: File | null; recipes: File | null }>({
     ingredients: null,
@@ -84,8 +80,6 @@ export function SetupFlow() {
     if (file && file.size > MAX_BYTES) {
       setFiles((current) => ({ ...current, [which]: null }));
       setMessage(`${FILE_NAMES[which]} is larger than 1 MB. Split it into smaller files.`);
-      const input = which === "ingredients" ? ingredientsInput.current : recipesInput.current;
-      if (input) input.value = "";
       return;
     }
     setFiles((current) => ({ ...current, [which]: file ?? null }));
@@ -95,8 +89,6 @@ export function SetupFlow() {
     setFiles({ ingredients: null, recipes: null });
     setChecked(null);
     setIssues([]);
-    if (ingredientsInput.current) ingredientsInput.current.value = "";
-    if (recipesInput.current) recipesInput.current.value = "";
   }
 
   function check() {
@@ -157,34 +149,34 @@ export function SetupFlow() {
             Choose one file or both. Nothing is saved until you press Import.
           </p>
         </div>
-        <FieldGroup>
-          <div className="grid gap-4 md:grid-cols-2">
-            <Field>
-              <FieldLabel htmlFor={`${uid}-ingredients`}>Ingredients file</FieldLabel>
-              <Input
-                ref={ingredientsInput}
-                id={`${uid}-ingredients`}
-                type="file"
+        <div className="grid gap-4 md:grid-cols-2">
+            <div className="flex min-w-0 flex-col gap-2">
+              <h3 className="text-sm font-medium">Ingredients file</h3>
+              <FileDropZone
+                label="Choose ingredients.csv"
+                ariaLabel="Ingredients file"
                 accept=".csv,text/csv"
+                buttonVariant="outline"
+                className="min-h-36"
                 disabled={pending}
-                onChange={(event) => chooseFile("ingredients", event.target.files?.[0])}
+                fileName={files.ingredients?.name ?? null}
+                onFile={(file) => chooseFile("ingredients", file)}
               />
-              <FieldDescription>ingredients.csv</FieldDescription>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor={`${uid}-recipes`}>Recipes file</FieldLabel>
-              <Input
-                ref={recipesInput}
-                id={`${uid}-recipes`}
-                type="file"
+            </div>
+            <div className="flex min-w-0 flex-col gap-2">
+              <h3 className="text-sm font-medium">Recipes file</h3>
+              <FileDropZone
+                label="Choose recipes.csv"
+                ariaLabel="Recipes file"
                 accept=".csv,text/csv"
+                buttonVariant="outline"
+                className="min-h-36"
                 disabled={pending}
-                onChange={(event) => chooseFile("recipes", event.target.files?.[0])}
+                fileName={files.recipes?.name ?? null}
+                onFile={(file) => chooseFile("recipes", file)}
               />
-              <FieldDescription>recipes.csv</FieldDescription>
-            </Field>
-          </div>
-        </FieldGroup>
+            </div>
+        </div>
         {message ? (
           <Alert variant="destructive">
             <AlertDescription>{message}</AlertDescription>
