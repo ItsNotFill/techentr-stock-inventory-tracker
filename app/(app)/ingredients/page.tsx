@@ -1,4 +1,4 @@
-import { Archive, ArchiveRestore, Carrot, Plus } from "lucide-react";
+import { Archive, ArchiveRestore, Carrot, FileSpreadsheet, Plus } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -26,6 +26,12 @@ export default function IngredientsPage({ searchParams }: PageProps<"/ingredient
           <Link href="/ingredients/new">
             <Plus aria-hidden />
             Add ingredient
+          </Link>
+        </Button>
+        <Button asChild variant="outline" size="lg">
+          <Link href="/setup">
+            <FileSpreadsheet aria-hidden />
+            Import from spreadsheet
           </Link>
         </Button>
       </PageHeader>
@@ -74,6 +80,12 @@ async function IngredientsContent({ searchParams }: { searchParams: PageProps<"/
             <Link href="/ingredients/new">
               <Plus aria-hidden />
               Add ingredient
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="lg">
+            <Link href="/setup">
+              <FileSpreadsheet aria-hidden />
+              Import from spreadsheet
             </Link>
           </Button>
         </EmptyState>

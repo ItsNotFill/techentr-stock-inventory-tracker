@@ -1,4 +1,4 @@
-import { Plus, UtensilsCrossed } from "lucide-react";
+import { FileSpreadsheet, Plus, UtensilsCrossed } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -35,6 +35,12 @@ export default function MenuPage({ searchParams }: PageProps<"/menu">) {
             Add item
           </Link>
         </Button>
+        <Button asChild variant="outline" size="lg">
+          <Link href="/setup">
+            <FileSpreadsheet aria-hidden />
+            Import from spreadsheet
+          </Link>
+        </Button>
       </PageHeader>
       <Suspense fallback={<TableSkeleton />}>
         <MenuContent searchParams={searchParams} />
@@ -64,6 +70,12 @@ async function MenuContent({ searchParams }: { searchParams: PageProps<"/menu">[
           <Link href="/menu/new">
             <Plus aria-hidden />
             Add item
+          </Link>
+        </Button>
+        <Button asChild variant="outline" size="lg">
+          <Link href="/setup">
+            <FileSpreadsheet aria-hidden />
+            Import from spreadsheet
           </Link>
         </Button>
       </EmptyState>
