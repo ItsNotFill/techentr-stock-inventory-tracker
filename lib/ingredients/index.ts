@@ -1,6 +1,6 @@
 import { and, asc, eq, sql } from "drizzle-orm";
 import type { Tx } from "@/lib/db/rls";
-import { ingredients, packSizes, recipeLines, type Ingredient, type PackSize } from "@/lib/db/schema";
+import { ingredients, packSizes, recipeLines, subRecipeLines, type Ingredient, type PackSize } from "@/lib/db/schema";
 import { hasMovements } from "@/lib/ledger";
 import { costPerBaseUnit, toBaseUnits, toDbQty, toDbUnitCost, DISPLAY_UNITS } from "@/lib/units";
 import { quantityToPar } from "./stock";
@@ -205,6 +205,12 @@ export async function baseUnitLocked(tx: Tx, locationId: string, ingredientId: s
     .where(and(eq(recipeLines.ingredientId, ingredientId), eq(recipeLines.locationId, locationId)))
     .limit(1);
   if (line) return true;
+  const [prepLine] = await tx
+    .select({ id: subRecipeLines.id })
+    .from(subRecipeLines)
+    .where(and(eq(subRecipeLines.ingredientId, ingredientId), eq(subRecipeLines.locationId, locationId)))
+    .limit(1);
+  if (prepLine) return true;
   return hasMovements(tx, locationId, ingredientId);
 }
 

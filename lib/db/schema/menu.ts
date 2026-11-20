@@ -5,6 +5,7 @@ import { ingredients } from "./catalogue";
 import { createdAt, money, qty, timestamptz, updatedAt } from "./columns";
 import { baseUnit, menuItemKind, recipeLineSource } from "./enums";
 import { tenantPolicies } from "./policies";
+import { subRecipes } from "./sub-recipes";
 import { locations } from "./tenancy";
 
 /**
@@ -65,8 +66,10 @@ export const recipeLines = pgTable(
       .notNull()
       .references(() => locations.id, { onDelete: "cascade" }),
     menuItemId: uuid("menu_item_id").notNull(),
-    /** Null only on an AI draft whose ingredient does not exist yet. */
+    /** Null on an AI draft whose ingredient does not exist yet, and on a line that uses a prep recipe. */
     ingredientId: uuid("ingredient_id"),
+    /** A prep recipe instead of an ingredient (DECISIONS.md 96). */
+    subRecipeId: uuid("sub_recipe_id"),
     /** What the AI called the ingredient. */
     draftIngredientName: text("draft_ingredient_name"),
     /** The unit the AI proposed. */
@@ -92,10 +95,22 @@ export const recipeLines = pgTable(
       columns: [t.ingredientId, t.locationId],
       foreignColumns: [ingredients.id, ingredients.locationId],
     }).onDelete("restrict"),
+    foreignKey({
+      name: "recipe_lines_sub_recipe_fk",
+      columns: [t.subRecipeId, t.locationId],
+      foreignColumns: [subRecipes.id, subRecipes.locationId],
+    }).onDelete("restrict"),
     unique("recipe_lines_menu_item_id_ingredient_id_key").on(t.menuItemId, t.ingredientId),
+    unique("recipe_lines_menu_item_id_sub_recipe_id_key").on(t.menuItemId, t.subRecipeId),
     index("recipe_lines_ingredient_id_idx").on(t.ingredientId),
+    index("recipe_lines_sub_recipe_id_idx").on(t.subRecipeId),
     check("recipe_lines_qty_positive", sql`${t.qtyBaseUnit} > 0`),
-    check("recipe_lines_confirmed_has_ingredient", sql`${t.confirmedAt} is null or ${t.ingredientId} is not null`),
+    // A confirmed line uses exactly one ingredient or one prep recipe; a draft may name neither yet.
+    check(
+      "recipe_lines_confirmed_has_ingredient",
+      sql`${t.confirmedAt} is null or ((${t.ingredientId} is not null) <> (${t.subRecipeId} is not null))`,
+    ),
+    check("recipe_lines_not_both", sql`${t.ingredientId} is null or ${t.subRecipeId} is null`),
     ...tenantPolicies("recipe_lines"),
   ],
 );

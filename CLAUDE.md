@@ -75,6 +75,7 @@ lib/
   variance/             unexplained-usage maths
   imports/              CSV parsing, column mapping, idempotent import, undo
   setup-import/         ingredients, pack sizes, menu items and recipes from two CSV files (pilot setup)
+  sub-recipes/          prep recipes (sauce, dough): composition, cost, cycle checks; expanded by depletion
   menu/                 menu items, recipes, unmapped queue
   ingredients/          ingredients and pack sizes
   team/                 team and restaurant details
