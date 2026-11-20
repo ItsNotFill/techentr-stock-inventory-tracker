@@ -144,3 +144,11 @@ The demo restaurant already holds the worked example from the spec: opening stoc
 - The reviewer agent returned OK; its four small notes are fixed or written down (DECISIONS.md, entry 90).
 - Good to know: `npm run build` now also builds the service worker (Serwist); the demo dashboard shows +€753.40 because of today's drinks count (section 1). Offline counting is next for the agents.
 - Live: <https://techentr-stock-inventory-tracker.vercel.app> once Vercel has deployed `main`; the branch preview is in the Vercel dashboard.
+
+### Stage 6, before the pilot (2026-11-20)
+
+- Built: **Import from spreadsheet** (Ingredients or Menu): two CSV files, with templates, set up a restaurant's ingredients, pack sizes, menu and recipes in one go. Every line is checked first, and nothing is imported while any line is wrong; a re-upload only adds what is missing and replaces recipes that changed.
+- Written: `docs/pilot-setup.md`, the checklist for choosing the pilot, what to ask them for, and the setup steps in order.
+- Checked: 197 tests and the browser tests for the new screen and the sales import pass; the reviewer agent returned OK, and its two useful notes are fixed.
+- Waits for you: a pilot restaurant (section 1). Next for the agents: offline counting, already in progress.
+- Live: <https://techentr-stock-inventory-tracker.vercel.app> once Vercel has deployed `main`.

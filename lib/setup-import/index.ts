@@ -209,6 +209,9 @@ async function buildPlan(tx: Tx, locationId: string, files: SetupFiles): Promise
   const sheetItems = new Map<string, SheetMenuItem>();
 
   const knownItems = recipeSheet.items.map((item) => ({ item, known: findItem(item) }));
+  // New items must not share a name: the database keeps POS names unique among items without a POS id,
+  // and two dishes with one name would be confusing on every screen.
+  const newNames = new Map<string, number>();
   const knownIds = knownItems.flatMap(({ known }) => (known ? [known.id] : []));
   const currentLines = knownIds.length
     ? await tx
@@ -229,6 +232,16 @@ async function buildPlan(tx: Tx, locationId: string, files: SetupFiles): Promise
       matched.set(known.id, item.posName);
       menuItemIds.set(key, known.id);
     } else {
+      const earlier = newNames.get(nameKey(item.posName));
+      if (earlier !== undefined) {
+        issues.push({
+          sheet: "recipes",
+          line: item.line,
+          message: `${item.posName} has the same name as the new item on line ${earlier}. Give each menu item its own name.`,
+        });
+        continue;
+      }
+      newNames.set(nameKey(item.posName), item.line);
       const checked = menuItemFormSchema.safeParse({
         posName: item.posName,
         posItemId: item.posItemId ?? "",

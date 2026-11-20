@@ -18,9 +18,9 @@ Rules:
 - Every session starts with `git status`, `git worktree list` and the "Now working on" line; half-done work and leftover worktrees are finished or cleaned up first.
 - Things only Filippo can do are listed in `NEXT_STEPS_FOR_FILIPPO.md`.
 
-**Current stage: 6 (Pilot)** (stages 0 to 5 are merged, 18 Nov: the MVP's manual paths are complete. Still open from earlier stages: stage 5's real-phone install check, which waits for Filippo (`NEXT_STEPS_FOR_FILIPPO.md`, section 1; DECISIONS.md, entry 89); stage 4's offline-counting block, next for the agents; the AI blocks of stages 2, 3 and 5, parked until `ANTHROPIC_API_KEY` exists)
+**Current stage: 6 (Pilot)** (stages 0 to 5 are merged, 18 Nov: the MVP's manual paths are complete. Stage 6's "Before the pilot" block (setup import, pilot checklist) is merged, 20 Nov; its other tasks wait for a pilot restaurant (`NEXT_STEPS_FOR_FILIPPO.md`, section 1). Still open from earlier stages: stage 5's real-phone install check (section 2); stage 4's offline-counting block, in progress; the AI blocks of stages 2, 3 and 5, parked until `ANTHROPIC_API_KEY` exists)
 
-**Now working on:** (1) review of stage 6's "Before the pilot" block (`reviewer`, read-only, main checkout), branch `stage-6-pilot-setup`. (2) Stage 4's offline-counting block: main agent, branch `stage-4-offline-counting`, worktree `.claude/worktrees/main-offline` (sync engine and count sheet wiring pushed as WIP).
+**Now working on:** stage 4's offline-counting block: branch `stage-4-offline-counting`, main agent in worktree `.claude/worktrees/main-offline` (sync engine and count sheet wiring pushed as WIP); the indicator and the airplane-mode test are with `ui-builder` in its own worktree under `.claude/worktrees/`.
 
 ## Stage 0: Setup
 
@@ -164,7 +164,7 @@ Restock by invoice photo (after the done check):
 
 **Done when:** the restaurant does at least one weekly count without your help, and you have their feedback written down.
 
-Before the pilot (no restaurant data needed; DECISIONS.md, entry 91). The tasks above wait for Filippo to find the pilot (`NEXT_STEPS_FOR_FILIPPO.md`, "Find a pilot restaurant"). Branch `stage-6-pilot-setup`:
+Before the pilot (no restaurant data needed; DECISIONS.md, entry 91) — **done, merged 20 Nov**. The tasks above wait for Filippo to find the pilot (`NEXT_STEPS_FOR_FILIPPO.md`, "Find a pilot restaurant"). Branch `stage-6-pilot-setup`:
 
 - [x] Setup import, server side: ingredients (with pack sizes) and recipes from two CSV files; check, preview, import in one transaction; tests
 - [x] Setup import screen for owners and managers, with downloadable templates

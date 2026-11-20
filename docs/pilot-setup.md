@@ -47,7 +47,7 @@ In this order. The app is at <https://techentr-stock-inventory-tracker.vercel.ap
    - Check the preview: skipped orders, and items that need a recipe.
    - Give every remaining item a recipe, or ignore it. Sales of those items are taken off stock as soon as the recipe exists.
 6. **Opening count.** Count everything once, by storage area. The first count of each ingredient is its starting stock, not unexplained usage.
-7. **Phones.** On each staff phone, open the app and install it ("Install app" on Android, "Add to Home Screen" on iPhone). Show them **Count**, **Deliveries** and **Waste**.
+7. **Phones.** On each staff phone, open the app in the browser and add it to the home screen: in Chrome on Android, the browser's menu, then **Install app** or **Add to Home screen**; in Safari on iPhone, **Share**, then **Add to Home Screen**. Show them **Count**, **Deliveries** and **Waste**.
 
 ## 4. During the pilot
 

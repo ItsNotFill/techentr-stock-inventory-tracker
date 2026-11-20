@@ -188,6 +188,13 @@ describe.skipIf(!hasDatabase)("setup import", () => {
     expect(await ingredientCount()).toBe(before);
   });
 
+  it("refuses two new menu items with the same name", async () => {
+    const preview = await plan({ ingredients: null, recipes: "menu_item,pos_item_id\nCalzone fritto,P1\nCALZONE FRITTO,P2" });
+    expect(preview.issues.filter((issue) => !issue.warning)).toEqual([
+      expect.objectContaining({ sheet: "recipes", line: 3, message: expect.stringContaining("same name as the new item on line 2") }),
+    ]);
+  });
+
   it("depletes sales that waited for a recipe (the back-fill)", async () => {
     const [calzone, ricotta] = await as(owner, async (tx) => [
       await createMenuItem(tx, loc(), menuItemFormSchema.parse({ posName: "Calzone", posItemId: "", displayName: "", kind: "item", category: "", price: "" })),
