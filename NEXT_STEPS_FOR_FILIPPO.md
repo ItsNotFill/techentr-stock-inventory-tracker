@@ -152,3 +152,9 @@ The demo restaurant already holds the worked example from the spec: opening stoc
 - Checked: 197 tests and the browser tests for the new screen and the sales import pass; the reviewer agent returned OK, and its two useful notes are fixed.
 - Waits for you: a pilot restaurant (section 1). Next for the agents: offline counting, already in progress.
 - Live: <https://techentr-stock-inventory-tracker.vercel.app> once Vercel has deployed `main`.
+
+### Offline counting, end of stage 4 (2026-11-20)
+
+- Built: counting without signal. Once a count is open, figures typed in a walk-in or cellar are kept on the phone and sent when there is signal again; a count submitted without signal goes through later, dated when Submit was tapped. The count screen says "No connection · N figures kept on this phone" meanwhile.
+- Checked: 217 tests, and a browser test that counts, reloads and submits with the server switched off, then checks the count arrived with the right time. The reviewer agent returned OK; the one real bug it found (a refused figure could be dropped by a late submit) is fixed and tested.
+- Good to know: a count must be started with signal; after that it works offline. Try it with airplane mode on your phone after installing the app (section 2).

@@ -114,6 +114,11 @@ export function CountSheetForm({
     startTransition(async () => {
       const outcome = await sync.submit(approve);
       if (outcome === "submitted") return; // announced above, then back to the list
+      if (outcome === "queued") {
+        // A save was on its way; the submit follows it and is announced when it goes through.
+        setSubmitOpen(false);
+        return;
+      }
       if (outcome === "waiting") {
         toast.message("No connection. The count is kept on this phone and is submitted as soon as there is signal.");
       } else {

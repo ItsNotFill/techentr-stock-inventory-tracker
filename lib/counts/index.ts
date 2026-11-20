@@ -337,6 +337,40 @@ export async function getCountSubmission(
   return session ?? null;
 }
 
+/**
+ * Saves the last entries and submits the user's draft, as the count sheet
+ * does (and, with `approve`, approves it: owners and managers, RLS checks).
+ *
+ * `tappedAt` is set only when a submit was kept on a phone without signal and
+ * is sent late (DECISIONS.md 94). Its time becomes the count time, clamped
+ * between the count's start and now. Such a retry may repeat a submit that
+ * already went through (the answer was lost): then nothing is saved again and
+ * the answer is "already"; a requested approval is still done if it was not.
+ * A submit tapped online gets no such pass: a second one is an error.
+ */
+export async function submitFromSheet(
+  tx: Tx,
+  locationId: string,
+  userId: string,
+  sessionId: string,
+  entries: CountEntry[],
+  options: { approve: boolean; tappedAt: Date | null },
+): Promise<"submitted" | "already"> {
+  const current = await getCountSubmission(tx, locationId, sessionId);
+  if (options.tappedAt && current && current.countedBy === userId && (current.status === "submitted" || current.status === "approved")) {
+    if (options.approve && current.status === "submitted") {
+      await approveCount(tx, locationId, userId, sessionId);
+      return "submitted";
+    }
+    return "already";
+  }
+  await saveCountEntries(tx, locationId, userId, sessionId, entries);
+  const countTime = options.tappedAt && current ? clampCountTime(options.tappedAt, current.startedAt) : new Date();
+  await submitCount(tx, locationId, userId, sessionId, countTime);
+  if (options.approve) await approveCount(tx, locationId, userId, sessionId);
+  return "submitted";
+}
+
 export type ApprovalResult = { adjustments: number; openingLines: number };
 
 /**

@@ -20,6 +20,13 @@ export function useCountSync(sessionId: string) {
   const syncRef = useRef<CountSync | null>(null);
   // Figures typed in the moment before the phone's store has opened.
   const earlyRef = useRef<CountEntry[]>([]);
+  // Resolves once the sync is running: a submit tapped before that waits for it.
+  const readyRef = useRef<{ promise: Promise<CountSync>; resolve: (sync: CountSync) => void } | null>(null);
+  if (readyRef.current === null) {
+    let resolve!: (sync: CountSync) => void;
+    const promise = new Promise<CountSync>((done) => (resolve = done));
+    readyRef.current = { promise, resolve };
+  }
 
   useEffect(() => {
     let alive = true;
@@ -40,8 +47,14 @@ export function useCountSync(sessionId: string) {
       syncRef.current = sync;
       const kept = await sync.start();
       if (!alive) return;
-      setRestored(kept);
-      for (const entry of earlyRef.current.splice(0)) sync.record(entry);
+      // A figure typed before the store opened is newer than what the phone kept: do not show the older one.
+      const early = earlyRef.current.splice(0);
+      const typed = new Set(early.map((entry) => entry.ingredientId));
+      setRestored(
+        kept && { ...kept, pending: Object.fromEntries(Object.entries(kept.pending).filter(([id]) => !typed.has(id))) },
+      );
+      for (const entry of early) sync.record(entry);
+      readyRef.current?.resolve(sync);
     });
 
     const wake = () => syncRef.current?.wake();
@@ -66,10 +79,7 @@ export function useCountSync(sessionId: string) {
 
   const flush = useCallback(() => syncRef.current?.flush() ?? Promise.resolve(), []);
 
-  const submit = useCallback(
-    async (approve: boolean) => (syncRef.current ? syncRef.current.submit(approve) : ("waiting" as const)),
-    [],
-  );
+  const submit = useCallback(async (approve: boolean) => (syncRef.current ?? (await readyRef.current!.promise)).submit(approve), []);
 
   const forget = useCallback(() => syncRef.current?.forget() ?? Promise.resolve(), []);
 

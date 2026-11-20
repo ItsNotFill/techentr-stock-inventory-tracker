@@ -160,6 +160,10 @@ export class CountSync {
     void this.persist();
   }
 
+  private allPending(): CountEntry[] {
+    return Object.entries(this.draft.pending).map(([ingredientId, value]) => ({ ingredientId, amount: value.amount, unit: value.unit }));
+  }
+
   private sendable(): CountEntry[] {
     return Object.entries(this.draft.pending)
       .filter(([id, value]) => this.refused.get(id) !== `${value.amount}|${value.unit}`)
@@ -193,8 +197,10 @@ export class CountSync {
       this.again = true;
       return this.persisting;
     }
-    const entries = this.sendable();
     const submit = this.draft.submit;
+    // A kept submit carries every figure, refused ones too, so the server can refuse the submit
+    // instead of the count going through without them.
+    const entries = submit ? this.allPending() : this.sendable();
     if (entries.length === 0 && !submit) return;
 
     this.running = true;
@@ -269,18 +275,19 @@ export class CountSync {
   /**
    * Submit was tapped. Sent now with "now" as the count time; if the server
    * cannot be reached, kept on the phone with the moment of the tap and sent
-   * later. Resolves to what happened.
+   * later. Resolves to what happened: "queued" when a save was on its way and
+   * the submit follows it at once.
    */
-  async submit(approve: boolean): Promise<"submitted" | "waiting" | "refused"> {
+  async submit(approve: boolean): Promise<"submitted" | "waiting" | "queued" | "refused"> {
     const countedAt = new Date(this.now()).toISOString();
-    const entries = Object.entries(this.draft.pending).map(([ingredientId, value]) => ({ ingredientId, amount: value.amount, unit: value.unit }));
+    const entries = this.allPending();
     if (this.running) {
       // A save is on its way: keep the submit and send it right after.
       this.draft.submit = { approve, countedAt };
       this.again = true;
       await this.persist();
       this.emit({});
-      return "waiting";
+      return "queued";
     }
     this.running = true;
     this.emit({ syncing: true });

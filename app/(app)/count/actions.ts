@@ -6,14 +6,12 @@ import { checkRole } from "@/lib/auth/membership";
 import { ALL_ROLES, MANAGER_ROLES } from "@/lib/auth/roles";
 import {
   approveCount,
-  clampCountTime,
   CountError,
   deleteDraftCount,
-  getCountSubmission,
   rejectCount,
   saveCountEntries,
   startCount,
-  submitCount,
+  submitFromSheet,
 } from "@/lib/counts";
 import { withUser } from "@/lib/db/client";
 import { countEntriesSchema, reviewNoteSchema } from "@/lib/validation/counts";
@@ -86,8 +84,9 @@ const tappedAtSchema = z.iso.datetime({ offset: true }).nullable();
  * manager approves it in the same step (DECISIONS.md 8); for anyone else
  * `approve` is refused.
  *
- * A retry of a submit that already went through (the answer was lost on the
- * way) succeeds without doing anything again.
+ * A late submit (with `countedAt`) that repeats one that already went through
+ * (the answer was lost on the way) succeeds without saving again
+ * (lib/counts `submitFromSheet`).
  */
 export async function submitCountAction(
   sessionId: string,
@@ -103,18 +102,12 @@ export async function submitCountAction(
   const tappedAt = tappedAtSchema.safeParse(countedAt);
   if (!id.success || !parsed || !tappedAt.success) return formError("Could not submit the count. Reload the page and try again.");
   try {
-    const outcome = await withUser(async (tx) => {
-      const current = await getCountSubmission(tx, membership.locationId, id.data);
-      if (current && current.countedBy === membership.userId && (current.status === "submitted" || current.status === "approved")) {
-        return "already" as const;
-      }
-      await saveCountEntries(tx, membership.locationId, membership.userId, id.data, parsed);
-      const countTime =
-        tappedAt.data && current ? clampCountTime(new Date(tappedAt.data), current.startedAt) : new Date();
-      await submitCount(tx, membership.locationId, membership.userId, id.data, countTime);
-      if (approve) await approveCount(tx, membership.locationId, membership.userId, id.data);
-      return "submitted" as const;
-    });
+    const outcome = await withUser((tx) =>
+      submitFromSheet(tx, membership.locationId, membership.userId, id.data, parsed, {
+        approve,
+        tappedAt: tappedAt.data ? new Date(tappedAt.data) : null,
+      }),
+    );
     refresh();
     if (outcome === "already") return { ok: true, message: "This count was already submitted." };
     return {

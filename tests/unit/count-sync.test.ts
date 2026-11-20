@@ -217,6 +217,45 @@ describe("offline counting: CountSync", () => {
     expect(store.records.has(SESSION)).toBe(false);
   });
 
+  it("sends a refused figure with a kept submit, so the submit is refused instead of dropping it", async () => {
+    const { server, timer, sync, state } = setup();
+    await sync.start();
+    // The server refuses a negative figure.
+    server.answer = (entries) => {
+      const index = entries.findIndex((entry) => entry.amount === "-1");
+      return index >= 0 ? { ok: false, message: "Please check the highlighted ingredient.", errors: { [`entries.${index}`]: ["A count cannot be below zero."] } } : { ok: true };
+    };
+    sync.record({ ingredientId: MOZZARELLA, amount: "-1", unit: "kg" });
+    await sync.flush();
+    expect(state().rowErrors).toHaveProperty(MOZZARELLA);
+    // No signal when Submit is tapped: kept.
+    server.reachable = false;
+    expect(await sync.submit(false)).toBe("waiting");
+    server.reachable = true;
+    await timer.fire();
+    // The late submit carried the refused figure, so it was refused too; nothing was lost.
+    expect(server.submits.at(-1)?.entries).toEqual([{ ingredientId: MOZZARELLA, amount: "-1", unit: "kg" }]);
+    expect(state()).toMatchObject({ submitted: false, submitWaiting: false, pending: [MOZZARELLA] });
+    expect(state().rowErrors).toHaveProperty(MOZZARELLA);
+  });
+
+  it("queues a submit tapped while a save is on its way, and sends it right after", async () => {
+    const { server, sync, state } = setup();
+    await sync.start();
+    server.hold = true;
+    sync.record({ ingredientId: MOZZARELLA, amount: "1", unit: "kg" });
+    const saving = sync.flush();
+    await settle();
+    expect(await sync.submit(false)).toBe("queued");
+    server.hold = false;
+    server.held.splice(0).forEach((release) => release());
+    await saving;
+    await settle();
+    await settle();
+    expect(server.submits).toHaveLength(1);
+    expect(state().submitted).toBe(true);
+  });
+
   it("clears a kept submit the server refuses, and says why", async () => {
     const { server, sync, state } = setup();
     await sync.start();

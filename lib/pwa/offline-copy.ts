@@ -20,6 +20,13 @@ export async function keepOfflineCopy(path: string): Promise<void> {
     const response = await fetch(url, { credentials: "same-origin", headers: { Accept: "text/html" } });
     if (!response.ok || response.redirected) return;
     const cache = await caches.open(PAGES_CACHE);
+    // One count sheet at a time is open (a person has one draft): drop copies of older sheets.
+    if (url.pathname.startsWith("/count/")) {
+      for (const request of await cache.keys()) {
+        const kept = new URL(request.url);
+        if (kept.pathname.startsWith("/count/") && kept.pathname !== url.pathname) await cache.delete(request);
+      }
+    }
     await cache.put(url.href, response);
   } catch {
     // No signal right now: the copy kept earlier, if any, stays.
