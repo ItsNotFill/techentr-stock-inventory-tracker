@@ -31,7 +31,15 @@ Everyone shares the same demo restaurant, so what you change, others see. Undo a
 
 Things only you can do, newest need first. Stage summaries are at the bottom.
 
-### 1. Install the app on a phone and log a delivery (10 minutes): the stage 5 done check
+### 1. Find a pilot restaurant (stage 6)
+
+Stage 6 runs with one real restaurant for two to four weeks. Everything in it waits for that: their sales export, their menu and recipes, their POS (which decides the POS connection we build), the first counts and their feedback.
+
+- **What to look for and what to ask them for:** `docs/pilot-setup.md`, sections 1 and 2. The most important ask: one week of sales exported from their till **per item** (receipt number, item, quantity, time), and a photo of their end-of-day report.
+- **Ready for them now:** setting up their ingredients, pack sizes, menu and recipes from two spreadsheets (**Ingredients** → **Import from spreadsheet**), and the phone screens. Offline counting is next.
+- **When you have them:** put the sales export and the end-of-day photo in the project folder under `pilot-data/` (git ignores it: it is their data), tell the next session which POS they use, and it picks up "Import one real week of sales" and "Add one POS API".
+
+### 2. Install the app on a phone and log a delivery (10 minutes): the stage 5 done check
 
 Stage 5's done check is "a staff member can log a delivery from a phone home-screen icon". Everything up to the phone is checked automatically: Chrome reports nothing that stops the install, the app opens offline, and a staff member logs a delivery on a phone-sized screen. Only a real phone is missing.
 
@@ -48,7 +56,7 @@ Stage 5's done check is "a staff member can log a delivery from a phone home-scr
 
 **Good to know about the demo restaurant:** a count of three drinks (house red wine, cola, beer) was submitted and approved by the demo owner on 18 Nov at 12:50, probably while you tried the app. It is now the newest count, so the dashboard shows **+€753.40** for "Unexplained usage, last count" instead of the worked example's −€4.00 (cola: 1,080 cans counted against 87 expected). The −€4.00 is still there under **Unexplained usage**, count of 16 Nov. Approved counts cannot be changed. If you want the dashboard to show the worked example again for a demo, say so: a new count of those three drinks at their real levels can be entered and approved, and it then becomes the newest count.
 
-### 2. Create a Claude API key (5 minutes)
+### 3. Create a Claude API key (5 minutes)
 
 The AI tasks read photos (POS screenshots, end-of-day reports, supplier invoices) with the Claude API. `ANTHROPIC_API_KEY` in `.env.local` is empty, so those tasks are parked and everything else continues.
 

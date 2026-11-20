@@ -52,3 +52,6 @@ yarn-error.log*
 # Serwist: the service worker is built by `npm run build` (serwist.config.mjs)
 public/sw.js
 public/sw.js.map
+
+# A pilot restaurant's own files (sales exports, report photos): never committed
+pilot-data/

@@ -168,7 +168,7 @@ Before the pilot (no restaurant data needed; DECISIONS.md, entry 91). The tasks 
 
 - [x] Setup import, server side: ingredients (with pack sizes) and recipes from two CSV files; check, preview, import in one transaction; tests
 - [ ] Setup import screen for owners and managers, with downloadable templates
-- [ ] Pilot checklist: what to ask the restaurant for, and how the setup goes (`docs/pilot-setup.md`)
+- [x] Pilot checklist: what to ask the restaurant for, and how the setup goes (`docs/pilot-setup.md`)
 
 Then stage 4's offline-counting block (above), on its own branch, so the pilot can count where there is no signal.
 
