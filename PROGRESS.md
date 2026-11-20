@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 6 (Pilot)** (stages 0 to 5 are merged, 18 Nov: the MVP's manual paths are complete; stage 4's offline counting is merged too, 20 Nov. Stage 6's "Before the pilot" block is merged; its other tasks wait for a pilot restaurant (`NEXT_STEPS_FOR_FILIPPO.md`, section 1). Still open: stage 5's real-phone install check (section 2); the AI blocks of stages 2, 3 and 5, parked until `ANTHROPIC_API_KEY` exists)
 
-**Now working on:** nothing. Offline counting is merged into `main`; next, stage 7 as Filippo asked on 20 Nov (DECISIONS.md, entry 95).
+**Now working on:** nothing. Sub-recipes are merged into `main`; next, stage 7 "Suppliers and purchase orders" on a new branch `stage-7-suppliers` from `main`.
 
 ## Stage 0: Setup
 
@@ -174,15 +174,36 @@ Then stage 4's offline-counting block (above), on its own branch, so the pilot c
 
 ## Stage 7: After the MVP
 
-Not broken into tasks yet. Plan each item when it is picked up.
+Started 20 Nov at Filippo's request, while stage 6 waits for a pilot (DECISIONS.md, entry 95). Four items, each on its own branch, built and merged one after another:
 
-- [ ] Sub-recipes and batch prep
-- [ ] Weekly owner summary by email
-- [ ] Email alerts for low stock
-- [ ] Forecasting service (Python) and order suggestions
-- [ ] Multiple locations in the UI
-- [ ] Purchase orders and supplier management
-- [ ] Payments and billing
-- [ ] Native app, if the PWA falls short
+Sub-recipes (prep recipes), branch `stage-7-sub-recipes` — **done, merged 20 Nov**. Later (review note): one shared line editor for menu recipes and prep recipes, instead of two copies of the picker:
+
+- [x] Migration: `sub_recipes` and `sub_recipe_lines` with RLS; a recipe line may point at a prep recipe instead of an ingredient
+- [x] `lib/sub-recipes`: create, edit, archive; no prep recipe may contain itself; cost per unit; tests
+- [x] Depletion expands prep recipes into their ingredients; tests with the pizzeria's dough and sauce
+- [x] Prep recipes screen: list, editor (what it makes, how much, from which ingredients), cost
+- [x] Recipe editor: a prep recipe can be a line; the item's cost includes it
+
+Suppliers and purchase orders, branch `stage-7-suppliers`:
+
+- [ ] Migration: `suppliers`, the supplier of each ingredient, `purchase_orders` and `purchase_order_lines` with RLS
+- [ ] Order suggestions: per supplier, what is at or below its reorder point and how many packs reach par
+- [ ] Suppliers screen; purchase order screen (from the suggestions, edit, mark as sent, text to send)
+- [ ] Receiving a purchase order logs its delivery
+
+Multiple locations, branch `stage-7-locations`:
+
+- [ ] The chosen location per user (switcher in the shell for people with more than one)
+- [ ] An owner adds a location to the organization; team per location
+- [ ] Every screen and action uses the chosen location; isolation tests
+
+E-mails, branch `stage-7-emails` (sending waits for an e-mail provider key from Filippo):
+
+- [ ] E-mail module with a provider key; without the key, e-mails are only previewed
+- [ ] Weekly owner summary: unexplained usage, top losses, low stock
+- [ ] Low-stock alert
+- [ ] Scheduled sending (Vercel Cron, protected by a secret)
+
+Not now (need accounts, hosting or pilot data): forecasting service (Python), payments and billing, native app.
 
 SPEC.md gives this stage no done check.

@@ -1,17 +1,23 @@
 import { and, eq, inArray, isNull, sql, type SQL } from "drizzle-orm";
 import type { Tx } from "@/lib/db/rls";
 import { menuItems, recipeLines, saleLines, sales } from "@/lib/db/schema";
+import Decimal from "decimal.js";
+import { composition, PrepRecipeError, type Composition } from "@/lib/sub-recipes/compose";
+import { loadPrepGraph } from "@/lib/sub-recipes/graph";
 import { toDecimal } from "@/lib/units";
 import { appendMovements } from "./index";
-import { depletionDelta, type NewMovement } from "./movements";
+import { LedgerError, roundQty, type NewMovement } from "./movements";
 
 /**
  * Depletion: sale lines x confirmed recipe lines -> `sale` movements.
  *
  * For every sale line that has not been depleted yet and whose menu item has
- * a confirmed recipe (and is not ignored), one movement is written per recipe
- * line: qty_delta = -(sale qty x recipe qty), dated at the sale's time. The
- * line is then marked with `depleted_at`.
+ * a confirmed recipe (and is not ignored), one movement is written per
+ * ingredient: qty_delta = -(sale qty x recipe qty), dated at the sale's time.
+ * A recipe line that uses a prep recipe (DECISIONS.md 96) is expanded into the
+ * prep recipe's ingredients in proportion; an ingredient used both directly
+ * and through a prep recipe gets one movement with the total. Rounded once, to
+ * three decimals, at the end. The line is then marked with `depleted_at`.
  *
  * Lines of items without a recipe are left alone: they wait, and are depleted
  * by the same function when the item gets its recipe (the back-fill).
@@ -62,7 +68,9 @@ async function depleteWhere(tx: Tx, locationId: string, userId: string | null, s
       saleQty: saleLines.qty,
       soldAt: sales.soldAt,
       ingredientId: recipeLines.ingredientId,
+      subRecipeId: recipeLines.subRecipeId,
       recipeQty: recipeLines.qtyBaseUnit,
+      itemName: menuItems.displayName,
     })
     .from(saleLines)
     .innerJoin(sales, eq(sales.id, saleLines.saleId))
@@ -72,25 +80,53 @@ async function depleteWhere(tx: Tx, locationId: string, userId: string | null, s
     .for("update", { of: saleLines });
   if (pending.length === 0) return { linesDepleted: 0, movementsWritten: 0 };
 
-  const movements: NewMovement[] = [];
-  const lineIds = new Set<string>();
+  // Prep recipes are loaded only when a recipe uses one.
+  const graph = pending.some((row) => row.subRecipeId) ? await loadPrepGraph(tx, locationId) : null;
+  const memo = new Map<string, Composition>();
+
+  // Per sale line: the total used of each ingredient, unrounded.
+  const used = new Map<string, { soldAt: Date; perIngredient: Map<string, Decimal> }>();
   for (const row of pending) {
-    lineIds.add(row.saleLineId);
-    // A confirmed line always has an ingredient (database check); this is for the type.
-    if (!row.ingredientId) continue;
-    const qtyDelta = depletionDelta(row.saleQty, row.recipeQty);
-    // A product that rounds to nothing (0.2 of an item using 0.001 g) moves no stock.
-    if (toDecimal(qtyDelta).isZero()) continue;
-    movements.push({
-      ingredientId: row.ingredientId,
-      qtyDelta,
-      type: "sale",
-      refTable: "sale_lines",
-      refId: row.saleLineId,
-      occurredAt: row.soldAt,
-      createdBy: userId,
-    });
+    const line = used.get(row.saleLineId) ?? { soldAt: row.soldAt, perIngredient: new Map<string, Decimal>() };
+    used.set(row.saleLineId, line);
+    const amount = toDecimal(row.saleQty).times(toDecimal(row.recipeQty));
+    const add = (ingredientId: string, qty: Decimal) =>
+      line.perIngredient.set(ingredientId, (line.perIngredient.get(ingredientId) ?? new Decimal(0)).plus(qty));
+    if (row.ingredientId) add(row.ingredientId, amount);
+    else if (row.subRecipeId && graph) {
+      let parts: Composition;
+      try {
+        parts = composition(graph, row.subRecipeId, memo);
+      } catch (error) {
+        // Saving prep recipes refuses cycles and deep nesting; this names the item if bad data got through anyway.
+        if (error instanceof PrepRecipeError) {
+          throw new LedgerError(`${row.itemName} cannot use up its ingredients: ${error.message} Fix it under Prep recipes.`);
+        }
+        throw error;
+      }
+      for (const [ingredientId, perUnit] of parts) add(ingredientId, amount.times(perUnit));
+    }
   }
+
+  const movements: NewMovement[] = [];
+  for (const [saleLineId, line] of used) {
+    for (const [ingredientId, total] of line.perIngredient) {
+      // Used stock is negative; a refund (negative sale quantity) gives it back.
+      const qtyDelta = roundQty(total.negated());
+      // A product that rounds to nothing (0.2 of an item using 0.001 g) moves no stock.
+      if (toDecimal(qtyDelta).isZero()) continue;
+      movements.push({
+        ingredientId,
+        qtyDelta,
+        type: "sale",
+        refTable: "sale_lines",
+        refId: saleLineId,
+        occurredAt: line.soldAt,
+        createdBy: userId,
+      });
+    }
+  }
+  const lineIds = new Set(used.keys());
   const written = await appendMovements(tx, locationId, movements);
 
   const ids = [...lineIds];

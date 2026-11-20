@@ -204,6 +204,14 @@ for (const viewport of Object.keys(VIEWPORTS) as Viewport[]) {
     await page.goto("/menu/new");
     await shot(page, viewport, "32-menu-item-new");
 
+    await page.goto("/prep");
+    await expect(page.getByRole("heading", { name: "Prep recipes" }).filter({ visible: true })).toBeVisible();
+    await shot(page, viewport, "33-prep-recipes");
+    // The demo has no prep recipes yet, so the editor is shown on a new one (read only: nothing is saved).
+    await page.goto("/prep/new");
+    await expect(page.getByRole("heading", { name: "Add prep recipe" }).filter({ visible: true })).toBeVisible();
+    await shot(page, viewport, "33-prep-recipe-new");
+
     await page.goto("/unmapped");
     await shot(page, viewport, "40-needs-recipe");
 

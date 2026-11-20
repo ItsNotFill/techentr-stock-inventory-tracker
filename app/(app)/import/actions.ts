@@ -21,6 +21,7 @@ import {
   type ImportResult,
   type InvalidRow,
 } from "@/lib/imports";
+import { LedgerError } from "@/lib/ledger";
 import { getRestaurantDetails } from "@/lib/team";
 import { formError, PERMISSION_DENIED, type FormState } from "@/lib/validation/form";
 import { columnMapSchema, type ColumnMap } from "@/lib/validation/imports";
@@ -62,7 +63,7 @@ export type PreviewResult =
 export type ConfirmResult = { ok: true; result: ImportResult } | { ok: false; message: string };
 
 function failure(error: unknown): { ok: false; message: string } {
-  if (error instanceof CsvError || error instanceof ImportError) return { ok: false, message: error.message };
+  if (error instanceof CsvError || error instanceof ImportError || error instanceof LedgerError) return { ok: false, message: error.message };
   throw error;
 }
 
@@ -178,7 +179,7 @@ export async function undoSalesImport(importId: string): Promise<FormState> {
       message: `Import undone: ${removed.sales} ${removed.sales === 1 ? "order" : "orders"} removed and the stock they used is back.`,
     };
   } catch (error) {
-    if (error instanceof ImportError) return formError(error.message);
+    if (error instanceof ImportError || error instanceof LedgerError) return formError(error.message);
     throw error;
   }
 }

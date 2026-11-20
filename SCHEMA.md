@@ -189,9 +189,44 @@ Unmapped queue = `is_mapped = false and is_ignored = false`. Items seen in sales
 | `confirmed_by` | uuid, nullable | |
 | `created_at`, `updated_at` | timestamptz | |
 
-Unique: `(menu_item_id, ingredient_id)`. Check: `confirmed_at is null or ingredient_id is not null`.
+| `sub_recipe_id` | uuid, nullable | composite FK → `sub_recipes`, on delete restrict; a line that uses a prep recipe instead of an ingredient (stage 7, DECISIONS.md 96) |
+
+Unique: `(menu_item_id, ingredient_id)`; `(menu_item_id, sub_recipe_id)`. Checks: a confirmed line has exactly one of `ingredient_id` and `sub_recipe_id`; no line has both.
 
 Only lines with `confirmed_at` set are used for depletion. Confirming a recipe creates or matches the ingredients named in its drafts, sets `ingredient_id`, and sets `menu_items.is_mapped = true`.
+
+### Prep recipes (stage 7)
+
+Sub-recipes, called "prep recipes" on screen (DECISIONS.md 96): tomato sauce, pizza dough. They have no stock; depletion expands them into their ingredients.
+
+#### `sub_recipes`
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | uuid PK | |
+| `location_id` | uuid, not null | |
+| `name` | text, not null | unique per location without regard to case |
+| `base_unit` | `base_unit`, not null | fixed once a recipe or another prep recipe uses it (app check) |
+| `yield_qty` | qty, not null, check `> 0` | how much one batch makes |
+| `category` | text, nullable | |
+| `is_active` | boolean, not null, default true | archive instead of delete |
+| `created_at`, `updated_at` | timestamptz | |
+
+Unique: `(id, location_id)`. Owners and managers write.
+
+#### `sub_recipe_lines`
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | uuid PK | |
+| `location_id` | uuid, not null | |
+| `sub_recipe_id` | uuid, not null | composite FK → `sub_recipes`, on delete cascade |
+| `ingredient_id` | uuid, nullable | composite FK → `ingredients`, on delete restrict |
+| `child_sub_recipe_id` | uuid, nullable | composite FK → `sub_recipes`, on delete restrict; never itself, never a cycle, at most five deep (app check) |
+| `qty_base_unit` | qty, not null, check `> 0` | per batch |
+| `created_at`, `updated_at` | timestamptz | |
+
+Checks: exactly one of `ingredient_id` and `child_sub_recipe_id`. Unique: `(sub_recipe_id, ingredient_id)`; `(sub_recipe_id, child_sub_recipe_id)`.
 
 ### AI reads (stage 2)
 
@@ -404,7 +439,7 @@ All of this lives in `lib/ledger` and the undo function. No other code writes to
 | --- | --- |
 | Stock now | `SUM(qty_delta)` for the ingredient |
 | Stock at time T | `SUM(qty_delta) where occurred_at <= T` |
-| Depletion | for each sale line with a mapped item: one `sale` movement per confirmed recipe line, `qty_delta = −(sale qty × recipe qty)`; then set `depleted_at` |
+| Depletion | for each sale line with a mapped item: one `sale` movement per ingredient, `qty_delta = −(sale qty × recipe qty)`, with prep recipe lines expanded into their ingredients in proportion (stage 7); then set `depleted_at` |
 | Unmapped item | the sale line is stored with `depleted_at` null and written to the ledger when the item is mapped |
 | Delivery | `+qty_base_unit` per confirmed delivery line |
 | Waste | negative `waste` movement with a reason |

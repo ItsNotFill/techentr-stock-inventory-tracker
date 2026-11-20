@@ -7,4 +7,5 @@ export * from "./menu";
 export * from "./roles";
 export * from "./sales";
 export * from "./setup-check";
+export * from "./sub-recipes";
 export * from "./tenancy";

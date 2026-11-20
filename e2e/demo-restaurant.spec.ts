@@ -46,8 +46,10 @@ test("the demo owner sees the worked example's unexplained usage: mozzarella -50
   await logIn(page, owner.email);
   await page.goto("/unexplained-usage");
   await expect(page.getByRole("heading", { name: "Unexplained usage", level: 1 })).toBeVisible();
-  await expect(page.getByText(/Last count: −€4\.00/).filter({ visible: true }).first()).toBeVisible();
-  await page.getByRole("link", { name: "See details" }).filter({ visible: true }).first().click();
+  // The worked example's count (16 Nov), wherever it is in the list: people trying the demo add newer counts.
+  const workedExample = page.getByRole("row").filter({ hasText: "−€4.00" }).filter({ visible: true }).first();
+  await expect(workedExample).toBeVisible();
+  await workedExample.getByRole("link", { name: "See details" }).click();
   await expect(page).toHaveURL(/\/unexplained-usage\/[0-9a-f-]{36}$/);
   await expect(page.getByText("−500 g").filter({ visible: true }).first()).toBeVisible();
   await expect(page.getByText("−€4.00").filter({ visible: true }).first()).toBeVisible();

@@ -1,7 +1,9 @@
-import { and, asc, eq, inArray, isNull, ne, notInArray, sql } from "drizzle-orm";
+import Decimal from "decimal.js";
+import { and, asc, eq, inArray, isNotNull, isNull, ne, sql } from "drizzle-orm";
 import type { Tx } from "@/lib/db/rls";
-import { ingredients, menuItems, recipeLines, saleLines, sales, type BaseUnit, type MenuItem } from "@/lib/db/schema";
+import { ingredients, menuItems, recipeLines, saleLines, sales, subRecipes, type BaseUnit, type MenuItem } from "@/lib/db/schema";
 import { depleteSaleLines } from "@/lib/ledger/depletion";
+import { prepCostsPerUnit } from "@/lib/sub-recipes/costs";
 import { DISPLAY_UNITS, toBaseUnits, toDbMoney, toDbQty, toDecimal } from "@/lib/units";
 import type { MenuItemFormValues, RecipeLineInput } from "@/lib/validation/menu";
 
@@ -40,8 +42,14 @@ export type RecipeLineDetail = {
   id: string;
   ingredientId: string | null;
   ingredientName: string | null;
+  /** A line that uses a prep recipe instead of an ingredient (DECISIONS.md 96). */
+  subRecipeId: string | null;
+  subRecipeName: string | null;
+  /** The unit of the ingredient, or of the prep recipe. */
   baseUnit: BaseUnit | null;
+  /** Euros per base unit of the ingredient, or of the prep recipe at today's ingredient costs. */
   costPerBaseUnit: string | null;
+  /** Whether the ingredient, or the prep recipe, is active (not archived). */
   ingredientActive: boolean | null;
   draftIngredientName: string | null;
   draftBaseUnit: BaseUnit | null;
@@ -73,13 +81,27 @@ export async function listMenuItems(tx: Tx, locationId: string): Promise<MenuIte
     .groupBy(recipeLines.menuItemId);
   const totalsByItem = new Map(totals.map((row) => [row.menuItemId, row]));
 
+  // Lines that use a prep recipe cost what its ingredients cost (DECISIONS.md 96).
+  const prepLines = await tx
+    .select({ menuItemId: recipeLines.menuItemId, subRecipeId: recipeLines.subRecipeId, qty: recipeLines.qtyBaseUnit })
+    .from(recipeLines)
+    .where(and(eq(recipeLines.locationId, locationId), isNotNull(recipeLines.subRecipeId), isNotNull(recipeLines.confirmedAt)));
+  const prepCosts = await prepCostsPerUnit(tx, locationId, prepLines.map((line) => line.subRecipeId!));
+  const prepCostByItem = new Map<string, Decimal>();
+  for (const line of prepLines) {
+    const cost = toDecimal(line.qty).times(toDecimal(prepCosts.get(line.subRecipeId!) ?? "0"));
+    prepCostByItem.set(line.menuItemId, (prepCostByItem.get(line.menuItemId) ?? new Decimal(0)).plus(cost));
+  }
+
   return items.map((item) => {
     const total = totalsByItem.get(item.id);
+    const prepCost = prepCostByItem.get(item.id);
+    const cost = total?.recipeCost || prepCost ? toDecimal(total?.recipeCost ?? "0").plus(prepCost ?? 0) : null;
     return {
       ...item,
       lineCount: total?.lineCount ?? 0,
       draftLineCount: total?.draftLineCount ?? 0,
-      recipeCost: total?.recipeCost ? toDbMoney(total.recipeCost) : null,
+      recipeCost: cost ? toDbMoney(cost) : null,
     };
   });
 }
@@ -136,9 +158,13 @@ export async function getMenuItem(tx: Tx, locationId: string, id: string): Promi
       id: recipeLines.id,
       ingredientId: recipeLines.ingredientId,
       ingredientName: ingredients.name,
-      baseUnit: ingredients.baseUnit,
-      costPerBaseUnit: ingredients.costPerBaseUnit,
-      ingredientActive: ingredients.isActive,
+      ingredientBaseUnit: ingredients.baseUnit,
+      ingredientCost: ingredients.costPerBaseUnit,
+      ingredientIsActive: ingredients.isActive,
+      subRecipeId: recipeLines.subRecipeId,
+      subRecipeName: subRecipes.name,
+      subRecipeBaseUnit: subRecipes.baseUnit,
+      subRecipeIsActive: subRecipes.isActive,
       draftIngredientName: recipeLines.draftIngredientName,
       draftBaseUnit: recipeLines.draftBaseUnit,
       qtyBaseUnit: recipeLines.qtyBaseUnit,
@@ -147,12 +173,32 @@ export async function getMenuItem(tx: Tx, locationId: string, id: string): Promi
     })
     .from(recipeLines)
     .leftJoin(ingredients, eq(ingredients.id, recipeLines.ingredientId))
+    .leftJoin(subRecipes, eq(subRecipes.id, recipeLines.subRecipeId))
     .where(and(eq(recipeLines.menuItemId, id), eq(recipeLines.locationId, locationId)))
     .orderBy(asc(recipeLines.createdAt), asc(recipeLines.id));
+  const prepCosts = await prepCostsPerUnit(
+    tx,
+    locationId,
+    lines.flatMap((line) => (line.subRecipeId ? [line.subRecipeId] : [])),
+  );
 
   return {
     ...item,
-    lines: lines.map(({ confirmedAt, ...line }) => ({ ...line, confirmed: confirmedAt !== null })),
+    lines: lines.map((line) => ({
+      id: line.id,
+      ingredientId: line.ingredientId,
+      ingredientName: line.ingredientName,
+      subRecipeId: line.subRecipeId,
+      subRecipeName: line.subRecipeName,
+      baseUnit: line.subRecipeId ? line.subRecipeBaseUnit : line.ingredientBaseUnit,
+      costPerBaseUnit: line.subRecipeId ? (prepCosts.get(line.subRecipeId) ?? null) : line.ingredientCost,
+      ingredientActive: line.subRecipeId ? line.subRecipeIsActive : line.ingredientIsActive,
+      draftIngredientName: line.draftIngredientName,
+      draftBaseUnit: line.draftBaseUnit,
+      qtyBaseUnit: line.qtyBaseUnit,
+      source: line.source,
+      confirmed: line.confirmedAt !== null,
+    })),
   };
 }
 
@@ -272,7 +318,8 @@ export async function saveRecipe(
     .for("update");
   if (!item) throw new MenuError("This item no longer exists.");
 
-  const ingredientIds = lines.map((line) => line.ingredientId);
+  const ingredientIds = lines.flatMap((line) => (line.ingredientId ? [line.ingredientId] : []));
+  const subRecipeIds = lines.flatMap((line) => (line.subRecipeId ? [line.subRecipeId] : []));
   const known = ingredientIds.length
     ? await tx
         .select({ id: ingredients.id, baseUnit: ingredients.baseUnit, isActive: ingredients.isActive })
@@ -280,58 +327,74 @@ export async function saveRecipe(
         .where(and(eq(ingredients.locationId, locationId), inArray(ingredients.id, ingredientIds)))
     : [];
   const ingredientById = new Map(known.map((row) => [row.id, row]));
+  // The prep recipes' units must not change while this recipe starts using them (lib/sub-recipes).
+  if (subRecipeIds.length > 0) await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${`prep:${locationId}`}, 0))`);
+  const knownPreps = subRecipeIds.length
+    ? await tx
+        .select({ id: subRecipes.id, baseUnit: subRecipes.baseUnit, isActive: subRecipes.isActive })
+        .from(subRecipes)
+        .where(and(eq(subRecipes.locationId, locationId), inArray(subRecipes.id, subRecipeIds)))
+    : [];
+  const prepById = new Map(knownPreps.map((row) => [row.id, row]));
 
   const seen = new Set<string>();
   const rows = lines.map((line, index) => {
-    const ingredient = ingredientById.get(line.ingredientId);
-    if (!ingredient) throw new MenuError("This ingredient no longer exists.", `lines.${index}.ingredientId`);
-    if (!ingredient.isActive) {
-      throw new MenuError("This ingredient is archived. Restore it or remove the line.", `lines.${index}.ingredientId`);
+    const field = `lines.${index}.ingredientId`;
+    const target = line.ingredientId ? ingredientById.get(line.ingredientId) : line.subRecipeId ? prepById.get(line.subRecipeId) : undefined;
+    const what = line.subRecipeId ? "prep recipe" : "ingredient";
+    if (!target) throw new MenuError(`This ${what} no longer exists.`, field);
+    if (!target.isActive) throw new MenuError(`This ${what} is archived. Restore it or remove the line.`, field);
+    const key = line.ingredientId ? `i:${line.ingredientId}` : `p:${line.subRecipeId}`;
+    if (seen.has(key)) throw new MenuError(`This ${what} is already in the recipe.`, field);
+    seen.add(key);
+    if (!DISPLAY_UNITS[target.baseUnit].some((entry) => entry.unit === line.unit)) {
+      throw new MenuError(`This unit does not match the ${what}'s unit.`, `lines.${index}.unit`);
     }
-    if (seen.has(line.ingredientId)) {
-      throw new MenuError("This ingredient is already in the recipe.", `lines.${index}.ingredientId`);
-    }
-    seen.add(line.ingredientId);
-    if (!DISPLAY_UNITS[ingredient.baseUnit].some((entry) => entry.unit === line.unit)) {
-      throw new MenuError("This unit does not match the ingredient's unit.", `lines.${index}.unit`);
-    }
-    const qtyBaseUnit = toDbQty(toBaseUnits(line.amount, line.unit, ingredient.baseUnit));
+    const qtyBaseUnit = toDbQty(toBaseUnits(line.amount, line.unit, target.baseUnit));
     if (toDecimal(qtyBaseUnit).lte(0)) {
       throw new MenuError("This amount is too small to store.", `lines.${index}.amount`);
     }
-    return { locationId, menuItemId, ingredientId: line.ingredientId, qtyBaseUnit };
+    return { locationId, menuItemId, ingredientId: line.ingredientId, subRecipeId: line.subRecipeId, qtyBaseUnit };
   });
 
-  // Drop what is no longer in the recipe, unconfirmed AI drafts included.
+  // Drop what is no longer in the recipe (either kind of line), unconfirmed AI drafts included.
+  const keepIngredient = ingredientIds.length ? sql`${recipeLines.ingredientId} in ${ingredientIds}` : sql`false`;
+  const keepPrep = subRecipeIds.length ? sql`${recipeLines.subRecipeId} in ${subRecipeIds}` : sql`false`;
   await tx
     .delete(recipeLines)
     .where(
       and(
         eq(recipeLines.menuItemId, menuItemId),
         eq(recipeLines.locationId, locationId),
-        ingredientIds.length
-          ? sql`(${recipeLines.ingredientId} is null or ${notInArray(recipeLines.ingredientId, ingredientIds)})`
-          : undefined,
+        sql`not (coalesce(${keepIngredient}, false) or coalesce(${keepPrep}, false))`,
       ),
     );
 
   for (const row of rows) {
-    await tx
-      .insert(recipeLines)
-      // clock_timestamp(), not now(): now() is the same for every line saved in one
-      // transaction, and the editor shows lines in the order they were added.
-      .values({ ...row, source: "manual", confirmedAt: new Date(), confirmedBy: userId, createdAt: sql`clock_timestamp()` })
-      .onConflictDoUpdate({
-        target: [recipeLines.menuItemId, recipeLines.ingredientId],
-        // A line that came from AI keeps its source; it is confirmed now if it was not before.
-        set: {
-          qtyBaseUnit: row.qtyBaseUnit,
-          confirmedAt: sql`coalesce(${recipeLines.confirmedAt}, now())`,
-          confirmedBy: sql`coalesce(${recipeLines.confirmedBy}, ${userId}::uuid)`,
-          draftIngredientName: null,
-          draftBaseUnit: null,
-        },
-      });
+    // clock_timestamp(), not now(): now() is the same for every line saved in one
+    // transaction, and the editor shows lines in the order they were added.
+    const values = { ...row, source: "manual" as const, confirmedAt: new Date(), confirmedBy: userId, createdAt: sql`clock_timestamp()` };
+    if (row.ingredientId) {
+      await tx
+        .insert(recipeLines)
+        .values(values)
+        .onConflictDoUpdate({
+          target: [recipeLines.menuItemId, recipeLines.ingredientId],
+          // A line that came from AI keeps its source; it is confirmed now if it was not before.
+          set: {
+            qtyBaseUnit: row.qtyBaseUnit,
+            confirmedAt: sql`coalesce(${recipeLines.confirmedAt}, now())`,
+            confirmedBy: sql`coalesce(${recipeLines.confirmedBy}, ${userId}::uuid)`,
+            draftIngredientName: null,
+            draftBaseUnit: null,
+          },
+        });
+    } else {
+      await tx
+        .insert(recipeLines)
+        .values(values)
+        .onConflictDoUpdate({ target: [recipeLines.menuItemId, recipeLines.subRecipeId], set: { qtyBaseUnit: row.qtyBaseUnit } });
+    }
   }
 
   const isMapped = rows.length > 0;

@@ -19,14 +19,21 @@ export const menuItemFormSchema = z.object({
 export type MenuItemFormValues = z.infer<typeof menuItemFormSchema>;
 
 /**
- * One recipe line as typed: `amount` of `unit` (120 g, 0.5 unit, 2 cl).
- * The server converts to the ingredient's base unit with lib/units.
+ * One recipe line as typed: `amount` of `unit` (120 g, 0.5 unit, 2 cl) of an
+ * ingredient, or of a prep recipe (250 g pizza dough, DECISIONS.md 96).
+ * The server converts to the base unit with lib/units.
  */
-export const recipeLineInputSchema = z.object({
-  ingredientId: z.uuid("Choose an ingredient."),
-  amount: decimalInput({ min: "0", minExclusive: true, label: "The amount" }),
-  unit: z.string().min(1, "Choose a unit."),
-});
+export const recipeLineInputSchema = z
+  .object({
+    ingredientId: z.uuid("Choose an ingredient.").nullish().transform((value) => value ?? null),
+    subRecipeId: z.uuid().nullish().transform((value) => value ?? null),
+    amount: decimalInput({ min: "0", minExclusive: true, label: "The amount" }),
+    unit: z.string().min(1, "Choose a unit."),
+  })
+  .refine((line) => (line.ingredientId === null) !== (line.subRecipeId === null), {
+    message: "Choose an ingredient or a prep recipe.",
+    path: ["ingredientId"],
+  });
 
 export const MAX_RECIPE_LINES = 60;
 

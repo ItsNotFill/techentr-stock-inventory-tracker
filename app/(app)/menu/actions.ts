@@ -5,6 +5,7 @@ import { checkRole } from "@/lib/auth/membership";
 import { MANAGER_ROLES } from "@/lib/auth/roles";
 import { withUser } from "@/lib/db/client";
 import { isUniqueViolation } from "@/lib/db/errors";
+import { LedgerError } from "@/lib/ledger";
 import {
   createMenuItem,
   deleteMenuItem,
@@ -28,6 +29,8 @@ function field(formData: FormData, name: string): string {
 }
 
 function toFormState(error: unknown): FormState {
+  // Saving a recipe depletes sales that waited for it; a broken prep recipe stops that with a clear message.
+  if (error instanceof LedgerError) return formError(error.message);
   if (error instanceof MenuError) {
     return error.field
       ? { ok: false, message: "Please check the highlighted fields.", errors: { [error.field]: [error.message] } }

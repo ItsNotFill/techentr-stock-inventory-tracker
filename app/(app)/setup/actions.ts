@@ -7,6 +7,7 @@ import { MANAGER_ROLES } from "@/lib/auth/roles";
 import { withUser } from "@/lib/db/client";
 import { isUniqueViolation } from "@/lib/db/errors";
 import { IngredientError } from "@/lib/ingredients";
+import { LedgerError } from "@/lib/ledger";
 import { MenuError } from "@/lib/menu";
 import {
   confirmSetupImport,
@@ -89,6 +90,7 @@ export async function importSetupFilesAction(input: unknown): Promise<SetupImpor
       return { ok: false, message: error.message, issues: hasErrors(error.issues) ? error.issues : undefined };
     }
     // Someone changed the same ingredients or items at the same moment.
+    if (error instanceof LedgerError) return { ok: false, message: error.message };
     if (error instanceof IngredientError || error instanceof MenuError || isUniqueViolation(error)) {
       return { ok: false, message: "Something changed while importing. Check the files again." };
     }
