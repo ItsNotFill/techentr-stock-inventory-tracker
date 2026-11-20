@@ -153,6 +153,29 @@ describe.skipIf(!hasDatabase)("prep recipes", () => {
     ).rejects.toThrow("inside itself");
   });
 
+  it("refuses to nest deeper than five, counting the prep recipes above the one being saved", async () => {
+    // E < D < C < B < A: five deep, the most allowed.
+    const chain = await as(owner, async (tx) => {
+      const made: string[] = [];
+      let child: string | null = null;
+      for (const name of ["Chain E", "Chain D", "Chain C", "Chain B", "Chain A"]) {
+        const chainLines = child ? [line({ subRecipeId: child }, "1", "g")] : [line({ ingredientId: ids.salt }, "1", "g")];
+        child = await saveSubRecipe(tx, loc(), null, prep(name, "g", "1", "kg"), lines(chainLines));
+        made.push(child);
+      }
+      return made;
+    });
+    const [bottom] = chain;
+    const extra = await as(owner, (tx) => saveSubRecipe(tx, loc(), null, prep("Chain F", "g", "1", "kg"), lines([line({ ingredientId: ids.salt }, "1", "g")])));
+    // Giving the bottom one a child of its own would make the chain six deep.
+    await expect(
+      as(owner, (tx) => saveSubRecipe(tx, loc(), bottom, prep("Chain E", "g", "1", "kg"), lines([line({ subRecipeId: extra }, "1", "g")]))),
+    ).rejects.toThrow("nested at most 5 deep");
+    // The top one still works out.
+    const top = await as(owner, (tx) => getSubRecipe(tx, loc(), chain[4]));
+    expect(top?.costPerUnit).not.toBeNull();
+  });
+
   it("checks names, units and what a prep recipe is used by", async () => {
     await expect(
       as(owner, (tx) => saveSubRecipe(tx, loc(), null, prep("pizza DOUGH", "g", "1", "kg"), lines([line({ ingredientId: ids.flour }, "1", "kg")]))),

@@ -82,6 +82,26 @@ export function depthWith(graph: PrepGraph, childIds: string[]): number {
   return 1 + childIds.reduce((max, child) => Math.max(max, depth(child, new Set())), 0);
 }
 
+/**
+ * The longest chain of prep recipes that use `id`, going up: 0 when no prep
+ * recipe uses it, 1 when one does, and so on. Saving `id` with deeper lines
+ * must keep this chain plus its own depth within MAX_DEPTH.
+ */
+export function chainAbove(graph: PrepGraph, id: string): number {
+  const parents = new Map<string, string[]>();
+  for (const recipe of graph.values()) {
+    for (const line of recipe.lines) {
+      if (line.childId) parents.set(line.childId, [...(parents.get(line.childId) ?? []), recipe.id]);
+    }
+  }
+  const height = (node: string, seen: Set<string>): number => {
+    if (seen.has(node)) return Infinity;
+    const next = new Set([...seen, node]);
+    return (parents.get(node) ?? []).reduce((max, parent) => Math.max(max, 1 + height(parent, next)), 0);
+  };
+  return height(id, new Set());
+}
+
 /** Euros per base unit of a prep recipe, from today's ingredient costs (euros per base unit). */
 export function costPerUnit(graph: PrepGraph, id: string, ingredientCosts: Map<string, string>, memo?: Map<string, Composition>): Decimal {
   let total = new Decimal(0);

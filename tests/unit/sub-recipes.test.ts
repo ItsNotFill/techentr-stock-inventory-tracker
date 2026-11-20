@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { composition, costPerUnit, createsCycle, depthWith, MAX_DEPTH, PrepRecipeError, type PrepGraph } from "@/lib/sub-recipes/compose";
+import { chainAbove, composition, costPerUnit, createsCycle, depthWith, MAX_DEPTH, PrepRecipeError, type PrepGraph } from "@/lib/sub-recipes/compose";
 
 // Ingredient ids, readable.
 const FLOUR = "flour";
@@ -99,6 +99,18 @@ describe("prep recipes: rules for saving", () => {
       chain.set(`p${level}`, { id: `p${level}`, name: `P${level}`, yieldQty: "1", lines: level === 0 ? [] : [{ ingredientId: null, childId: `p${level - 1}`, qty: "1" }] });
     }
     expect(depthWith(chain, [`p${MAX_DEPTH}`])).toBeGreaterThan(MAX_DEPTH);
+  });
+});
+
+describe("prep recipes: the chain above", () => {
+  it("counts the prep recipes that use one, going up", () => {
+    const graph = pizzeriaPreps();
+    expect(chainAbove(graph, "garlic-oil")).toBe(1); // the sauce uses it
+    expect(chainAbove(graph, "sauce")).toBe(0);
+    expect(chainAbove(graph, "dough")).toBe(0);
+    // A pizza base that uses the sauce: garlic oil is now two deep.
+    graph.set("base", { id: "base", name: "Pizza base", yieldQty: "1000", lines: [{ ingredientId: null, childId: "sauce", qty: "100" }] });
+    expect(chainAbove(graph, "garlic-oil")).toBe(2);
   });
 });
 

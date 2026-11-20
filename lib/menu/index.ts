@@ -327,6 +327,8 @@ export async function saveRecipe(
         .where(and(eq(ingredients.locationId, locationId), inArray(ingredients.id, ingredientIds)))
     : [];
   const ingredientById = new Map(known.map((row) => [row.id, row]));
+  // The prep recipes' units must not change while this recipe starts using them (lib/sub-recipes).
+  if (subRecipeIds.length > 0) await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${`prep:${locationId}`}, 0))`);
   const knownPreps = subRecipeIds.length
     ? await tx
         .select({ id: subRecipes.id, baseUnit: subRecipes.baseUnit, isActive: subRecipes.isActive })

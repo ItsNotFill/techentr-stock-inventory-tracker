@@ -3,7 +3,7 @@ import type { Tx } from "@/lib/db/rls";
 import { ingredients, menuItems, recipeLines, subRecipeLines, subRecipes, type BaseUnit } from "@/lib/db/schema";
 import { DISPLAY_UNITS, toBaseUnits, toDbQty, toDecimal } from "@/lib/units";
 import type { PrepLineInput, SubRecipeFormValues } from "@/lib/validation/sub-recipes";
-import { createsCycle, depthWith, MAX_DEPTH, type PrepGraph } from "./compose";
+import { chainAbove, createsCycle, depthWith, MAX_DEPTH, type PrepGraph } from "./compose";
 import { prepCostsPerUnit } from "./costs";
 import { loadPrepGraph } from "./graph";
 
@@ -182,6 +182,8 @@ export async function saveSubRecipe(
   values: SubRecipeFormValues,
   lines: PrepLineInput[],
 ): Promise<string> {
+  // One prep recipe save at a time per restaurant: two saves at once could otherwise each pass the cycle check.
+  await lockPrepRecipes(tx, locationId);
   if (id) {
     const [current] = await tx
       .select({ baseUnit: subRecipes.baseUnit })
@@ -252,8 +254,9 @@ async function checkLines(tx: Tx, locationId: string, id: string | null, lines: 
     if (id && createsCycle(graph, id, childIds)) {
       throw new SubRecipeError("This would put the prep recipe inside itself, through another one.", "lines");
     }
-    if (depthWith(graph, childIds) > MAX_DEPTH) {
-      throw new SubRecipeError(`Prep recipes can be nested at most ${MAX_DEPTH} deep.`, "lines");
+    // The chain counts the prep recipes that already use this one, too.
+    if (depthWith(graph, childIds) + (id ? chainAbove(graph, id) : 0) > MAX_DEPTH) {
+      throw new SubRecipeError(`Prep recipes can be nested at most ${MAX_DEPTH} deep, counting the ones that use this one.`, "lines");
     }
   }
 
@@ -274,6 +277,11 @@ async function checkLines(tx: Tx, locationId: string, id: string | null, lines: 
     if (!toDecimal(qtyBaseUnit).gt(0)) throw new SubRecipeError("This amount is too small to store.", `lines.${index}.amount`);
     return { ingredientId: line.ingredientId, childSubRecipeId: line.subRecipeId, qtyBaseUnit };
   });
+}
+
+/** Serialises changes to prep recipes (and recipes that use them) within one restaurant. */
+export async function lockPrepRecipes(tx: Tx, locationId: string): Promise<void> {
+  await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${`prep:${locationId}`}, 0))`);
 }
 
 /** Archive (or restore). Recipes that use it keep working; it can no longer be added to new ones. */

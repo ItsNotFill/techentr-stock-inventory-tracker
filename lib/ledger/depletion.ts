@@ -2,11 +2,11 @@ import { and, eq, inArray, isNull, sql, type SQL } from "drizzle-orm";
 import type { Tx } from "@/lib/db/rls";
 import { menuItems, recipeLines, saleLines, sales } from "@/lib/db/schema";
 import Decimal from "decimal.js";
-import { composition, type Composition } from "@/lib/sub-recipes/compose";
+import { composition, PrepRecipeError, type Composition } from "@/lib/sub-recipes/compose";
 import { loadPrepGraph } from "@/lib/sub-recipes/graph";
 import { toDecimal } from "@/lib/units";
 import { appendMovements } from "./index";
-import { roundQty, type NewMovement } from "./movements";
+import { LedgerError, roundQty, type NewMovement } from "./movements";
 
 /**
  * Depletion: sale lines x confirmed recipe lines -> `sale` movements.
@@ -70,6 +70,7 @@ async function depleteWhere(tx: Tx, locationId: string, userId: string | null, s
       ingredientId: recipeLines.ingredientId,
       subRecipeId: recipeLines.subRecipeId,
       recipeQty: recipeLines.qtyBaseUnit,
+      itemName: menuItems.displayName,
     })
     .from(saleLines)
     .innerJoin(sales, eq(sales.id, saleLines.saleId))
@@ -93,7 +94,17 @@ async function depleteWhere(tx: Tx, locationId: string, userId: string | null, s
       line.perIngredient.set(ingredientId, (line.perIngredient.get(ingredientId) ?? new Decimal(0)).plus(qty));
     if (row.ingredientId) add(row.ingredientId, amount);
     else if (row.subRecipeId && graph) {
-      for (const [ingredientId, perUnit] of composition(graph, row.subRecipeId, memo)) add(ingredientId, amount.times(perUnit));
+      let parts: Composition;
+      try {
+        parts = composition(graph, row.subRecipeId, memo);
+      } catch (error) {
+        // Saving prep recipes refuses cycles and deep nesting; this names the item if bad data got through anyway.
+        if (error instanceof PrepRecipeError) {
+          throw new LedgerError(`${row.itemName} cannot use up its ingredients: ${error.message} Fix it under Prep recipes.`);
+        }
+        throw error;
+      }
+      for (const [ingredientId, perUnit] of parts) add(ingredientId, amount.times(perUnit));
     }
   }
 

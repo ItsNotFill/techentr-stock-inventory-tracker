@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 6 (Pilot)** (stages 0 to 5 are merged, 18 Nov: the MVP's manual paths are complete; stage 4's offline counting is merged too, 20 Nov. Stage 6's "Before the pilot" block is merged; its other tasks wait for a pilot restaurant (`NEXT_STEPS_FOR_FILIPPO.md`, section 1). Still open: stage 5's real-phone install check (section 2); the AI blocks of stages 2, 3 and 5, parked until `ANTHROPIC_API_KEY` exists)
 
-**Now working on:** review of stage 7's sub-recipes block (`reviewer`, read-only, main checkout), branch `stage-7-sub-recipes`.
+**Now working on:** nothing. Sub-recipes are merged into `main`; next, stage 7 "Suppliers and purchase orders" on a new branch `stage-7-suppliers` from `main`.
 
 ## Stage 0: Setup
 
@@ -176,7 +176,7 @@ Then stage 4's offline-counting block (above), on its own branch, so the pilot c
 
 Started 20 Nov at Filippo's request, while stage 6 waits for a pilot (DECISIONS.md, entry 95). Four items, each on its own branch, built and merged one after another:
 
-Sub-recipes (prep recipes), branch `stage-7-sub-recipes`:
+Sub-recipes (prep recipes), branch `stage-7-sub-recipes` — **done, merged 20 Nov**. Later (review note): one shared line editor for menu recipes and prep recipes, instead of two copies of the picker:
 
 - [x] Migration: `sub_recipes` and `sub_recipe_lines` with RLS; a recipe line may point at a prep recipe instead of an ingredient
 - [x] `lib/sub-recipes`: create, edit, archive; no prep recipe may contain itself; cost per unit; tests

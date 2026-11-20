@@ -158,3 +158,10 @@ The demo restaurant already holds the worked example from the spec: opening stoc
 - Built: counting without signal. Once a count is open, figures typed in a walk-in or cellar are kept on the phone and sent when there is signal again; a count submitted without signal goes through later, dated when Submit was tapped. The count screen says "No connection · N figures kept on this phone" meanwhile.
 - Checked: 217 tests, and a browser test that counts, reloads and submits with the server switched off, then checks the count arrived with the right time. The reviewer agent returned OK; the one real bug it found (a refused figure could be dropped by a late submit) is fixed and tested.
 - Good to know: a count must be started with signal; after that it works offline. Try it with airplane mode on your phone after installing the app (section 2).
+
+### Stage 7, prep recipes (2026-11-20)
+
+- Built: **Prep recipes** (Menu, then Prep recipes): a sauce, dough or mix made from ingredients ("Tomato sauce makes 5 l from 4 kg tomatoes and 200 ml olive oil"), with its cost per litre or kilo. Menu recipes can use them like an ingredient ("250 g pizza dough"); when the dish sells, the app takes the right share of flour, tomatoes and oil off stock.
+- Checked: 233 tests and browser tests; the reviewer agent found one real bug (prep recipes could be nested too deep through the ones above, which would have stopped imports), fixed and tested before the merge.
+- Not tracked (on purpose): stock of the prep itself, such as dough in the fridge. Say if the pilot needs it.
+- Next for the agents: suppliers and purchase orders.
