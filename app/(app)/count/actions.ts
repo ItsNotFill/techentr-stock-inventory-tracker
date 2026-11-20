@@ -82,7 +82,7 @@ const tappedAtSchema = z.iso.datetime({ offset: true }).nullable();
  * Saves the last entries and submits the count. The count time is now, or,
  * for a submit tapped on a phone without signal and sent later,
  * `countedAt` (the phone's time of the tap, ISO), kept between the count's
- * start and now (DECISIONS.md 71, 93). With `approve` true, an owner or
+ * start and now (DECISIONS.md 71, 94). With `approve` true, an owner or
  * manager approves it in the same step (DECISIONS.md 8); for anyone else
  * `approve` is refused.
  *

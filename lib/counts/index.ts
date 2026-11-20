@@ -315,7 +315,7 @@ export async function submitCount(
 
 /**
  * The count time of a submit that was tapped on a phone without signal and
- * sent later (DECISIONS.md 71, 93): the moment of the tap, but never before
+ * sent later (DECISIONS.md 71, 94): the moment of the tap, but never before
  * the count was started and never after now. A phone clock that is wrong can
  * then not get a count refused for good, nor date it outside its session.
  */

@@ -8,7 +8,7 @@ import { countDraftStore } from "@/lib/counts/offline-store";
 /**
  * The count sheet's link to the offline sync (lib/counts/offline.ts): figures
  * typed are kept on the phone and sent when the server can be reached
- * (DECISIONS.md 93). The sync is woken when the browser says it is online
+ * (DECISIONS.md 94). The sync is woken when the browser says it is online
  * again and when the page is shown again.
  *
  * `restored` is what the phone kept from an earlier visit (show those

@@ -1,7 +1,7 @@
 import { memoryDraftStore, type CountDraftRecord, type CountDraftStore } from "./offline";
 
 /**
- * Count drafts kept in the browser's IndexedDB (DECISIONS.md 93), one record
+ * Count drafts kept in the browser's IndexedDB (DECISIONS.md 94), one record
  * per count. Browser only. When IndexedDB cannot be opened (a private window,
  * storage blocked) the figures are kept in memory instead: they survive a
  * lost signal, not a closed page.

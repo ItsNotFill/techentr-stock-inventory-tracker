@@ -125,8 +125,8 @@ Sales by photo (after the done check) — **parked: waiting for `ANTHROPIC_API_K
 
 Offline counting (after the done check) — **not done yet**; next, after stage 5 (DECISIONS.md, entry 82). The service worker it needs exists since stage 5:
 
-- [ ] Save count drafts to IndexedDB as they are typed
-- [ ] Sync on reconnect, idempotent through `client_id`
+- [x] Save count drafts to IndexedDB as they are typed
+- [x] Sync on reconnect, idempotent through `client_id` (figures: one line per ingredient; submit: kept with its time, a repeated submit answers success; DECISIONS.md, entry 94)
 - [ ] Offline and "waiting to sync" indicator; test in airplane mode
 
 ## Stage 5: Deliveries, waste, dashboard, PWA

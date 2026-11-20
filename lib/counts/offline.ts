@@ -1,5 +1,5 @@
 /**
- * Offline counting (DECISIONS.md 93). Walk-in fridges and cellars have no
+ * Offline counting (DECISIONS.md 94). Walk-in fridges and cellars have no
  * signal, so what a person types on the count sheet is kept on the phone and
  * sent when the server can be reached again.
  *
