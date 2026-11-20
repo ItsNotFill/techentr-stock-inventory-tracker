@@ -15,11 +15,17 @@ export function StartCountButton({ hasDraft, className }: { hasDraft: boolean; c
 
   function start() {
     startTransition(async () => {
-      const result = await startCountAction(crypto.randomUUID());
-      if (result.ok && result.id) {
-        router.push(`/count/${result.id}`);
-      } else {
-        toast.error(result.message ?? "Could not start the count.");
+      try {
+        const result = await startCountAction(crypto.randomUUID());
+        if (result.ok && result.id) {
+          // The sheet keeps its own offline copy once it is open (lib/pwa/offline-copy.ts).
+          router.push(`/count/${result.id}`);
+        } else {
+          toast.error(result.message ?? "Could not start the count.");
+        }
+      } catch {
+        // The server could not be reached.
+        toast.error("You need a connection to start a count. Once the count is open you can keep counting without signal.");
       }
     });
   }

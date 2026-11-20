@@ -18,9 +18,9 @@ Rules:
 - Every session starts with `git status`, `git worktree list` and the "Now working on" line; half-done work and leftover worktrees are finished or cleaned up first.
 - Things only Filippo can do are listed in `NEXT_STEPS_FOR_FILIPPO.md`.
 
-**Current stage: 6 (Pilot)** (stages 0 to 5 are merged, 18 Nov: the MVP's manual paths are complete. Stage 6's "Before the pilot" block (setup import, pilot checklist) is merged, 20 Nov; its other tasks wait for a pilot restaurant (`NEXT_STEPS_FOR_FILIPPO.md`, section 1). Still open from earlier stages: stage 5's real-phone install check (section 2); stage 4's offline-counting block, in progress; the AI blocks of stages 2, 3 and 5, parked until `ANTHROPIC_API_KEY` exists)
+**Current stage: 6 (Pilot)** (stages 0 to 5 are merged, 18 Nov: the MVP's manual paths are complete; stage 4's offline counting is merged too, 20 Nov. Stage 6's "Before the pilot" block is merged; its other tasks wait for a pilot restaurant (`NEXT_STEPS_FOR_FILIPPO.md`, section 1). Still open: stage 5's real-phone install check (section 2); the AI blocks of stages 2, 3 and 5, parked until `ANTHROPIC_API_KEY` exists)
 
-**Now working on:** stage 4's offline-counting block: branch `stage-4-offline-counting`, main agent in worktree `.claude/worktrees/main-offline` (sync engine and count sheet wiring pushed as WIP); the indicator and the airplane-mode test are with `ui-builder` in its own worktree under `.claude/worktrees/`.
+**Now working on:** nothing. Offline counting is merged into `main`; next, stage 7 as Filippo asked on 20 Nov (DECISIONS.md, entry 95).
 
 ## Stage 0: Setup
 
@@ -123,11 +123,11 @@ Sales by photo (after the done check) — **parked: waiting for `ANTHROPIC_API_K
 
 **Done when:** the worked example's closing count shows −500 g and −€4.
 
-Offline counting (after the done check) — **not done yet**; next, after stage 5 (DECISIONS.md, entry 82). The service worker it needs exists since stage 5:
+Offline counting (after the done check) — **done, merged 20 Nov** (DECISIONS.md, entries 82 and 94):
 
-- [ ] Save count drafts to IndexedDB as they are typed
-- [ ] Sync on reconnect, idempotent through `client_id`
-- [ ] Offline and "waiting to sync" indicator; test in airplane mode
+- [x] Save count drafts to IndexedDB as they are typed
+- [x] Sync on reconnect, idempotent through `client_id` (figures: one line per ingredient; submit: kept with its time, a repeated submit answers success; DECISIONS.md, entry 94)
+- [x] Offline and "waiting to sync" indicator; test in airplane mode (`e2e/offline-count.spec.ts`, production build: the server is stopped to take the signal away)
 
 ## Stage 5: Deliveries, waste, dashboard, PWA
 

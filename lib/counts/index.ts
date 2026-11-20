@@ -313,6 +313,64 @@ export async function submitCount(
   return submittedAt;
 }
 
+/**
+ * The count time of a submit that was tapped on a phone without signal and
+ * sent later (DECISIONS.md 71, 94): the moment of the tap, but never before
+ * the count was started and never after now. A phone clock that is wrong can
+ * then not get a count refused for good, nor date it outside its session.
+ */
+export function clampCountTime(tappedAt: Date, startedAt: Date, now: Date = new Date()): Date {
+  const time = Math.min(Math.max(tappedAt.getTime(), startedAt.getTime()), now.getTime());
+  return new Date(time);
+}
+
+/** Where a count stands, for a submit that may be a retry of one that already went through. */
+export async function getCountSubmission(
+  tx: Tx,
+  locationId: string,
+  sessionId: string,
+): Promise<{ status: CountStatus; countedBy: string; startedAt: Date } | null> {
+  const [session] = await tx
+    .select({ status: countSessions.status, countedBy: countSessions.countedBy, startedAt: countSessions.startedAt })
+    .from(countSessions)
+    .where(and(eq(countSessions.id, sessionId), eq(countSessions.locationId, locationId)));
+  return session ?? null;
+}
+
+/**
+ * Saves the last entries and submits the user's draft, as the count sheet
+ * does (and, with `approve`, approves it: owners and managers, RLS checks).
+ *
+ * `tappedAt` is set only when a submit was kept on a phone without signal and
+ * is sent late (DECISIONS.md 94). Its time becomes the count time, clamped
+ * between the count's start and now. Such a retry may repeat a submit that
+ * already went through (the answer was lost): then nothing is saved again and
+ * the answer is "already"; a requested approval is still done if it was not.
+ * A submit tapped online gets no such pass: a second one is an error.
+ */
+export async function submitFromSheet(
+  tx: Tx,
+  locationId: string,
+  userId: string,
+  sessionId: string,
+  entries: CountEntry[],
+  options: { approve: boolean; tappedAt: Date | null },
+): Promise<"submitted" | "already"> {
+  const current = await getCountSubmission(tx, locationId, sessionId);
+  if (options.tappedAt && current && current.countedBy === userId && (current.status === "submitted" || current.status === "approved")) {
+    if (options.approve && current.status === "submitted") {
+      await approveCount(tx, locationId, userId, sessionId);
+      return "submitted";
+    }
+    return "already";
+  }
+  await saveCountEntries(tx, locationId, userId, sessionId, entries);
+  const countTime = options.tappedAt && current ? clampCountTime(options.tappedAt, current.startedAt) : new Date();
+  await submitCount(tx, locationId, userId, sessionId, countTime);
+  if (options.approve) await approveCount(tx, locationId, userId, sessionId);
+  return "submitted";
+}
+
 export type ApprovalResult = { adjustments: number; openingLines: number };
 
 /**

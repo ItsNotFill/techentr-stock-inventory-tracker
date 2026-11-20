@@ -1,6 +1,7 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { z } from "zod";
 import { checkRole } from "@/lib/auth/membership";
 import { ALL_ROLES, MANAGER_ROLES } from "@/lib/auth/roles";
 import {
@@ -10,7 +11,7 @@ import {
   rejectCount,
   saveCountEntries,
   startCount,
-  submitCount,
+  submitFromSheet,
 } from "@/lib/counts";
 import { withUser } from "@/lib/db/client";
 import { countEntriesSchema, reviewNoteSchema } from "@/lib/validation/counts";
@@ -73,25 +74,42 @@ export async function saveCountAction(sessionId: string, entries: unknown): Prom
   }
 }
 
+const tappedAtSchema = z.iso.datetime({ offset: true }).nullable();
+
 /**
- * Saves the last entries and submits the count: the count time is now.
- * With `approve` true, an owner or manager approves it in the same step
- * (DECISIONS.md 8); for anyone else `approve` is refused.
+ * Saves the last entries and submits the count. The count time is now, or,
+ * for a submit tapped on a phone without signal and sent later,
+ * `countedAt` (the phone's time of the tap, ISO), kept between the count's
+ * start and now (DECISIONS.md 71, 94). With `approve` true, an owner or
+ * manager approves it in the same step (DECISIONS.md 8); for anyone else
+ * `approve` is refused.
+ *
+ * A late submit (with `countedAt`) that repeats one that already went through
+ * (the answer was lost on the way) succeeds without saving again
+ * (lib/counts `submitFromSheet`).
  */
-export async function submitCountAction(sessionId: string, entries: unknown, approve = false): Promise<FormState> {
+export async function submitCountAction(
+  sessionId: string,
+  entries: unknown,
+  approve = false,
+  countedAt: string | null = null,
+): Promise<FormState> {
   const membership = await checkRole(ALL_ROLES);
   if (!membership) return PERMISSION_DENIED;
   if (approve && !MANAGER_ROLES.includes(membership.role)) return PERMISSION_DENIED;
   const id = idSchema.safeParse(sessionId);
   const parsed = parseEntries(entries);
-  if (!id.success || !parsed) return formError("Could not submit the count. Reload the page and try again.");
+  const tappedAt = tappedAtSchema.safeParse(countedAt);
+  if (!id.success || !parsed || !tappedAt.success) return formError("Could not submit the count. Reload the page and try again.");
   try {
-    await withUser(async (tx) => {
-      await saveCountEntries(tx, membership.locationId, membership.userId, id.data, parsed);
-      await submitCount(tx, membership.locationId, membership.userId, id.data);
-      if (approve) await approveCount(tx, membership.locationId, membership.userId, id.data);
-    });
+    const outcome = await withUser((tx) =>
+      submitFromSheet(tx, membership.locationId, membership.userId, id.data, parsed, {
+        approve,
+        tappedAt: tappedAt.data ? new Date(tappedAt.data) : null,
+      }),
+    );
     refresh();
+    if (outcome === "already") return { ok: true, message: "This count was already submitted." };
     return {
       ok: true,
       message: approve ? "Count submitted and approved. Stock now matches what you counted." : "Count submitted. A manager will review it.",
