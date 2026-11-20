@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 6 (Pilot)** (stages 0 to 5 are merged, 18 Nov: the MVP's manual paths are complete; stage 4's offline counting is merged too, 20 Nov. Stage 6's "Before the pilot" block is merged; its other tasks wait for a pilot restaurant (`NEXT_STEPS_FOR_FILIPPO.md`, section 1). Still open: stage 5's real-phone install check (section 2); the AI blocks of stages 2, 3 and 5, parked until `ANTHROPIC_API_KEY` exists)
 
-**Now working on:** stage 7, sub-recipes: Server Actions for prep recipes (main agent), then "Prep recipes screen" and "Recipe editor" with `ui-builder`. Branch `stage-7-sub-recipes`, main checkout.
+**Now working on:** review of stage 7's sub-recipes block (`reviewer`, read-only, main checkout), branch `stage-7-sub-recipes`.
 
 ## Stage 0: Setup
 
@@ -181,7 +181,7 @@ Sub-recipes (prep recipes), branch `stage-7-sub-recipes`:
 - [x] Migration: `sub_recipes` and `sub_recipe_lines` with RLS; a recipe line may point at a prep recipe instead of an ingredient
 - [x] `lib/sub-recipes`: create, edit, archive; no prep recipe may contain itself; cost per unit; tests
 - [x] Depletion expands prep recipes into their ingredients; tests with the pizzeria's dough and sauce
-- [ ] Prep recipes screen: list, editor (what it makes, how much, from which ingredients), cost
+- [x] Prep recipes screen: list, editor (what it makes, how much, from which ingredients), cost
 - [x] Recipe editor: a prep recipe can be a line; the item's cost includes it
 
 Suppliers and purchase orders, branch `stage-7-suppliers`:

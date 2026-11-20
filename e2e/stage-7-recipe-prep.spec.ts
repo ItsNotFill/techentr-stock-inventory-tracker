@@ -99,7 +99,8 @@ test("the owner adds a prep recipe line, sees the cost, saves, and sales use up 
   await page.goto(`/menu/${ids.margherita}`);
   await expect(page.getByRole("heading", { name: "Margherita" }).filter({ visible: true })).toBeVisible();
   await expect(page.getByText("Needs recipe").filter({ visible: true }).first()).toBeVisible();
-  await expect(page.getByRole("link", { name: "Prep recipes" }).filter({ visible: true })).toHaveAttribute("href", "/prep");
+  // The editor's own link (the sidebar has one with the same name).
+  await expect(page.getByRole("main").getByRole("link", { name: "Prep recipes" }).filter({ visible: true })).toHaveAttribute("href", "/prep");
 
   await page.getByRole("button", { name: "Add ingredient" }).filter({ visible: true }).click();
   await page.getByLabel("Ingredient, line 1").filter({ visible: true }).click();
