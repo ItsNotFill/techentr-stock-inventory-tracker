@@ -142,6 +142,12 @@ A short log of design decisions, so later sessions do not undo earlier choices. 
 | 89 | **Stage 5 is merged once its review passes, with "Install on a real phone" still open for Filippo** (`NEXT_STEPS_FOR_FILIPPO.md`, section 1). The machine-checkable half of the done check is covered: Chrome reports no installability errors for the production build, the app shell opens offline, and a staff member logs a delivery on a phone-sized screen (`e2e/pwa.spec.ts`, `e2e/stage-5.spec.ts`). The task is ticked when Filippo reports back. Same approach as entry 42. | Installing from a home screen needs a physical phone, which only Filippo has; the live site gets the PWA only once `main` has it. |
 | 90 | **The test-cleanup switch (`app.allow_movement_delete`, entry 59) also lifts the delivery freeze triggers.** The app role still cannot change a confirmed delivery or its lines: RLS lets it write only drafts, and no app code sets the switch. Revisit with a stricter check (for example refusing the switch for `app_user`) if raw SQL ever reaches the app role. | Raised by the stage 5 review. The same switch already guards approved counts; one switch keeps the throwaway-restaurant cleanup in `tests/helpers/db.ts` simple. |
 
+## Decided in stage 6 (2026-11-20)
+
+| # | Decision | Reasoning |
+| --- | --- | --- |
+| 91 | **Stage 6 starts before there is a pilot restaurant.** Its tasks that need the restaurant (agree the pilot, set it up, real imports, POS API, counts, feedback) wait for Filippo. Meanwhile the agents build what the pilot needs and does not depend on its data, in this order: a spreadsheet setup import (ingredients with pack sizes, menu items and recipes from CSV), a pilot checklist, then stage 4's offline-counting block. The pre-pilot block is reviewed and merged on its own; stage 6's done check stays open until the pilot has run. | Filippo has no pilot yet (asked on 20 Nov). `SPEC.md` names recipe setup as the main adoption risk and "CSV recipe import" as its mitigation; walk-in fridges and cellars have no signal, and the done check is a weekly count without help. |
+
 ## Open questions (from SPEC.md, still open)
 
 - Which restaurant will pilot it, and which POS do they use?

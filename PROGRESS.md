@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 6 (Pilot)** (stages 0 to 5 are merged, 18 Nov: the MVP's manual paths are complete. Still open from earlier stages: stage 5's real-phone install check, which waits for Filippo (`NEXT_STEPS_FOR_FILIPPO.md`, section 1; DECISIONS.md, entry 89); stage 4's offline-counting block, next for the agents; the AI blocks of stages 2, 3 and 5, parked until `ANTHROPIC_API_KEY` exists)
 
-**Now working on:** nothing. Stage 5 is merged into `main`; the next task is the first offline-counting task (end of stage 4), on a new branch from `main`.
+**Now working on:** stage 6, "Before the pilot": "Setup import, server side". Branch `stage-6-pilot-setup`, main checkout (no worktree).
 
 ## Stage 0: Setup
 
@@ -163,6 +163,14 @@ Restock by invoice photo (after the done check):
 - [ ] Write down their feedback
 
 **Done when:** the restaurant does at least one weekly count without your help, and you have their feedback written down.
+
+Before the pilot (no restaurant data needed; DECISIONS.md, entry 91). The tasks above wait for Filippo to find the pilot (`NEXT_STEPS_FOR_FILIPPO.md`, "Find a pilot restaurant"). Branch `stage-6-pilot-setup`:
+
+- [ ] Setup import, server side: ingredients (with pack sizes) and recipes from two CSV files; check, preview, import in one transaction; tests
+- [ ] Setup import screen for owners and managers, with downloadable templates
+- [ ] Pilot checklist: what to ask the restaurant for, and how the setup goes (`docs/pilot-setup.md`)
+
+Then stage 4's offline-counting block (above), on its own branch, so the pilot can count where there is no signal.
 
 ## Stage 7: After the MVP
 
