@@ -9,7 +9,7 @@ import { buttonVariants, Button } from "@/components/ui/button";
 export function OrderText({ text, email, restaurantName }: { text: string; email: string | null; restaurantName: string }) {
   const uid = useId();
   const mailto = email
-    ? `mailto:${email}?subject=${encodeURIComponent(`Order from ${restaurantName}`)}&body=${encodeURIComponent(text)}`
+    ? `mailto:${email}?subject=${encodeURIComponent(`Order from ${restaurantName}`)}&body=${encodeURIComponent(text.replace(/\n/g, "\r\n"))}`
     : null;
 
   async function copy() {

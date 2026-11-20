@@ -477,6 +477,12 @@ export async function receivePurchaseOrder(
     deliveredAt: input.deliveredAt,
     lines: input.lines,
   });
+  // A delivery belongs to one order at most (a reused clientId must not receive a second order).
+  const [linked] = await tx
+    .select({ id: purchaseOrders.id })
+    .from(purchaseOrders)
+    .where(and(eq(purchaseOrders.locationId, locationId), eq(purchaseOrders.deliveryId, logged.id), ne(purchaseOrders.id, id)));
+  if (linked) throw new PurchasingError("This delivery was already used to receive another order. Reload the page and try again.");
   await tx
     .update(purchaseOrders)
     .set({ status: "received", receivedAt: new Date(), receivedBy: userId, deliveryId: logged.id })

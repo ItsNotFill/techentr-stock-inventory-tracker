@@ -431,6 +431,58 @@ Index: `(delivery_id)`. On confirmation, each line writes one `delivery` movemen
 
 The pack size key names its column in the delete action because a plain `SET NULL` on a composite key would also null `location_id`, which is not allowed. This form needs Postgres 15 or later and may have to be hand-written in the migration SQL. If it cannot be used, fall back to `on delete restrict`.
 
+### Suppliers and purchase orders (stage 7)
+
+DECISIONS.md 97. Enum `purchase_order_status`: `draft`, `sent`, `received`, `cancelled`.
+
+#### `suppliers`
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | uuid PK | |
+| `location_id` | uuid, not null | |
+| `name` | text, not null | unique per location without regard to case |
+| `contact_name`, `email`, `phone`, `notes` | text, nullable | |
+| `is_active` | boolean, not null, default true | archive instead of delete |
+| `created_at`, `updated_at` | timestamptz | |
+
+Unique: `(id, location_id)`. Owners and managers write.
+
+`ingredients.supplier_id` (uuid, nullable): composite FK → `suppliers`, on delete restrict; index `(supplier_id)`. Who an ingredient is ordered from.
+
+#### `purchase_orders`
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | uuid PK | |
+| `location_id` | uuid, not null | |
+| `supplier_id` | uuid, not null | composite FK → `suppliers`, on delete restrict |
+| `status` | `purchase_order_status`, not null, default `draft` | draft → sent → received, or cancelled |
+| `notes` | text, nullable | |
+| `created_by` | uuid, not null | |
+| `created_at`, `updated_at` | timestamptz | |
+| `sent_at`, `sent_by` | timestamptz, uuid, nullable | |
+| `received_at`, `received_by` | timestamptz, uuid, nullable | |
+| `delivery_id` | uuid, nullable | composite FK → `deliveries`, on delete restrict; the delivery logged on receipt (through `lib/deliveries`) |
+| `cancelled_at` | timestamptz, nullable | |
+
+Checks: sent or received orders have `sent_at`; received orders have `received_at` and `delivery_id`. Unique: `(id, location_id)`. Indexes: `(location_id, status)`, `(supplier_id)`. Owners and managers write; only drafts can be deleted.
+
+#### `purchase_order_lines`
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | uuid PK | |
+| `location_id` | uuid, not null | |
+| `purchase_order_id` | uuid, not null | composite FK → `purchase_orders`, on delete cascade |
+| `ingredient_id` | uuid, not null | composite FK → `ingredients`, on delete restrict |
+| `pack_size_id` | uuid, nullable | composite FK → `pack_sizes`, `ON DELETE SET NULL (pack_size_id)` |
+| `pack_count` | qty, nullable, check `> 0` | |
+| `qty_base_unit` | qty, not null, check `> 0` | |
+| `created_at`, `updated_at` | timestamptz | |
+
+Unique: `(purchase_order_id, ingredient_id)`. Index: `(ingredient_id)`. Owners and managers write, and only while the order is a draft (the policy looks at the order).
+
 ## Ledger rules
 
 All of this lives in `lib/ledger` and the undo function. No other code writes to `stock_movements`.
@@ -469,6 +521,6 @@ Late sale: if 5 more Margherita from that day are imported after the closing cou
 ## Deliberately left out
 
 - A `current_stock` or any cached stock column.
-- Sub-recipes, suppliers, purchase orders, forecasting tables: after the MVP.
+- Forecasting tables: after the MVP. (Sub-recipes, suppliers and purchase orders were added in stage 7, above.)
 - An invitations table: Supabase Auth invites plus a `memberships` row are enough.
 - Cost history table: snapshots on count and delivery lines cover the MVP.
