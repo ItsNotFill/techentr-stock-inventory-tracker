@@ -182,7 +182,7 @@ Sub-recipes (prep recipes), branch `stage-7-sub-recipes`:
 - [x] `lib/sub-recipes`: create, edit, archive; no prep recipe may contain itself; cost per unit; tests
 - [x] Depletion expands prep recipes into their ingredients; tests with the pizzeria's dough and sauce
 - [ ] Prep recipes screen: list, editor (what it makes, how much, from which ingredients), cost
-- [ ] Recipe editor: a prep recipe can be a line; the item's cost includes it
+- [x] Recipe editor: a prep recipe can be a line; the item's cost includes it
 
 Suppliers and purchase orders, branch `stage-7-suppliers`:
 
