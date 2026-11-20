@@ -1,4 +1,4 @@
-import { FileSpreadsheet, Plus, UtensilsCrossed } from "lucide-react";
+import { CookingPot, FileSpreadsheet, Plus, UtensilsCrossed } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -33,6 +33,12 @@ export default function MenuPage({ searchParams }: PageProps<"/menu">) {
           <Link href="/menu/new">
             <Plus aria-hidden />
             Add item
+          </Link>
+        </Button>
+        <Button asChild variant="outline" size="lg">
+          <Link href="/prep">
+            <CookingPot aria-hidden />
+            Prep recipes
           </Link>
         </Button>
         <Button asChild variant="outline" size="lg">
