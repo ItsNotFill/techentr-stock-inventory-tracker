@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 6 (Pilot)** (stages 0 to 5 are merged, 18 Nov: the MVP's manual paths are complete. Stage 6's "Before the pilot" block (setup import, pilot checklist) is merged, 20 Nov; its other tasks wait for a pilot restaurant (`NEXT_STEPS_FOR_FILIPPO.md`, section 1). Still open from earlier stages: stage 5's real-phone install check (section 2); stage 4's offline-counting block, in progress; the AI blocks of stages 2, 3 and 5, parked until `ANTHROPIC_API_KEY` exists)
 
-**Now working on:** stage 4's offline-counting block: branch `stage-4-offline-counting`, main agent in worktree `.claude/worktrees/main-offline` (sync engine and count sheet wiring pushed as WIP); the indicator and the airplane-mode test are with `ui-builder` in its own worktree under `.claude/worktrees/`.
+**Now working on:** review of stage 4's offline-counting block (`reviewer`, read-only, worktree `.claude/worktrees/main-offline`), branch `stage-4-offline-counting`.
 
 ## Stage 0: Setup
 
@@ -127,7 +127,7 @@ Offline counting (after the done check) — **not done yet**; next, after stage 
 
 - [x] Save count drafts to IndexedDB as they are typed
 - [x] Sync on reconnect, idempotent through `client_id` (figures: one line per ingredient; submit: kept with its time, a repeated submit answers success; DECISIONS.md, entry 94)
-- [ ] Offline and "waiting to sync" indicator; test in airplane mode
+- [x] Offline and "waiting to sync" indicator; test in airplane mode (`e2e/offline-count.spec.ts`, production build: the server is stopped to take the signal away)
 
 ## Stage 5: Deliveries, waste, dashboard, PWA
 

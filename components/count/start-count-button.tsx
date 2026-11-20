@@ -1,6 +1,7 @@
 "use client";
 
 import { ClipboardList } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
 import { startCountAction } from "@/app/(app)/count/actions";
@@ -9,6 +10,7 @@ import { cn } from "@/lib/utils";
 
 /** Starts a count (or returns to the user's draft) and opens the count sheet. */
 export function StartCountButton({ hasDraft, className }: { hasDraft: boolean; className?: string }) {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   function start() {
@@ -16,10 +18,8 @@ export function StartCountButton({ hasDraft, className }: { hasDraft: boolean; c
       try {
         const result = await startCountAction(crypto.randomUUID());
         if (result.ok && result.id) {
-          // A full page load, not router.push: the service worker only keeps pages it loaded itself, and the
-          // sheet must open with no signal after a reload (DECISIONS.md 94). Stays "Opening…" until the page changes.
-          // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-          window.location.assign(`/count/${result.id}`);
+          // The sheet keeps its own offline copy once it is open (lib/pwa/offline-copy.ts).
+          router.push(`/count/${result.id}`);
         } else {
           toast.error(result.message ?? "Could not start the count.");
         }

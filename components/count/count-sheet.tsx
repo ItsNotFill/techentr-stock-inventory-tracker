@@ -26,6 +26,7 @@ import type { CountSheetIngredient } from "@/lib/counts";
 import { DISPLAY_UNITS, formatQty, packsToBase, parseQuantityInput, toBaseUnits, toDecimal } from "@/lib/units";
 import { cn } from "@/lib/utils";
 import { useCountSync } from "@/hooks/use-count-sync";
+import { keepOfflineCopy } from "@/lib/pwa/offline-copy";
 
 const PACK_PREFIX = "pack:";
 
@@ -74,6 +75,10 @@ export function CountSheetForm({
   const [pending, startTransition] = useTransition();
   // Figures are kept on the phone and sent when there is signal (DECISIONS.md 94).
   const sync = useCountSync(sessionId);
+  // A copy of this sheet for the service worker, so it reopens without signal however it was reached.
+  useEffect(() => {
+    void keepOfflineCopy(`/count/${sessionId}`);
+  }, [sessionId]);
   const { state: syncState } = sync;
 
   // What the phone kept from an earlier visit is newer than the server's figures.
