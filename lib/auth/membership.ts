@@ -1,10 +1,10 @@
 import "server-only";
 import { cache } from "react";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { asc, eq } from "drizzle-orm";
 import { withUserId } from "@/lib/db/client";
-import { locations, memberships } from "@/lib/db/schema";
 import type { MemberRole } from "@/lib/db/schema";
+import { listMyLocations, LOCATION_COOKIE, pickLocation, type MyLocation } from "./locations";
 import { getCurrentUser } from "./session";
 
 export type Membership = {
@@ -18,31 +18,36 @@ export type Membership = {
 };
 
 /**
+ * Every location the signed-in user belongs to (for the location switcher).
+ * Cached for the length of one request.
+ */
+export const getMyLocations = cache(async (): Promise<MyLocation[]> => {
+  const user = await getCurrentUser();
+  if (!user) return [];
+  return withUserId(user.id, (tx) => listMyLocations(tx, user.id));
+});
+
+/**
  * The signed-in user's restaurant and role, or null when signed out or not yet
- * part of a restaurant. The MVP shows one location per user: the first one
- * they joined. Cached for the length of one request.
+ * part of a restaurant: the location chosen in the `location` cookie when the
+ * user belongs to it, else the first one they joined (DECISIONS.md 98).
+ * Cached for the length of one request.
  */
 export const getCurrentMembership = cache(async (): Promise<Membership | null> => {
   const user = await getCurrentUser();
   if (!user) return null;
-
-  const [row] = await withUserId(user.id, (tx) =>
-    tx
-      .select({
-        locationId: memberships.locationId,
-        role: memberships.role,
-        locationName: locations.name,
-        organizationId: locations.orgId,
-        timezone: locations.timezone,
-      })
-      .from(memberships)
-      .innerJoin(locations, eq(locations.id, memberships.locationId))
-      .where(eq(memberships.userId, user.id))
-      .orderBy(asc(memberships.createdAt))
-      .limit(1),
-  );
-  if (!row) return null;
-  return { userId: user.id, email: user.email, ...row };
+  const chosen = (await cookies()).get(LOCATION_COOKIE)?.value;
+  const location = pickLocation(await getMyLocations(), chosen);
+  if (!location) return null;
+  return {
+    userId: user.id,
+    email: user.email,
+    locationId: location.locationId,
+    locationName: location.locationName,
+    organizationId: location.organizationId,
+    timezone: location.timezone,
+    role: location.role,
+  };
 });
 
 /**
