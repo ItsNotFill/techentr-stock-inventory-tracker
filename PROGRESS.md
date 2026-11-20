@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 6 (Pilot)** (stages 0 to 5 are merged, 18 Nov: the MVP's manual paths are complete; stage 4's offline counting is merged too, 20 Nov. Stage 6's "Before the pilot" block is merged; its other tasks wait for a pilot restaurant (`NEXT_STEPS_FOR_FILIPPO.md`, section 1). Still open: stage 5's real-phone install check (section 2); the AI blocks of stages 2, 3 and 5, parked until `ANTHROPIC_API_KEY` exists)
 
-**Now working on:** nothing. Suppliers and purchase orders are merged into `main`; next, stage 7 "Multiple locations" on a new branch `stage-7-locations` from `main`.
+**Now working on:** nothing. Multiple locations are merged into `main`; next, stage 7 "E-mails" on a new branch `stage-7-emails` from `main`.
 
 ## Stage 0: Setup
 
@@ -191,11 +191,11 @@ Suppliers and purchase orders, branch `stage-7-suppliers` — **done, merged 20 
 - [x] Suppliers screen; purchase order screen (from the suggestions, edit, mark as sent, text to send)
 - [x] Receiving a purchase order logs its delivery
 
-Multiple locations, branch `stage-7-locations`:
+Multiple locations, branch `stage-7-locations` — **done, merged 20 Nov**:
 
-- [ ] The chosen location per user (switcher in the shell for people with more than one)
-- [ ] An owner adds a location to the organization; team per location
-- [ ] Every screen and action uses the chosen location; isolation tests
+- [x] The chosen location per user (switcher in the shell for people with more than one)
+- [x] An owner adds a location to the organization; team per location
+- [x] Every screen and action uses the chosen location; isolation tests
 
 E-mails, branch `stage-7-emails` (sending waits for an e-mail provider key from Filippo):
 

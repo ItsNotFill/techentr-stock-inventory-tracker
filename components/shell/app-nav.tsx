@@ -2,8 +2,9 @@ import { LogOut, Store } from "lucide-react";
 import { signOut } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { requireMembership } from "@/lib/auth/membership";
+import { getMyLocations, requireMembership } from "@/lib/auth/membership";
 import { ROLE_LABELS } from "@/lib/auth/roles";
+import { LocationSwitcher } from "./location-switcher";
 import { BottomTabs, SidebarLinks } from "./nav-links";
 import { sidebarItemClass } from "./nav-style";
 
@@ -22,17 +23,28 @@ function RestaurantMark() {
  */
 export async function AppNav() {
   const membership = await requireMembership();
+  const locations = await getMyLocations();
+  const switcher = locations.length > 1 ? locations : null;
 
   return (
     <>
       <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-border bg-card px-4 py-2 md:hidden">
-        <div className="flex min-w-0 items-center gap-3">
-          <RestaurantMark />
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold">{membership.locationName}</p>
-            <p className="text-xs text-muted-foreground">{ROLE_LABELS[membership.role]}</p>
+        {switcher ? (
+          <LocationSwitcher
+            locations={switcher}
+            currentId={membership.locationId}
+            variant="topbar"
+            subtitle={ROLE_LABELS[membership.role]}
+          />
+        ) : (
+          <div className="flex min-w-0 items-center gap-3">
+            <RestaurantMark />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">{membership.locationName}</p>
+              <p className="text-xs text-muted-foreground">{ROLE_LABELS[membership.role]}</p>
+            </div>
           </div>
-        </div>
+        )}
         <form action={signOut}>
           <Button type="submit" variant="outline" className="px-3">
             <LogOut aria-hidden />
@@ -43,16 +55,27 @@ export async function AppNav() {
 
       <aside className="hidden w-64 shrink-0 bg-sidebar md:block">
         <div className="sticky top-0 flex h-dvh flex-col gap-6 overflow-y-auto p-4">
-          <div className="flex min-w-0 items-center gap-3 px-1 pt-1">
-            <RestaurantMark />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-sidebar-title">{membership.locationName}</p>
-              <p className="truncate text-xs text-sidebar-foreground">
-                {ROLE_LABELS[membership.role]}
-                {membership.email ? ` · ${membership.email}` : ""}
-              </p>
+          {switcher ? (
+            <div className="flex pt-1">
+              <LocationSwitcher
+                locations={switcher}
+                currentId={membership.locationId}
+                variant="sidebar"
+                subtitle={`${ROLE_LABELS[membership.role]}${membership.email ? ` · ${membership.email}` : ""}`}
+              />
             </div>
-          </div>
+          ) : (
+            <div className="flex min-w-0 items-center gap-3 px-1 pt-1">
+              <RestaurantMark />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-sidebar-title">{membership.locationName}</p>
+                <p className="truncate text-xs text-sidebar-foreground">
+                  {ROLE_LABELS[membership.role]}
+                  {membership.email ? ` · ${membership.email}` : ""}
+                </p>
+              </div>
+            </div>
+          )}
           <div className="flex-1">
             <SidebarLinks role={membership.role} />
           </div>

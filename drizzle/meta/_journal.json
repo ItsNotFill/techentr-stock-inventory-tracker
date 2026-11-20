@@ -120,6 +120,13 @@
       "when": 1795186346066,
       "tag": "0016_suppliers_and_purchase_orders",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1795188616375,
+      "tag": "0017_create_location_function",
+      "breakpoints": true
     }
   ]
 }
