@@ -4,10 +4,11 @@ import { Suspense } from "react";
 import { PageHeader } from "@/components/page-header";
 import { CardsSkeleton } from "@/components/page-skeleton";
 import { AddMemberForm } from "@/components/settings/add-member-form";
+import { LocationsCard } from "@/components/settings/locations-card";
 import { RestaurantForm } from "@/components/settings/restaurant-form";
 import { TeamList, type TeamRow } from "@/components/settings/team-list";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { requireRole } from "@/lib/auth/membership";
+import { getMyLocations, requireRole } from "@/lib/auth/membership";
 import { OWNER_ROLES } from "@/lib/auth/roles";
 import { withUser } from "@/lib/db/client";
 import { getRestaurantDetails, listTeam } from "@/lib/team";
@@ -32,6 +33,9 @@ async function SettingsContent() {
     team: await listTeam(tx, membership.locationId),
   }));
   if (!details) notFound();
+  const organizationLocations = (await getMyLocations())
+    .filter((location) => location.organizationId === membership.organizationId)
+    .map(({ locationId, locationName, timezone }) => ({ locationId, locationName, timezone }));
 
   const dateFormat = new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeZone: details.timezone });
   const rows: TeamRow[] = team.map((member) => ({
@@ -52,6 +56,13 @@ async function SettingsContent() {
           <RestaurantForm name={details.name} posProvider={details.posProvider} timezone={details.timezone} />
         </CardContent>
       </Card>
+
+      <LocationsCard
+        locations={organizationLocations}
+        currentId={membership.locationId}
+        defaultTimezone={details.timezone}
+        timezones={Intl.supportedValuesOf("timeZone")}
+      />
 
       <Card>
         <CardHeader>
