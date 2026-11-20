@@ -193,6 +193,10 @@ for (const viewport of Object.keys(VIEWPORTS) as Viewport[]) {
     await page.getByRole("button", { name: "Add ingredient" }).click();
     await shot(page, viewport, "23-ingredient-new-errors");
 
+    await page.goto("/setup");
+    await expect(page.getByRole("heading", { name: "Import from a spreadsheet" }).filter({ visible: true })).toBeVisible();
+    await shot(page, viewport, "26-setup-import");
+
     await page.goto("/menu");
     await shot(page, viewport, "30-menu");
     await openFirst(page, 'a[href^="/menu/"]:has-text("Margherita")', /\/menu\/[0-9a-f-]{36}$/);

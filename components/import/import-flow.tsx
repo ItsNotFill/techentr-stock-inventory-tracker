@@ -1,8 +1,8 @@
 "use client";
 
-import { CircleCheck, Upload } from "lucide-react";
+import { CircleCheck } from "lucide-react";
 import Link from "next/link";
-import { useId, useRef, useState, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
   analyzeSalesCsv,
@@ -11,9 +11,10 @@ import {
   type AnalyzeResult,
   type PreviewResult,
 } from "@/app/(app)/import/actions";
+import { FileDropZone } from "@/components/file-drop-zone";
 import { SELECT_HEIGHT } from "@/components/ingredients/units";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -127,7 +128,6 @@ function StepIndicator({ step }: { step: number }) {
 
 export function ImportFlow({ timeZone }: { timeZone: string }) {
   const uid = useId();
-  const fileInput = useRef<HTMLInputElement>(null);
   const [pending, startTransition] = useTransition();
   const [step, setStep] = useState(0);
   const [csvText, setCsvText] = useState("");
@@ -138,7 +138,6 @@ export function ImportFlow({ timeZone }: { timeZone: string }) {
   const [result, setResult] = useState<ImportResult | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
-  const [dragging, setDragging] = useState(false);
 
   function reset() {
     setStep(0);
@@ -150,8 +149,6 @@ export function ImportFlow({ timeZone }: { timeZone: string }) {
     setResult(null);
     setMessage(null);
     setErrors({});
-    setDragging(false);
-    if (fileInput.current) fileInput.current.value = "";
   }
 
   function handleFile(file: File | undefined) {
@@ -264,43 +261,12 @@ export function ImportFlow({ timeZone }: { timeZone: string }) {
           <p className="text-sm text-muted-foreground">
             Export the sales per item from your POS as a CSV file. Each row is one item on one order.
           </p>
-          <label
-            htmlFor={`${uid}-file`}
-            onDragOver={(event) => {
-              event.preventDefault();
-              setDragging(true);
-            }}
-            onDragLeave={() => setDragging(false)}
-            onDrop={(event) => {
-              event.preventDefault();
-              setDragging(false);
-              if (!pending) handleFile(event.dataTransfer.files[0]);
-            }}
-            className={cn(
-              "group flex min-h-44 cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-6 text-center transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring",
-              dragging ? "border-primary bg-accent" : "border-border hover:border-primary hover:bg-accent/50",
-            )}
-          >
-            <span className="flex size-11 items-center justify-center rounded-full bg-accent text-primary">
-              <Upload className="size-5" aria-hidden />
-            </span>
-            <span className={buttonVariants({ size: "lg", className: "pointer-events-none" })}>
-              {pending ? "Reading the file…" : "Choose a CSV file"}
-            </span>
-            <span className="text-sm text-muted-foreground">Tap here, or drop the file on this box</span>
-            <input
-              ref={fileInput}
-              id={`${uid}-file`}
-              type="file"
-              accept=".csv,text/csv,text/plain"
-              className="sr-only"
-              disabled={pending}
-              onChange={(event) => {
-                handleFile(event.target.files?.[0]);
-                event.target.value = "";
-              }}
-            />
-          </label>
+          <FileDropZone
+            label={pending ? "Reading the file…" : "Choose a CSV file"}
+            accept=".csv,text/csv,text/plain"
+            disabled={pending}
+            onFile={handleFile}
+          />
         </div>
       ) : null}
 

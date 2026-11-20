@@ -74,6 +74,7 @@ lib/
   units/                base-unit and pack conversion
   variance/             unexplained-usage maths
   imports/              CSV parsing, column mapping, idempotent import, undo
+  setup-import/         ingredients, pack sizes, menu items and recipes from two CSV files (pilot setup)
   menu/                 menu items, recipes, unmapped queue
   ingredients/          ingredients and pack sizes
   team/                 team and restaurant details
