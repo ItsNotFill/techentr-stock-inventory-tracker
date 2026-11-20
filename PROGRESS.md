@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 6 (Pilot)** (stages 0 to 5 are merged, 18 Nov: the MVP's manual paths are complete; stage 4's offline counting is merged too, 20 Nov. Stage 6's "Before the pilot" block is merged; its other tasks wait for a pilot restaurant (`NEXT_STEPS_FOR_FILIPPO.md`, section 1). Still open: stage 5's real-phone install check (section 2); the AI blocks of stages 2, 3 and 5, parked until `ANTHROPIC_API_KEY` exists)
 
-**Now working on:** stage 7, e-mails: Settings "E-mails" card and preview (ui-builder). Branch `stage-7-emails`, worktree `.claude/worktrees/emails-ui`.
+**Now working on:** stage 7, e-mails: Settings "E-mails" card and preview (ui-builder). Branch `stage-7-emails`, worktree `.claude/worktrees/agent-ae256469156ae624c`.
 
 ## Stage 0: Setup
 
