@@ -212,6 +212,16 @@ for (const viewport of Object.keys(VIEWPORTS) as Viewport[]) {
     await expect(page.getByRole("heading", { name: "Add prep recipe" }).filter({ visible: true })).toBeVisible();
     await shot(page, viewport, "33-prep-recipe-new");
 
+    // The demo has no suppliers, so this is the empty state (read only).
+    await page.goto("/suppliers");
+    await expect(page.getByRole("heading", { name: "Suppliers" }).filter({ visible: true })).toBeVisible();
+    await expect(page.getByText("No suppliers yet").filter({ visible: true })).toBeVisible();
+    await shot(page, viewport, "35-suppliers");
+
+    await page.goto("/orders");
+    await expect(page.getByRole("heading", { name: "Suggested orders" }).filter({ visible: true })).toBeVisible();
+    await shot(page, viewport, "36-orders");
+
     await page.goto("/unmapped");
     await shot(page, viewport, "40-needs-recipe");
 

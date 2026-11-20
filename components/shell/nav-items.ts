@@ -1,4 +1,5 @@
 import {
+  Building2,
   Carrot,
   CircleHelp,
   ClipboardList,
@@ -7,6 +8,7 @@ import {
   History,
   LayoutDashboard,
   Settings,
+  ShoppingCart,
   Trash2,
   Truck,
   TrendingDown,
@@ -37,6 +39,8 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/history", label: "Stock history", icon: History, roles: MANAGER_ROLES },
   { href: "/menu", label: "Menu", icon: UtensilsCrossed, roles: MANAGER_ROLES },
   { href: "/prep", label: "Prep recipes", icon: CookingPot, roles: MANAGER_ROLES },
+  { href: "/orders", label: "Orders", icon: ShoppingCart, roles: MANAGER_ROLES },
+  { href: "/suppliers", label: "Suppliers", icon: Building2, roles: MANAGER_ROLES },
   { href: "/import", label: "Import sales", icon: FileUp, roles: MANAGER_ROLES },
   { href: "/unmapped", label: "Needs recipe", icon: CircleHelp, roles: MANAGER_ROLES },
   { href: "/count", label: "Count", icon: ClipboardList, roles: ALL_ROLES, phoneTab: true },

@@ -165,3 +165,9 @@ The demo restaurant already holds the worked example from the spec: opening stoc
 - Checked: 233 tests and browser tests; the reviewer agent found one real bug (prep recipes could be nested too deep through the ones above, which would have stopped imports), fixed and tested before the merge.
 - Not tracked (on purpose): stock of the prep itself, such as dough in the fridge. Say if the pilot needs it.
 - Next for the agents: suppliers and purchase orders.
+
+### Stage 7, suppliers and purchase orders (2026-11-20)
+
+- Built: **Suppliers** (who you buy from; each ingredient can have one) and **Orders**: what to order per supplier from what is low (topped up to par, in whole packs, minus what is already ordered), purchase orders you copy or e-mail to the supplier, and **Receive delivery**, which logs what really arrived and adds it to stock.
+- Checked: 246 tests and browser tests of the whole flow (suggest 7 bags, order 6, receive 5: stock goes from 1,900 g to 6,900 g). The reviewer agent returned OK; its small notes are fixed or written down.
+- Good to know: the app does not e-mail suppliers itself; it opens your e-mail program with the order filled in. Orders are for owners and managers; staff keep using Log delivery.

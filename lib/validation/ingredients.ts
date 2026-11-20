@@ -27,6 +27,14 @@ export const ingredientFormSchema = z
     levelUnit: displayUnit,
     category: optionalText(60),
     storageArea: optionalText(60),
+    /**
+     * Who it is ordered from (stage 7). "" clears it; left out (undefined), an
+     * update keeps what is there, so callers that do not know suppliers change nothing.
+     */
+    supplierId: z
+      .union([z.literal(""), z.uuid("Choose a supplier.")])
+      .optional()
+      .transform((value) => (value === undefined ? undefined : value === "" ? null : value)),
   })
   .superRefine((value, context) => {
     if (!unitFitsBaseUnit(value.baseUnit, value.costUnit)) {

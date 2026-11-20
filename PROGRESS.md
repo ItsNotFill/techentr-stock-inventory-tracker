@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 6 (Pilot)** (stages 0 to 5 are merged, 18 Nov: the MVP's manual paths are complete; stage 4's offline counting is merged too, 20 Nov. Stage 6's "Before the pilot" block is merged; its other tasks wait for a pilot restaurant (`NEXT_STEPS_FOR_FILIPPO.md`, section 1). Still open: stage 5's real-phone install check (section 2); the AI blocks of stages 2, 3 and 5, parked until `ANTHROPIC_API_KEY` exists)
 
-**Now working on:** nothing. Sub-recipes are merged into `main`; next, stage 7 "Suppliers and purchase orders" on a new branch `stage-7-suppliers` from `main`.
+**Now working on:** nothing. Suppliers and purchase orders are merged into `main`; next, stage 7 "Multiple locations" on a new branch `stage-7-locations` from `main`.
 
 ## Stage 0: Setup
 
@@ -184,12 +184,12 @@ Sub-recipes (prep recipes), branch `stage-7-sub-recipes` — **done, merged 20 N
 - [x] Prep recipes screen: list, editor (what it makes, how much, from which ingredients), cost
 - [x] Recipe editor: a prep recipe can be a line; the item's cost includes it
 
-Suppliers and purchase orders, branch `stage-7-suppliers`:
+Suppliers and purchase orders, branch `stage-7-suppliers` — **done, merged 20 Nov**:
 
-- [ ] Migration: `suppliers`, the supplier of each ingredient, `purchase_orders` and `purchase_order_lines` with RLS
-- [ ] Order suggestions: per supplier, what is at or below its reorder point and how many packs reach par
-- [ ] Suppliers screen; purchase order screen (from the suggestions, edit, mark as sent, text to send)
-- [ ] Receiving a purchase order logs its delivery
+- [x] Migration: `suppliers`, the supplier of each ingredient, `purchase_orders` and `purchase_order_lines` with RLS
+- [x] Order suggestions: per supplier, what is at or below its reorder point and how many packs reach par
+- [x] Suppliers screen; purchase order screen (from the suggestions, edit, mark as sent, text to send)
+- [x] Receiving a purchase order logs its delivery
 
 Multiple locations, branch `stage-7-locations`:
 

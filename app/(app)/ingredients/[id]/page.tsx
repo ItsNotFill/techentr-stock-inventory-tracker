@@ -15,6 +15,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth/membership";
 import { MANAGER_ROLES } from "@/lib/auth/roles";
 import { withUser } from "@/lib/db/client";
+import { listSupplierOptions, listSuppliers } from "@/lib/purchasing";
 import { baseUnitLocked, getIngredient, type IngredientWithPacks } from "@/lib/ingredients";
 import { DISPLAY_UNITS, fromBaseUnits, toDecimal, type Quantity } from "@/lib/units";
 import { idSchema } from "@/lib/validation/ingredients";
@@ -60,6 +61,7 @@ function toDefaults(ingredient: IngredientWithPacks): IngredientFormDefaults {
     levelUnit: unit,
     category: ingredient.category ?? "",
     storageArea: ingredient.storageArea ?? "",
+    supplierId: ingredient.supplierId ?? "",
   };
 }
 
@@ -69,11 +71,19 @@ async function EditIngredientContent({ params }: { params: PageProps<"/ingredien
   // A malformed id can never match; real database errors still reach the error screen.
   const parsedId = idSchema.safeParse(id);
   if (!parsedId.success) notFound();
-  const { ingredient, unitLocked } = await withUser(async (tx) => ({
+  const { ingredient, unitLocked, supplierOptions, allSuppliers } = await withUser(async (tx) => ({
     ingredient: await getIngredient(tx, membership.locationId, parsedId.data),
     unitLocked: await baseUnitLocked(tx, membership.locationId, parsedId.data),
+    supplierOptions: await listSupplierOptions(tx, membership.locationId),
+    allSuppliers: await listSuppliers(tx, membership.locationId, { includeArchived: true }),
   }));
   if (!ingredient) notFound();
+  // The ingredient may still point at a supplier archived since; keep it as an option.
+  const suppliers = [...supplierOptions];
+  const current = allSuppliers.find((supplier) => supplier.id === ingredient.supplierId);
+  if (current && !suppliers.some((supplier) => supplier.id === current.id)) {
+    suppliers.push({ id: current.id, name: `${current.name} (archived)` });
+  }
 
   return (
     <>
@@ -96,6 +106,7 @@ async function EditIngredientContent({ params }: { params: PageProps<"/ingredien
               key={JSON.stringify(toDefaults(ingredient))}
               defaults={toDefaults(ingredient)}
               unitLocked={unitLocked}
+              suppliers={suppliers}
             />
           </CardContent>
         </Card>

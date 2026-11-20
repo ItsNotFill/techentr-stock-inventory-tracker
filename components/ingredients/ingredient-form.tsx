@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useActionState, useId, useState } from "react";
 import { toast } from "sonner";
@@ -26,6 +27,8 @@ export type IngredientFormDefaults = {
   levelUnit: string;
   category: string;
   storageArea: string;
+  /** The supplier's id, or "" for none. */
+  supplierId: string;
 };
 
 export const NEW_INGREDIENT_DEFAULTS: IngredientFormDefaults = {
@@ -38,7 +41,10 @@ export const NEW_INGREDIENT_DEFAULTS: IngredientFormDefaults = {
   levelUnit: DEFAULT_DISPLAY_UNIT.g,
   category: "",
   storageArea: "",
+  supplierId: "",
 };
+
+const NO_SUPPLIER = "none";
 
 function UnitSelect({
   name,
@@ -75,8 +81,11 @@ function UnitSelect({
 export function IngredientForm({
   defaults,
   unitLocked = false,
+  suppliers,
 }: {
   defaults: IngredientFormDefaults;
+  /** Suppliers to pick from; an archived one the ingredient still has is marked "(archived)". */
+  suppliers: { id: string; name: string }[];
   /** The ingredient has pack sizes, recipes or stock movements, so the server refuses a unit change. */
   unitLocked?: boolean;
 }) {
@@ -270,6 +279,35 @@ export function IngredientForm({
             <FieldError errors={fieldErrors(state, "storageArea")} />
           </Field>
         </div>
+
+        <Field data-invalid={invalid("supplierId")}>
+          <FieldLabel htmlFor={`${uid}-supplierId`}>Supplier</FieldLabel>
+          {/* The select uses "none" for no supplier; the form sends "" to clear it. */}
+          <input type="hidden" name="supplierId" value={values.supplierId} />
+          <Select
+            value={values.supplierId === "" ? NO_SUPPLIER : values.supplierId}
+            onValueChange={(value) => set("supplierId")(value === NO_SUPPLIER ? "" : value)}
+          >
+            <SelectTrigger id={`${uid}-supplierId`} className={SELECT_HEIGHT} aria-invalid={invalid("supplierId")}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={NO_SUPPLIER}>No supplier</SelectItem>
+              {suppliers.map((supplier) => (
+                <SelectItem key={supplier.id} value={supplier.id}>
+                  {supplier.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <FieldDescription>
+            Orders are made per supplier.{" "}
+            <Link href="/suppliers" className="font-medium text-primary hover:underline hover:underline-offset-4">
+              Manage suppliers
+            </Link>
+          </FieldDescription>
+          <FieldError errors={fieldErrors(state, "supplierId")} />
+        </Field>
 
         <Button type="submit" size="lg" className="sm:w-fit" disabled={pending}>
           {pending ? "Saving…" : editing ? "Save changes" : "Add ingredient"}
