@@ -60,8 +60,8 @@ export type CountSyncState = {
   submitted: boolean;
   /** Per ingredient: why the server refused the figure. Not sent again until it changes. */
   rowErrors: Record<string, string>;
-  /** Ingredients the server confirmed in the last successful send. */
-  justSaved: string[];
+  /** Ingredients the server has confirmed since they were last changed. */
+  saved: string[];
   /** A refusal that is not about one figure (for example: already reviewed). */
   message: string | null;
 };
@@ -73,7 +73,7 @@ export const INITIAL_SYNC_STATE: CountSyncState = {
   submitWaiting: false,
   submitted: false,
   rowErrors: {},
-  justSaved: [],
+  saved: [],
   message: null,
 };
 
@@ -156,7 +156,7 @@ export class CountSync {
     this.refused.delete(entry.ingredientId);
     const rowErrors = { ...this.state.rowErrors };
     delete rowErrors[entry.ingredientId];
-    this.emit({ rowErrors, justSaved: this.state.justSaved.filter((id) => id !== entry.ingredientId) });
+    this.emit({ rowErrors, saved: this.state.saved.filter((id) => id !== entry.ingredientId) });
     void this.persist();
   }
 
@@ -233,12 +233,13 @@ export class CountSync {
         }
         delete rowErrors[entry.ingredientId];
       }
+      const allSaved = [...new Set([...this.state.saved, ...saved])];
       if (wasSubmit) {
         this.draft = { ...this.draft, pending: {}, submit: null };
-        this.emit({ syncing: false, unreachable: false, rowErrors: {}, justSaved: saved, submitted: true, message: answer.message ?? null });
+        this.emit({ syncing: false, unreachable: false, rowErrors: {}, saved: allSaved, submitted: true, message: answer.message ?? null });
         return;
       }
-      this.emit({ syncing: false, unreachable: false, rowErrors, justSaved: saved, message: null });
+      this.emit({ syncing: false, unreachable: false, rowErrors, saved: allSaved, message: null });
       // Figures typed meanwhile go in the next batch.
       if (this.sendable().length > 0) this.again = true;
       return;
@@ -259,7 +260,6 @@ export class CountSync {
       syncing: false,
       unreachable: false,
       rowErrors,
-      justSaved: [],
       message: perFigure ? (wasSubmit ? answer.message ?? "Please check the highlighted ingredient." : null) : (answer.message ?? "Not saved."),
     });
     // The other figures of the batch were not saved either (one transaction): send them again.

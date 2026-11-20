@@ -93,7 +93,7 @@ describe("offline counting: CountSync", () => {
 
     await sync.flush();
     expect(server.saves).toEqual([[{ ingredientId: MOZZARELLA, amount: "1,9", unit: "kg" }]]);
-    expect(state()).toMatchObject({ pending: [], unreachable: false, justSaved: [MOZZARELLA] });
+    expect(state()).toMatchObject({ pending: [], unreachable: false, saved: [MOZZARELLA] });
     expect(store.records.has(SESSION)).toBe(false);
   });
 
@@ -175,6 +175,7 @@ describe("offline counting: CountSync", () => {
     // Basil went again on its own and was saved; mozzarella waits for a correction.
     expect(server.saves.at(-1)).toEqual([{ ingredientId: BASIL, amount: "0.2", unit: "kg" }]);
     expect(state().pending).toEqual([MOZZARELLA]);
+    expect(state().saved).toEqual([BASIL]);
 
     await sync.flush();
     expect(server.saves).toHaveLength(2);

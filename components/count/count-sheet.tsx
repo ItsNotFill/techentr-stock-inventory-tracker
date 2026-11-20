@@ -144,7 +144,7 @@ export function CountSheetForm({
       if (syncState.unreachable) return { state: "kept" };
       return undefined;
     }
-    if (syncState.justSaved.includes(id)) return { state: "saved" };
+    if (syncState.saved.includes(id)) return { state: "saved" };
     return undefined;
   }
 
