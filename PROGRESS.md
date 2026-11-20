@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 6 (Pilot)** (stages 0 to 5 are merged, 18 Nov: the MVP's manual paths are complete; stage 4's offline counting is merged too, 20 Nov. Stage 6's "Before the pilot" block is merged; its other tasks wait for a pilot restaurant (`NEXT_STEPS_FOR_FILIPPO.md`, section 1). Still open: stage 5's real-phone install check (section 2); the AI blocks of stages 2, 3 and 5, parked until `ANTHROPIC_API_KEY` exists)
 
-**Now working on:** nothing. Sub-recipes are merged into `main`; next, stage 7 "Suppliers and purchase orders" on a new branch `stage-7-suppliers` from `main`.
+**Now working on:** stage 7, suppliers: "Migration: `suppliers`, the supplier of each ingredient, `purchase_orders` and `purchase_order_lines`". Branch `stage-7-suppliers`, main checkout (no worktree).
 
 ## Stage 0: Setup
 
