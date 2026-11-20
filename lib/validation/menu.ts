@@ -28,6 +28,10 @@ export const recipeLineInputSchema = z.object({
   unit: z.string().min(1, "Choose a unit."),
 });
 
-export const recipeInputSchema = z.array(recipeLineInputSchema).max(60, "A recipe can have at most 60 lines.");
+export const MAX_RECIPE_LINES = 60;
+
+export const recipeInputSchema = z
+  .array(recipeLineInputSchema)
+  .max(MAX_RECIPE_LINES, `A recipe can have at most ${MAX_RECIPE_LINES} lines.`);
 
 export type RecipeLineInput = z.infer<typeof recipeLineInputSchema>;

@@ -78,6 +78,16 @@ function findItem(index: MenuIndex, row: Pick<SaleRow, "itemId" | "itemName">): 
   return (row.itemId ? index.byPosId.get(row.itemId) : undefined) ?? index.byName.get(nameKey(row.itemName));
 }
 
+/**
+ * Finds the menu items that rows name, with the same rule as the sales import
+ * (POS id first, then the name without regard to case). Used by the setup
+ * import, so a spreadsheet and a POS export always land on the same item.
+ */
+export async function menuItemMatcher(tx: Tx, locationId: string) {
+  const index = await loadMenuIndex(tx, locationId);
+  return (row: { posItemId: string | null; posName: string }) => findItem(index, { itemId: row.posItemId, itemName: row.posName });
+}
+
 /** The key under which an item unknown to the app will be created. */
 const unknownKey = (row: Pick<SaleRow, "itemId" | "itemName">) => (row.itemId ? `id:${row.itemId}` : `name:${nameKey(row.itemName)}`);
 

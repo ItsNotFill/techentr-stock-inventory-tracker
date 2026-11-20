@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 6 (Pilot)** (stages 0 to 5 are merged, 18 Nov: the MVP's manual paths are complete. Still open from earlier stages: stage 5's real-phone install check, which waits for Filippo (`NEXT_STEPS_FOR_FILIPPO.md`, section 1; DECISIONS.md, entry 89); stage 4's offline-counting block, next for the agents; the AI blocks of stages 2, 3 and 5, parked until `ANTHROPIC_API_KEY` exists)
 
-**Now working on:** stage 6, "Before the pilot": "Setup import, server side". Branch `stage-6-pilot-setup`, main checkout (no worktree).
+**Now working on:** stage 6, "Before the pilot": "Setup import screen" with `ui-builder` in its own worktree under `.claude/worktrees/`; the main agent writes the pilot checklist meanwhile. Branch `stage-6-pilot-setup`.
 
 ## Stage 0: Setup
 
@@ -166,7 +166,7 @@ Restock by invoice photo (after the done check):
 
 Before the pilot (no restaurant data needed; DECISIONS.md, entry 91). The tasks above wait for Filippo to find the pilot (`NEXT_STEPS_FOR_FILIPPO.md`, "Find a pilot restaurant"). Branch `stage-6-pilot-setup`:
 
-- [ ] Setup import, server side: ingredients (with pack sizes) and recipes from two CSV files; check, preview, import in one transaction; tests
+- [x] Setup import, server side: ingredients (with pack sizes) and recipes from two CSV files; check, preview, import in one transaction; tests
 - [ ] Setup import screen for owners and managers, with downloadable templates
 - [ ] Pilot checklist: what to ask the restaurant for, and how the setup goes (`docs/pilot-setup.md`)
 

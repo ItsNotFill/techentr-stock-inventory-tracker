@@ -1,0 +1,6 @@
+name,unit,cost,cost_per,pack,pack_size,pack_unit,reorder_point,par_level,level_unit,category,storage_area
+Mozzarella,g,8.00,kg,Bag 1 kg,1,kg,2,8,kg,Dairy,Walk-in fridge
+Mozzarella,,,,Case 10x1 kg,10,kg,,,,,
+Tomato passata,ml,2.40,l,Tin 2.5 l,2.5,l,5,15,l,Canned,Dry store
+Basil,g,25.00,kg,Bunch 50 g,50,g,100,300,g,Fresh,Walk-in fridge
+Pizza box,unit,0.35,unit,Bundle of 50,50,unit,100,300,unit,Packaging,Dry store

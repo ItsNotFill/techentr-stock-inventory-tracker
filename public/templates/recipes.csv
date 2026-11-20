@@ -1,0 +1,7 @@
+menu_item,pos_item_id,kind,category,price,ingredient,amount,unit
+Margherita,,item,Pizza,9.50,Mozzarella,120,g
+Margherita,,,,,Tomato passata,80,ml
+Margherita,,,,,Basil,2,g
+Extra mozzarella,,modifier,Extras,1.50,Mozzarella,50,g
+Takeaway box,,modifier,Extras,0.50,Pizza box,1,unit
+Service charge,,item,Other,,,,
