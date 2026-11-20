@@ -1,12 +1,12 @@
 "use server";
 
-import { z } from "zod";
-import { setEmailSettings } from "@/lib/email/settings";
 import { refresh } from "next/cache";
 import { headers } from "next/headers";
+import { z } from "zod";
 import { checkRole } from "@/lib/auth/membership";
 import { OWNER_ROLES } from "@/lib/auth/roles";
 import { withUser } from "@/lib/db/client";
+import { setEmailSettings } from "@/lib/email/settings";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
   addMember,
@@ -184,7 +184,12 @@ export async function setEmailSettingsAction(values: unknown): Promise<FormState
   if (!membership) return PERMISSION_DENIED;
   const parsed = emailSettingsSchema.safeParse(values);
   if (!parsed.success) return formError("Could not save the e-mail settings. Reload the page and try again.");
-  await withUser((tx) => setEmailSettings(tx, membership.locationId, parsed.data));
+  try {
+    await withUser((tx) => setEmailSettings(tx, membership.locationId, parsed.data));
+  } catch (error) {
+    console.error("Saving the e-mail settings failed:", error);
+    return formError("Could not save the e-mail settings. Try again.");
+  }
   refresh();
   return { ok: true, message: "E-mail settings saved." };
 }
