@@ -23,6 +23,8 @@ export const aiExtractionKind = pgEnum("ai_extraction_kind", [
 export const aiExtractionStatus = pgEnum("ai_extraction_status", ["draft", "confirmed", "discarded", "failed"]);
 /** Stage 7 (DECISIONS.md 97). */
 export const purchaseOrderStatus = pgEnum("purchase_order_status", ["draft", "sent", "received", "cancelled"]);
+/** Stage 7 (DECISIONS.md 99). */
+export const emailKind = pgEnum("email_kind", ["weekly_summary", "low_stock"]);
 
 export type MemberRole = (typeof memberRole.enumValues)[number];
 export type BaseUnit = (typeof baseUnit.enumValues)[number];
@@ -30,3 +32,4 @@ export type MovementType = (typeof movementType.enumValues)[number];
 export type WasteReason = (typeof wasteReason.enumValues)[number];
 export type CountStatus = (typeof countStatus.enumValues)[number];
 export type PurchaseOrderStatus = (typeof purchaseOrderStatus.enumValues)[number];
+export type EmailKind = (typeof emailKind.enumValues)[number];

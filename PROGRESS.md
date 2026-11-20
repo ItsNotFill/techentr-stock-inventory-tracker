@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 6 (Pilot)** (stages 0 to 5 are merged, 18 Nov: the MVP's manual paths are complete; stage 4's offline counting is merged too, 20 Nov. Stage 6's "Before the pilot" block is merged; its other tasks wait for a pilot restaurant (`NEXT_STEPS_FOR_FILIPPO.md`, section 1). Still open: stage 5's real-phone install check (section 2); the AI blocks of stages 2, 3 and 5, parked until `ANTHROPIC_API_KEY` exists)
 
-**Now working on:** nothing. Multiple locations are merged into `main`; next, stage 7 "E-mails" on a new branch `stage-7-emails` from `main`.
+**Now working on:** stage 7, e-mails: Settings "E-mails" card and preview (ui-builder). Branch `stage-7-emails`, worktree `.claude/worktrees/emails-ui`.
 
 ## Stage 0: Setup
 
@@ -199,10 +199,11 @@ Multiple locations, branch `stage-7-locations` — **done, merged 20 Nov**:
 
 E-mails, branch `stage-7-emails` (sending waits for an e-mail provider key from Filippo):
 
-- [ ] E-mail module with a provider key; without the key, e-mails are only previewed
-- [ ] Weekly owner summary: unexplained usage, top losses, low stock
-- [ ] Low-stock alert
-- [ ] Scheduled sending (Vercel Cron, protected by a secret)
+- [x] E-mail module with a provider key (Resend, `lib/email`; migration 0018: `email_log`, switches per location); without the key, runs are logged as skipped
+- [x] Weekly owner summary: unexplained usage, top losses, low stock
+- [x] Low-stock alert
+- [x] Scheduled sending (Vercel Cron, protected by a secret)
+- [ ] Settings: an "E-mails" card (owner switches, when the last one went out) and a preview of both e-mails
 
 Not now (need accounts, hosting or pilot data): forecasting service (Python), payments and billing, native app.
 

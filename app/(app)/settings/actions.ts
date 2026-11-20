@@ -1,5 +1,7 @@
 "use server";
 
+import { z } from "zod";
+import { setEmailSettings } from "@/lib/email/settings";
 import { refresh } from "next/cache";
 import { headers } from "next/headers";
 import { checkRole } from "@/lib/auth/membership";
@@ -169,4 +171,20 @@ export async function removeTeamMember(userId: string): Promise<FormState> {
   } catch (error) {
     return toFormState(error);
   }
+}
+
+/**
+ * Switches this location's scheduled e-mails on or off (DECISIONS.md 99):
+ * `{ weeklySummary, lowStockAlerts }`. Owners only.
+ */
+const emailSettingsSchema = z.object({ weeklySummary: z.boolean(), lowStockAlerts: z.boolean() });
+
+export async function setEmailSettingsAction(values: unknown): Promise<FormState> {
+  const membership = await checkRole(OWNER_ROLES);
+  if (!membership) return PERMISSION_DENIED;
+  const parsed = emailSettingsSchema.safeParse(values);
+  if (!parsed.success) return formError("Could not save the e-mail settings. Reload the page and try again.");
+  await withUser((tx) => setEmailSettings(tx, membership.locationId, parsed.data));
+  refresh();
+  return { ok: true, message: "E-mail settings saved." };
 }

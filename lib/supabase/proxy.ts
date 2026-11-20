@@ -4,7 +4,8 @@ import { supabasePublicEnv } from "./public-env";
 
 /** Paths anyone may open. Everything else needs a signed-in user. */
 const PUBLIC_PATHS = ["/", "/login", "/sign-up", "/~offline"];
-const PUBLIC_PREFIXES = ["/auth/", "/api/health"];
+// /api/cron/ checks its own secret (lib/email/cron.ts); it has no signed-in user.
+const PUBLIC_PREFIXES = ["/auth/", "/api/health", "/api/cron/"];
 /** Signed-in users are sent away from these to the app. */
 const SIGNED_OUT_ONLY = ["/login", "/sign-up"];
 
