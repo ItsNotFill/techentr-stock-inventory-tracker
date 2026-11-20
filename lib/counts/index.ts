@@ -313,6 +313,30 @@ export async function submitCount(
   return submittedAt;
 }
 
+/**
+ * The count time of a submit that was tapped on a phone without signal and
+ * sent later (DECISIONS.md 71, 93): the moment of the tap, but never before
+ * the count was started and never after now. A phone clock that is wrong can
+ * then not get a count refused for good, nor date it outside its session.
+ */
+export function clampCountTime(tappedAt: Date, startedAt: Date, now: Date = new Date()): Date {
+  const time = Math.min(Math.max(tappedAt.getTime(), startedAt.getTime()), now.getTime());
+  return new Date(time);
+}
+
+/** Where a count stands, for a submit that may be a retry of one that already went through. */
+export async function getCountSubmission(
+  tx: Tx,
+  locationId: string,
+  sessionId: string,
+): Promise<{ status: CountStatus; countedBy: string; startedAt: Date } | null> {
+  const [session] = await tx
+    .select({ status: countSessions.status, countedBy: countSessions.countedBy, startedAt: countSessions.startedAt })
+    .from(countSessions)
+    .where(and(eq(countSessions.id, sessionId), eq(countSessions.locationId, locationId)));
+  return session ?? null;
+}
+
 export type ApprovalResult = { adjustments: number; openingLines: number };
 
 /**

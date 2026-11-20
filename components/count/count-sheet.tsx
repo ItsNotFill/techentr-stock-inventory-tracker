@@ -2,9 +2,9 @@
 
 import { CheckIcon, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useId, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { deleteDraftAction, saveCountAction, submitCountAction } from "@/app/(app)/count/actions";
+import { deleteDraftAction } from "@/app/(app)/count/actions";
 import { EmptyState } from "@/components/empty-state";
 import { SELECT_HEIGHT } from "@/components/ingredients/units";
 import {
@@ -24,11 +24,11 @@ import { Switch } from "@/components/ui/switch";
 import type { CountSheetIngredient } from "@/lib/counts";
 import { DISPLAY_UNITS, formatQty, packsToBase, parseQuantityInput, toBaseUnits, toDecimal } from "@/lib/units";
 import { cn } from "@/lib/utils";
+import { useCountSync } from "@/hooks/use-count-sync";
 
 const PACK_PREFIX = "pack:";
 
-type RowStatus = { state: "saving" | "saved" | "error"; message?: string };
-type Entry = { ingredientId: string; amount: string; unit: string };
+type RowStatus = { state: "saving" | "saved" | "kept" | "error"; message?: string };
 
 /** The unit a row starts in: base unit when something was saved already, else the default pack, else the base unit. */
 function initialUnit(ingredient: CountSheetIngredient): string {
@@ -67,104 +67,51 @@ export function CountSheetForm({
     Object.fromEntries(ingredients.map((i) => [i.id, i.countedQty === null ? "" : toDecimal(i.countedQty).toFixed()])),
   );
   const [units, setUnits] = useState<Record<string, string>>(() => Object.fromEntries(ingredients.map((i) => [i.id, initialUnit(i)])));
-  const [statuses, setStatuses] = useState<Record<string, RowStatus>>({});
   const [onlyOpen, setOnlyOpen] = useState(false);
   const [submitOpen, setSubmitOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [pending, startTransition] = useTransition();
+  // Figures are kept on the phone and sent when there is signal (DECISIONS.md 93).
+  const sync = useCountSync(sessionId);
+  const { state: syncState } = sync;
 
-  // Mirrors of the state so a blur handler always sees the latest typed values.
-  const valuesRef = useRef(values);
-  const unitsRef = useRef(units);
-  const dirtyRef = useRef(new Set<string>());
-  const savingRef = useRef(false);
-  // A save was asked for while another was running; run it when that one ends.
-  const queuedRef = useRef(false);
+  // What the phone kept from an earlier visit is newer than the server's figures.
+  const [appliedRestore, setAppliedRestore] = useState(false);
+  if (!appliedRestore && sync.restored !== undefined) {
+    setAppliedRestore(true);
+    const kept = sync.restored?.pending ?? {};
+    if (Object.keys(kept).length > 0) {
+      setValues((current) => ({ ...current, ...Object.fromEntries(Object.entries(kept).map(([id, entry]) => [id, entry.amount])) }));
+      setUnits((current) => ({ ...current, ...Object.fromEntries(Object.entries(kept).map(([id, entry]) => [id, entry.unit])) }));
+    }
+  }
+
+  // Submitted: at once, or later when a submit kept on the phone went through.
+  const submittedMessage = syncState.submitted ? (syncState.message ?? "Count submitted. A manager will review it.") : null;
+  useEffect(() => {
+    if (!submittedMessage) return;
+    toast.success(submittedMessage);
+    router.push("/count");
+  }, [submittedMessage, router]);
 
   function change(id: string, nextValue: string, nextUnit: string) {
-    valuesRef.current = { ...valuesRef.current, [id]: nextValue };
-    unitsRef.current = { ...unitsRef.current, [id]: nextUnit };
-    setValues(valuesRef.current);
-    setUnits(unitsRef.current);
-    dirtyRef.current.add(id);
-    setStatuses((current) => {
-      if (!current[id]) return current;
-      const rest = { ...current };
-      delete rest[id];
-      return rest;
-    });
+    setValues((current) => ({ ...current, [id]: nextValue }));
+    setUnits((current) => ({ ...current, [id]: nextUnit }));
+    sync.record({ ingredientId: id, amount: nextValue, unit: nextUnit });
   }
 
-  function buildEntries(): Entry[] {
-    return ingredients
-      .filter((i) => dirtyRef.current.has(i.id))
-      .map((i) => ({ ingredientId: i.id, amount: valuesRef.current[i.id] ?? "", unit: unitsRef.current[i.id] }));
-  }
-
-  /** Marks entries saved (or failed) and keeps whatever was typed meanwhile as dirty. */
-  function applyResult(sent: Entry[], errors: Record<string, string[] | undefined> | undefined, ok: boolean, message?: string) {
-    const next: Record<string, RowStatus> = {};
-    sent.forEach((entry, index) => {
-      const error = errors?.[`entries.${index}`]?.[0];
-      if (error) next[entry.ingredientId] = { state: "error", message: error };
-      else if (ok) {
-        const unchanged = valuesRef.current[entry.ingredientId] === entry.amount && unitsRef.current[entry.ingredientId] === entry.unit;
-        if (unchanged) {
-          dirtyRef.current.delete(entry.ingredientId);
-          next[entry.ingredientId] = { state: "saved" };
-        }
-      } else next[entry.ingredientId] = { state: "error", message: message ?? "Not saved." };
-    });
-    setStatuses((current) => {
-      const merged = { ...current, ...next };
-      for (const entry of sent) if (!next[entry.ingredientId] && merged[entry.ingredientId]?.state === "saving") delete merged[entry.ingredientId];
-      return merged;
-    });
-  }
-
-  async function save(): Promise<boolean> {
-    if (savingRef.current) {
-      queuedRef.current = true;
-      return false;
-    }
-    const entries = buildEntries();
-    if (entries.length === 0) return true;
-    savingRef.current = true;
-    setSaving(true);
-    setStatuses((current) => ({ ...current, ...Object.fromEntries(entries.map((e) => [e.ingredientId, { state: "saving" as const }])) }));
-    try {
-      const result = await saveCountAction(sessionId, entries);
-      applyResult(entries, result.errors, result.ok, result.message);
-      if (!result.ok && !result.errors) toast.error(result.message ?? "Could not save.");
-      return result.ok;
-    } catch {
-      applyResult(entries, undefined, false, "Could not reach the server. Your figures are kept here.");
-      return false;
-    } finally {
-      savingRef.current = false;
-      setSaving(false);
-      if (queuedRef.current) {
-        queuedRef.current = false;
-        void save();
-      }
-    }
+  function save() {
+    void sync.flush();
   }
 
   function submit(approve: boolean) {
     startTransition(async () => {
-      const entries = buildEntries();
-      try {
-        const result = await submitCountAction(sessionId, entries, approve);
-        if (result.ok) {
-          toast.success(result.message);
-          router.push("/count");
-          return;
-        }
-        applyResult(entries, result.errors, false, undefined);
-        toast.error(result.message ?? "Could not submit the count.");
-      } catch {
-        toast.error("Could not reach the server. Your figures are kept here.");
+      const outcome = await sync.submit(approve);
+      if (outcome === "submitted") return; // announced above, then back to the list
+      if (outcome === "waiting") {
+        toast.message("No connection. The count is kept on this phone and is submitted as soon as there is signal.");
+      } else {
+        toast.error(syncState.message ?? "Could not submit the count. Check the highlighted ingredients.");
       }
       setSubmitOpen(false);
     });
@@ -172,16 +119,37 @@ export function CountSheetForm({
 
   function discard() {
     startTransition(async () => {
-      const result = await deleteDraftAction(sessionId);
-      if (result.ok) {
-        toast.success(result.message);
-        router.push("/count");
-      } else {
-        toast.error(result.message ?? "Could not delete the draft.");
+      try {
+        const result = await deleteDraftAction(sessionId);
+        if (result.ok) {
+          await sync.forget();
+          toast.success(result.message);
+          router.push("/count");
+        } else {
+          toast.error(result.message ?? "Could not delete the draft.");
+          setDeleteOpen(false);
+        }
+      } catch {
+        toast.error("No connection. Delete the draft once there is signal.");
         setDeleteOpen(false);
       }
     });
   }
+
+  function rowStatus(id: string): RowStatus | undefined {
+    const error = syncState.rowErrors[id];
+    if (error) return { state: "error", message: error };
+    if (syncState.pending.includes(id)) {
+      if (syncState.syncing) return { state: "saving" };
+      if (syncState.unreachable) return { state: "kept" };
+      return undefined;
+    }
+    if (syncState.justSaved.includes(id)) return { state: "saved" };
+    return undefined;
+  }
+
+  const saving = syncState.syncing;
+  const waitingCount = syncState.pending.length;
 
   const isCounted = (id: string) => parseQuantityInput(values[id] ?? "") !== null;
   const countedTotal = ingredients.filter((i) => isCounted(i.id)).length;
@@ -213,6 +181,17 @@ export function CountSheetForm({
             Show only not counted
           </label>
         </div>
+        {syncState.unreachable || syncState.submitWaiting ? (
+          <p className="text-sm font-medium text-warning-foreground" role="status">
+            {syncState.submitWaiting
+              ? "No connection. The count is kept on this phone and is submitted as soon as there is signal."
+              : `No connection. ${waitingCount} ${waitingCount === 1 ? "figure is" : "figures are"} kept on this phone and sent as soon as there is signal.`}
+          </p>
+        ) : syncState.message ? (
+          <p className="text-sm font-medium text-destructive" role="alert">
+            {syncState.message}
+          </p>
+        ) : null}
         <div className="h-2 overflow-hidden rounded-full bg-muted" aria-hidden>
           <div
             className="h-full rounded-full bg-primary transition-[width]"
@@ -229,7 +208,7 @@ export function CountSheetForm({
             <h2 className="text-lg font-semibold tracking-tight">{area}</h2>
             <ul className="flex flex-col gap-3">
               {visible.map((ingredient) => {
-                const status = statuses[ingredient.id];
+                const status = rowStatus(ingredient.id);
                 const unit = units[ingredient.id];
                 const eq = equivalent(ingredient, values[ingredient.id] ?? "", unit);
                 const counted = isCounted(ingredient.id);
@@ -263,13 +242,13 @@ export function CountSheetForm({
                         aria-invalid={status?.state === "error" ? true : undefined}
                         className="h-14 text-xl font-medium tabular-nums md:h-12 md:text-lg"
                         onChange={(event) => change(ingredient.id, event.target.value, unit)}
-                        onBlur={() => void save()}
+                        onBlur={save}
                       />
                       <Select
                         value={unit}
                         onValueChange={(next) => {
                           change(ingredient.id, values[ingredient.id] ?? "", next);
-                          if ((values[ingredient.id] ?? "") !== "") queueMicrotask(() => void save());
+                          if ((values[ingredient.id] ?? "") !== "") queueMicrotask(save);
                         }}
                       >
                         <SelectTrigger
@@ -306,7 +285,13 @@ export function CountSheetForm({
                           )}
                           role={status.state === "error" ? "alert" : undefined}
                         >
-                          {status.state === "saving" ? "Saving…" : status.state === "saved" ? "Saved" : status.message}
+                          {status.state === "saving"
+                            ? "Saving…"
+                            : status.state === "saved"
+                              ? "Saved"
+                              : status.state === "kept"
+                                ? "Kept on this phone"
+                                : status.message}
                         </span>
                       ) : null}
                     </div>
@@ -331,7 +316,7 @@ export function CountSheetForm({
 
       {/* Stays above the phone tab bar while scrolling; at the end of the list it sits in place, so it never covers the last item. */}
       <div className="sticky bottom-[calc(var(--tabbar-height)+env(safe-area-inset-bottom))] z-10 -mx-4 flex gap-3 border-t border-border bg-card p-4 md:bottom-4 md:mx-0 md:rounded-lg md:border">
-        <Button type="button" variant="outline" size="lg" className="h-12 flex-1 text-base" disabled={saving || pending} onClick={() => void save()}>
+        <Button type="button" variant="outline" size="lg" className="h-12 flex-1 text-base" disabled={saving || pending} onClick={save}>
           {saving ? "Saving…" : "Save"}
         </Button>
         <Button type="button" size="lg" className="h-12 flex-1 text-base" disabled={saving || pending} onClick={() => setSubmitOpen(true)}>
