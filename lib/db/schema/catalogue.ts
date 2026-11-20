@@ -5,6 +5,31 @@ import { baseUnit } from "./enums";
 import { tenantPolicies } from "./policies";
 import { locations } from "./tenancy";
 
+/** Who the restaurant buys from (stage 7, DECISIONS.md 97). Archived, never deleted, once used. */
+export const suppliers = pgTable(
+  "suppliers",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    locationId: uuid("location_id")
+      .notNull()
+      .references(() => locations.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    contactName: text("contact_name"),
+    email: text("email"),
+    phone: text("phone"),
+    /** Ordering days, minimum order, account number... */
+    notes: text("notes"),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    unique("suppliers_id_location_id_key").on(t.id, t.locationId),
+    uniqueIndex("suppliers_location_id_lower_name_key").on(t.locationId, sql`lower(${t.name})`),
+    ...tenantPolicies("suppliers"),
+  ],
+);
+
 /** What is stocked. There is no stock column: stock is the sum of the ledger. */
 export const ingredients = pgTable(
   "ingredients",
@@ -26,11 +51,19 @@ export const ingredients = pgTable(
     storageArea: text("storage_area"),
     /** Archive instead of delete, because movements reference the ingredient. */
     isActive: boolean("is_active").notNull().default(true),
+    /** Who it is ordered from (stage 7). */
+    supplierId: uuid("supplier_id"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
   (t) => [
     unique("ingredients_id_location_id_key").on(t.id, t.locationId),
+    foreignKey({
+      name: "ingredients_supplier_fk",
+      columns: [t.supplierId, t.locationId],
+      foreignColumns: [suppliers.id, suppliers.locationId],
+    }).onDelete("restrict"),
+    index("ingredients_supplier_id_idx").on(t.supplierId),
     uniqueIndex("ingredients_location_id_lower_name_key").on(t.locationId, sql`lower(${t.name})`),
     index("ingredients_location_id_storage_area_idx").on(t.locationId, t.storageArea),
     check("ingredients_cost_not_negative", sql`${t.costPerBaseUnit} >= 0`),

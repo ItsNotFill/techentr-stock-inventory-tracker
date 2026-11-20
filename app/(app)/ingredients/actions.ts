@@ -53,6 +53,8 @@ function parseIngredient(formData: FormData) {
     levelUnit: field(formData, "levelUnit"),
     category: field(formData, "category"),
     storageArea: field(formData, "storageArea"),
+    // Only a form that shows the supplier field sends it; otherwise the supplier is kept.
+    supplierId: formData.has("supplierId") ? field(formData, "supplierId") : undefined,
   });
 }
 

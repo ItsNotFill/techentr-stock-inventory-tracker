@@ -160,6 +160,8 @@ function toColumns(values: IngredientFormValues) {
     parLevel: toLevel(values.parLevel),
     category: values.category,
     storageArea: values.storageArea,
+    // Left out of the form: keep the supplier that is there.
+    ...(values.supplierId === undefined ? {} : { supplierId: values.supplierId }),
   };
 }
 

@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 6 (Pilot)** (stages 0 to 5 are merged, 18 Nov: the MVP's manual paths are complete; stage 4's offline counting is merged too, 20 Nov. Stage 6's "Before the pilot" block is merged; its other tasks wait for a pilot restaurant (`NEXT_STEPS_FOR_FILIPPO.md`, section 1). Still open: stage 5's real-phone install check (section 2); the AI blocks of stages 2, 3 and 5, parked until `ANTHROPIC_API_KEY` exists)
 
-**Now working on:** stage 7, suppliers: "Migration: `suppliers`, the supplier of each ingredient, `purchase_orders` and `purchase_order_lines`". Branch `stage-7-suppliers`, main checkout (no worktree).
+**Now working on:** stage 7, suppliers: server side and Server Actions done (receiving included); "Suppliers screen; purchase order screen" and the receive screen with `ui-builder`. Branch `stage-7-suppliers`.
 
 ## Stage 0: Setup
 
@@ -186,8 +186,8 @@ Sub-recipes (prep recipes), branch `stage-7-sub-recipes` — **done, merged 20 N
 
 Suppliers and purchase orders, branch `stage-7-suppliers`:
 
-- [ ] Migration: `suppliers`, the supplier of each ingredient, `purchase_orders` and `purchase_order_lines` with RLS
-- [ ] Order suggestions: per supplier, what is at or below its reorder point and how many packs reach par
+- [x] Migration: `suppliers`, the supplier of each ingredient, `purchase_orders` and `purchase_order_lines` with RLS
+- [x] Order suggestions: per supplier, what is at or below its reorder point and how many packs reach par
 - [ ] Suppliers screen; purchase order screen (from the suggestions, edit, mark as sent, text to send)
 - [ ] Receiving a purchase order logs its delivery
 
