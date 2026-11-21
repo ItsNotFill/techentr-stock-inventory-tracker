@@ -20,7 +20,7 @@ Rules:
 
 **Current stage: 6 (Pilot)** (stages 0 to 5 are merged, 18 Nov: the MVP's manual paths are complete; stage 4's offline counting is merged too, 20 Nov. Stage 6's "Before the pilot" block is merged; its other tasks wait for a pilot restaurant (`NEXT_STEPS_FOR_FILIPPO.md`, section 1). Still open: stage 5's real-phone install check (section 2); the AI blocks of stages 2, 3 and 5, parked until `ANTHROPIC_API_KEY` exists)
 
-**Now working on:** stage 7, e-mails: Settings "E-mails" card and preview (ui-builder). Branch `stage-7-emails`, worktree `.claude/worktrees/agent-ae256469156ae624c`.
+**Now working on:** stage 7, e-mails: every task ticked; whole-block review (reviewer agent), then merge into `main`. Branch `stage-7-emails`, main checkout.
 
 ## Stage 0: Setup
 
@@ -203,7 +203,7 @@ E-mails, branch `stage-7-emails` (sending waits for an e-mail provider key from 
 - [x] Weekly owner summary: unexplained usage, top losses, low stock
 - [x] Low-stock alert
 - [x] Scheduled sending (Vercel Cron, protected by a secret)
-- [ ] Settings: an "E-mails" card (owner switches, when the last one went out) and a preview of both e-mails
+- [x] Settings: an "E-mails" card (owner switches, when the last one went out) and a preview of both e-mails
 
 Not now (need accounts, hosting or pilot data): forecasting service (Python), payments and billing, native app.
 
