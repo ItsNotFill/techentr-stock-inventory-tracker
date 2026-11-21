@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { index, pgPolicy, pgTable, primaryKey, text, uuid } from "drizzle-orm/pg-core";
+import { boolean, index, pgPolicy, pgTable, primaryKey, text, uuid } from "drizzle-orm/pg-core";
 import { authUsers } from "drizzle-orm/supabase";
 import { createdAt } from "./columns";
 import { memberRole } from "./enums";
@@ -48,6 +48,9 @@ export const locations = pgTable(
     posProvider: text("pos_provider"),
     /** IANA name, taken from the browser at sign-up. */
     timezone: text("timezone").notNull(),
+    /** E-mails (stage 7, DECISIONS.md 99): the weekly owner summary and low-stock alerts, switched by owners. */
+    weeklySummaryEnabled: boolean("weekly_summary_enabled").notNull().default(true),
+    lowStockAlertsEnabled: boolean("low_stock_alerts_enabled").notNull().default(true),
     createdAt: createdAt(),
   },
   (t) => [

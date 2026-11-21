@@ -64,7 +64,7 @@ lib/
   db/
     schema/             Drizzle tables, enums, RLS policies
     client.ts           RLS-enforcing client (runs as the signed-in user)
-    admin.ts            admin connection: migrations, seed, sign-up bootstrap only
+    admin.ts            admin connection: migrations, seed, sign-up bootstrap, e-mail cron jobs only
   ledger/               append movements, stock queries, depletion, late-movement correction (with migrations 0011, 0012)
   counts/               stock counts: start, save, submit, approve, reject
   deliveries/           log a delivery (draft, lines, confirm, movements), delivery list
@@ -80,6 +80,7 @@ lib/
   ingredients/          ingredients and pack sizes
   team/                 team and restaurant details
   auth/                 session, membership, roles, sign-up bootstrap
+  email/                weekly summary and low-stock e-mails: templates, jobs, Resend sender
   supabase/             server and browser Supabase clients (Auth and Storage only)
   validation/           shared Zod schemas
 drizzle/                generated SQL migrations (never edit the DB by hand)
@@ -120,6 +121,10 @@ Environment variables live in `.env.local` (never committed) and are documented 
 | `DATABASE_URL_MIGRATIONS` | server only: drizzle-kit and the seed script |
 | `ANTHROPIC_API_KEY` | server only |
 | `AI_MODEL` | server only |
+| `RESEND_API_KEY` | server only |
+| `EMAIL_FROM` | server only |
+| `CRON_SECRET` | server only: checked by `app/api/cron/*` |
+| `APP_URL` | server only, optional: links in e-mails |
 
 - The Supabase keys are the new publishable and secret keys, not the old `anon` and `service_role` keys.
 - `DATABASE_URL` is the transaction pooler (port 6543). The app's Drizzle client must be created with `prepare: false`, because that pooler does not support prepared statements.
@@ -203,7 +208,7 @@ This is not the Next.js of older tutorials. `AGENTS.md` says the same: read the 
 ## How the rules apply in code
 
 - **Ledger.** All writes to `stock_movements` go through `lib/ledger`. Nothing else inserts into that table. The only delete is the import-undo database function. See `SCHEMA.md`, "Ledger rules".
-- **RLS.** App queries use `lib/db/client.ts`, which runs each transaction as the database role `app_user` with the signed-in user's id set, so policies apply. Policies are written `to: appUser` and use `public.is_member()`, `public.has_role()` and `public.current_user_id()`. Every migration that adds a table ends with hand-written `GRANT`s to `app_user` (Drizzle does not generate grants). `lib/db/admin.ts` bypasses RLS and is imported only by migrations, the seed script and the sign-up bootstrap.
+- **RLS.** App queries use `lib/db/client.ts`, which runs each transaction as the database role `app_user` with the signed-in user's id set, so policies apply. Policies are written `to: appUser` and use `public.is_member()`, `public.has_role()` and `public.current_user_id()`. Every migration that adds a table ends with hand-written `GRANT`s to `app_user` (Drizzle does not generate grants). `lib/db/admin.ts` bypasses RLS and is imported only by migrations, the seed script, the sign-up bootstrap and the e-mail cron routes (which use it only to list recipients and write `email_log`; the figures are read through RLS, DECISIONS.md 99).
 - **Supabase client.** `supabase-js` is for Auth and Storage only. Never query tables with it: new tables are not exposed to the Data API, and all table access goes through Drizzle on the server.
 - **Tenant keys.** Parents have `UNIQUE(id, location_id)` and children use composite foreign keys, so a row can never reference another location's data. See `SCHEMA.md`, "Composite tenant keys".
 - **AI.** `lib/ai` uses `client.messages.parse()` with `zodOutputFormat()` so every result is validated against a Zod schema. Check `stop_reason` and a null `parsed_output` before using a result. Every result is saved as a draft in `ai_extractions`; nothing reaches the ledger until a user confirms. Use the `claude-api` skill when building this module.

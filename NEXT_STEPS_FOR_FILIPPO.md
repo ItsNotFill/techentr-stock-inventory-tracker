@@ -67,6 +67,23 @@ The AI tasks read photos (POS screenshots, end-of-day reports, supplier invoices
 5. In Vercel: **Settings**, **Environment Variables**, add `ANTHROPIC_API_KEY` with the same value (Production ticked), then redeploy with "Use existing Build Cache" unticked.
 6. Start a new session and say the key is there. The parked tasks are listed in `PROGRESS.md` under "AI onboarding", "Sales by photo" and "Restock by invoice photo".
 
+### 4. Switch on e-mail sending (20 minutes, plus waiting for DNS)
+
+The app can send the weekly owner summary (Mondays) and the low-stock alert (daily, only when what is low changes). Until the three values below exist, nothing is sent: every run is recorded as "not sent", and owners can preview both e-mails under **Settings** → **E-mails**. Sending uses Resend (free up to 3,000 e-mails a month, 100 a day).
+
+1. Create an account at <https://resend.com>.
+2. **Domains** → **Add Domain**: a domain you own (for example `mail.yourdomain.com`). Add the DNS records Resend shows at the place where you bought the domain, then wait until Resend says **Verified** (minutes to a few hours). Without your own domain Resend only sends to your own address, which is enough for a test but not for a pilot.
+3. **API Keys** → **Create API Key**, permission "Sending access". Copy it (it starts with `re_` and is shown once).
+4. Make a secret for the scheduled jobs: in the terminal run `openssl rand -hex 32` and copy the result.
+5. In Vercel: **Settings** → **Environment Variables**, Production ticked, add:
+   - `RESEND_API_KEY`: the key from step 3;
+   - `EMAIL_FROM`: the sender on your verified domain, for example `Inventory <stock@mail.yourdomain.com>`;
+   - `CRON_SECRET`: the value from step 4. Vercel sends it with every scheduled call; the app refuses calls without it.
+   Then redeploy (**Deployments**, the latest one, **Redeploy**).
+6. Optional, to try it locally: put the same three lines in `.env.local`.
+7. Scheduled jobs run only on the live site (`main`), once the e-mails stage is merged. Vercel lists them under **Settings** → **Cron Jobs** (weekly summary Mondays 06:00 UTC, low stock daily 05:00 UTC); **Run** there sends one at once. **Settings** → **E-mails** in the app then shows "Last sent …".
+8. Tell the next session it is set up (or what Resend or Vercel showed).
+
 ## Done
 
 - **Project moved out of iCloud Drive** (17 Nov): it now lives in `~/Development/Project_Tech_Entre`. `.gitignore` ignores iCloud conflict copies ("file 2.tsx", "page 3.tsx", ...).
@@ -177,3 +194,10 @@ The demo restaurant already holds the worked example from the spec: opening stoc
 - Built: an owner adds a second restaurant under **Settings** → **Locations**; each location has its own ingredients, menu, team and counts. People in more than one location switch between them at the top of the menu.
 - Checked: 250 tests and browser tests (add a location, switch, see only that location's data; staff of one location see no switcher). The reviewer agent returned OK; its small notes are fixed or written down.
 - Good to know: two browser tabs share the chosen location; switch in one and reload the other.
+
+### Stage 7, e-mails (2026-11-21)
+
+- Built: a **weekly summary** for owners every Monday (the week's unexplained usage in euros, the five biggest losses, what is low, waste, what waits for you) and a **low-stock alert** for owners and managers, sent only when the list of low ingredients changes. Owners switch each on or off under **Settings** → **E-mails** and can preview both there.
+- Checked: 264 tests (nothing sent twice, a failed or key-less run is retried, two runs at once send once) and browser tests (switches, previews, a manager cannot open them). The reviewer agent returned OK; its notes are fixed or written down (DECISIONS.md 99).
+- Waiting on you: nothing is sent until you add the Resend key and the cron secret (section 4 above). Until then each run shows "not sent" in Settings.
+- Next for the agents: all four stage 7 items are done. What is left needs you: a pilot restaurant, the phone check, the Claude API key, the e-mail key.

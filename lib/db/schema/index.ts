@@ -1,6 +1,7 @@
 export * from "./catalogue";
 export * from "./counts";
 export * from "./deliveries";
+export * from "./emails";
 export * from "./enums";
 export * from "./ledger";
 export * from "./menu";

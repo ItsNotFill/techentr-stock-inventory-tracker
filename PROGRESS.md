@@ -18,9 +18,9 @@ Rules:
 - Every session starts with `git status`, `git worktree list` and the "Now working on" line; half-done work and leftover worktrees are finished or cleaned up first.
 - Things only Filippo can do are listed in `NEXT_STEPS_FOR_FILIPPO.md`.
 
-**Current stage: 6 (Pilot)** (stages 0 to 5 are merged, 18 Nov: the MVP's manual paths are complete; stage 4's offline counting is merged too, 20 Nov. Stage 6's "Before the pilot" block is merged; its other tasks wait for a pilot restaurant (`NEXT_STEPS_FOR_FILIPPO.md`, section 1). Still open: stage 5's real-phone install check (section 2); the AI blocks of stages 2, 3 and 5, parked until `ANTHROPIC_API_KEY` exists)
+**Current stage: 6 (Pilot)** (stages 0 to 5 are merged, 18 Nov: the MVP's manual paths are complete; stage 4's offline counting is merged too, 20 Nov. Stage 6's "Before the pilot" block is merged; its other tasks wait for a pilot restaurant (`NEXT_STEPS_FOR_FILIPPO.md`, section 1). Stage 7's four items are merged, 20 and 21 Nov. Still open: stage 5's real-phone install check (section 2); the AI blocks of stages 2, 3 and 5, parked until `ANTHROPIC_API_KEY` exists (section 3); e-mail sending, waiting for the Resend key (section 4))
 
-**Now working on:** nothing. Multiple locations are merged into `main`; next, stage 7 "E-mails" on a new branch `stage-7-emails` from `main`.
+**Now working on:** nothing. Stage 7's four items are merged into `main` (21 Nov). Everything still open waits for Filippo: a pilot restaurant (stage 6), the real-phone install check (stage 5), `ANTHROPIC_API_KEY` (the AI blocks), and the Resend key with `CRON_SECRET` (e-mail sending).
 
 ## Stage 0: Setup
 
@@ -197,12 +197,13 @@ Multiple locations, branch `stage-7-locations` — **done, merged 20 Nov**:
 - [x] An owner adds a location to the organization; team per location
 - [x] Every screen and action uses the chosen location; isolation tests
 
-E-mails, branch `stage-7-emails` (sending waits for an e-mail provider key from Filippo):
+E-mails, branch `stage-7-emails` — **done, merged 21 Nov** (sending starts when Filippo adds the Resend key and `CRON_SECRET`, `NEXT_STEPS_FOR_FILIPPO.md` section 4):
 
-- [ ] E-mail module with a provider key; without the key, e-mails are only previewed
-- [ ] Weekly owner summary: unexplained usage, top losses, low stock
-- [ ] Low-stock alert
-- [ ] Scheduled sending (Vercel Cron, protected by a secret)
+- [x] E-mail module with a provider key (Resend, `lib/email`; migration 0018: `email_log`, switches per location); without the key, runs are logged as skipped
+- [x] Weekly owner summary: unexplained usage, top losses, low stock
+- [x] Low-stock alert
+- [x] Scheduled sending (Vercel Cron, protected by a secret)
+- [x] Settings: an "E-mails" card (owner switches, when the last one went out) and a preview of both e-mails
 
 Not now (need accounts, hosting or pilot data): forecasting service (Python), payments and billing, native app.
 

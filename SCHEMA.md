@@ -105,6 +105,8 @@ Select policy: the user is a member of at least one location in the organization
 | `name` | text, not null | |
 | `pos_provider` | text, nullable | free text for now, e.g. `lightspeed` |
 | `timezone` | text, not null | IANA name, taken from the browser at sign-up |
+| `weekly_summary_enabled` | boolean, not null, default true | stage 7: the owners' weekly e-mail (DECISIONS.md 99) |
+| `low_stock_alerts_enabled` | boolean, not null, default true | stage 7: the daily low-stock e-mail |
 | `created_at` | timestamptz, default now | |
 
 Index: `(org_id)`.
@@ -484,6 +486,26 @@ Checks: sent or received orders have `sent_at`; received orders have `received_a
 | `created_at`, `updated_at` | timestamptz | |
 
 Unique: `(purchase_order_id, ingredient_id)`. Index: `(ingredient_id)`. Owners and managers write, and only while the order is a draft (the policy looks at the order).
+
+### E-mails (stage 7)
+
+DECISIONS.md 99. Enum `email_kind`: `weekly_summary`, `low_stock`.
+
+#### `email_log`
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | uuid PK | |
+| `location_id` | uuid, not null, FK `locations.id` on delete cascade | |
+| `kind` | `email_kind`, not null | |
+| `period` | text, not null | ISO week (`2026-W47`) for the weekly summary, the local day (`2026-11-20`) for a low-stock alert |
+| `status` | text, not null, check in `sent`, `skipped`, `failed` | skipped: no e-mail key, or nobody to send to |
+| `recipient_count` | integer, not null, default 0 | |
+| `signature` | text, nullable | low-stock alert: the sorted ids of the low ingredients; the next alert goes only when it changes. Empty (`''`, status `skipped`) records that nothing was low any more |
+| `error` | text, nullable | why it was skipped or failed |
+| `created_at` | timestamptz, default now | |
+
+Unique: `(location_id, kind, period)`, so a cron job that runs twice sends once (a run claims its row before sending; a skipped, failed or stalled row of the same period can be claimed again). Index: `(location_id, kind, created_at)`. Members read it (Settings shows the last send). The app role has `SELECT` only: the cron jobs write it through the admin connection, which they use for nothing else but listing each location's recipients.
 
 ## Ledger rules
 

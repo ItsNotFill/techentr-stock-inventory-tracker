@@ -10,9 +10,11 @@ let db: Database | undefined;
  * Admin connection: BYPASSES ROW LEVEL SECURITY.
  *
  * Import this only from the sign-up bootstrap (creating a user's first
- * organization, location and owner membership). Migrations and the seed script
- * make their own connection through DATABASE_URL_MIGRATIONS. Everything else
- * uses `withUser` from lib/db/client.ts.
+ * organization, location and owner membership) and the e-mail cron routes
+ * (listing recipients and writing `email_log`; the figures themselves are read
+ * through RLS, DECISIONS.md 99). Migrations and the seed script make their own
+ * connection through DATABASE_URL_MIGRATIONS. Everything else uses `withUser`
+ * from lib/db/client.ts.
  */
 export function getAdminDb(): Database {
   db ??= drizzle(getPool(), { schema });
