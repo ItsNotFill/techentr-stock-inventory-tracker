@@ -501,11 +501,11 @@ DECISIONS.md 99. Enum `email_kind`: `weekly_summary`, `low_stock`.
 | `period` | text, not null | ISO week (`2026-W47`) for the weekly summary, the local day (`2026-11-20`) for a low-stock alert |
 | `status` | text, not null, check in `sent`, `skipped`, `failed` | skipped: no e-mail key, or nobody to send to |
 | `recipient_count` | integer, not null, default 0 | |
-| `signature` | text, nullable | low-stock alert: the sorted ids of the low ingredients; the next alert goes only when it changes |
+| `signature` | text, nullable | low-stock alert: the sorted ids of the low ingredients; the next alert goes only when it changes. Empty (`''`, status `skipped`) records that nothing was low any more |
 | `error` | text, nullable | why it was skipped or failed |
 | `created_at` | timestamptz, default now | |
 
-Unique: `(location_id, kind, period)`, so a cron job that runs twice sends once (a run claims its row before sending). Index: `(location_id, kind, created_at)`. Members read it (Settings shows the last send). The app role has `SELECT` only: the cron jobs write it through the admin connection, which they use for nothing else but listing each location's recipients.
+Unique: `(location_id, kind, period)`, so a cron job that runs twice sends once (a run claims its row before sending; a skipped, failed or stalled row of the same period can be claimed again). Index: `(location_id, kind, created_at)`. Members read it (Settings shows the last send). The app role has `SELECT` only: the cron jobs write it through the admin connection, which they use for nothing else but listing each location's recipients.
 
 ## Ledger rules
 

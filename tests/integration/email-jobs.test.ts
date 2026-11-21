@@ -104,12 +104,34 @@ describe.skipIf(!hasDatabase)("scheduled e-mails", () => {
     expect(await logOf("weekly_summary")).toEqual([expect.objectContaining({ status: "sent", recipientCount: 1, error: null })]);
   });
 
-  it("logs a skip, not a send, when e-mail is not set up, and nothing when switched off", async () => {
+  it("logs a skip without a key, and sends that week once the key is there", async () => {
     const nextWeek = new Date(Date.now() + 7 * DAY);
     expect(await runWeeklySummaries(testDb.db, options(nextWeek, null))).toEqual({ sent: 0, skipped: 1, failed: 0 });
     expect((await logOf("weekly_summary")).find((row) => row.status === "skipped")?.error).toContain("No e-mail key");
+    // The key arrives mid-week and the job is run again by hand: the same week goes out.
+    expect(await runWeeklySummaries(testDb.db, options(new Date(nextWeek.getTime() + HOUR)))).toEqual({ sent: 1, skipped: 0, failed: 0 });
+    expect((await logOf("weekly_summary")).filter((row) => row.status === "sent")).toHaveLength(2);
+  });
+
+  it("records a failed send, and the next run of that week tries again", async () => {
+    const inTwoWeeks = new Date(Date.now() + 14 * DAY);
+    const broken = async () => {
+      throw new Error("The e-mail service answered 500");
+    };
+    expect(await runWeeklySummaries(testDb.db, options(inTwoWeeks, broken))).toEqual({ sent: 0, skipped: 0, failed: 1 });
+    expect(await logOf("weekly_summary")).toContainEqual(expect.objectContaining({ status: "failed", error: "The e-mail service answered 500" }));
+    expect(await runWeeklySummaries(testDb.db, options(inTwoWeeks))).toEqual({ sent: 1, skipped: 0, failed: 0 });
+    expect((await logOf("weekly_summary")).some((row) => row.status === "failed")).toBe(false);
+  });
+
+  it("sends once when two runs overlap, and nothing when switched off", async () => {
+    const inThreeWeeks = new Date(Date.now() + 21 * DAY);
+    const sentBefore = outbox.length;
+    const results = await Promise.all([runWeeklySummaries(testDb.db, options(inThreeWeeks)), runWeeklySummaries(testDb.db, options(inThreeWeeks))]);
+    expect(results.reduce((total, result) => total + result.sent, 0)).toBe(1);
+    expect(outbox).toHaveLength(sentBefore + 1);
     await as(owner, (tx) => setEmailSettings(tx, loc(), { weeklySummary: false, lowStockAlerts: true }));
-    expect(await runWeeklySummaries(testDb.db, options(new Date(Date.now() + 14 * DAY)))).toEqual({ sent: 0, skipped: 0, failed: 0 });
+    expect(await runWeeklySummaries(testDb.db, options(new Date(Date.now() + 28 * DAY)))).toEqual({ sent: 0, skipped: 0, failed: 0 });
     expect((await as(owner, (tx) => getEmailSettings(tx, loc())))).toMatchObject({ weeklySummaryEnabled: false, lowStockAlertsEnabled: true });
   });
 
@@ -126,6 +148,25 @@ describe.skipIf(!hasDatabase)("scheduled e-mails", () => {
     await as(owner, (tx) => updateIngredient(tx, loc(), flour, ingredient("Flour", "6")));
     expect(await runLowStockAlerts(testDb.db, options(new Date(today.getTime() + 2 * DAY)))).toEqual({ sent: 1, skipped: 0, failed: 0 });
     expect(outbox.at(-1)?.subject).toContain("2 ingredients are low");
+  });
+
+  it("alerts again when the same ingredients run low after they had recovered", async () => {
+    const today = new Date();
+    // Both recover (their reorder points drop under the stock): nothing is sent, and that is recorded.
+    await as(owner, async (tx) => {
+      await updateIngredient(tx, loc(), mozzarella, ingredient("Mozzarella", "0.1"));
+      await updateIngredient(tx, loc(), flour, ingredient("Flour", "0.1"));
+    });
+    expect(await runLowStockAlerts(testDb.db, options(new Date(today.getTime() + 3 * DAY)))).toEqual({ sent: 0, skipped: 0, failed: 0 });
+    expect(await logOf("low_stock")).toContainEqual(expect.objectContaining({ status: "skipped", signature: "", error: "Nothing is low on stock" }));
+    // The same two run low again: a new alert, although the list is the one sent last time.
+    await as(owner, async (tx) => {
+      await updateIngredient(tx, loc(), mozzarella, ingredient("Mozzarella", "2"));
+      await updateIngredient(tx, loc(), flour, ingredient("Flour", "6"));
+    });
+    const sentBefore = outbox.length;
+    expect(await runLowStockAlerts(testDb.db, options(new Date(today.getTime() + 4 * DAY)))).toEqual({ sent: 1, skipped: 0, failed: 0 });
+    expect(outbox.slice(sentBefore).map((email) => email.subject)).toEqual([expect.stringContaining("2 ingredients are low"), expect.stringContaining("2 ingredients are low")]);
   });
 
   it("keeps the switches to owners and the log to the jobs", async () => {
