@@ -3,6 +3,7 @@ import Link from "next/link";
 import { MailCheck } from "lucide-react";
 import { Suspense } from "react";
 import { EmptyState } from "@/components/empty-state";
+import { EmailFrame } from "@/components/settings/email-frame";
 import { PageHeader } from "@/components/page-header";
 import { CardsSkeleton } from "@/components/page-skeleton";
 import { Button } from "@/components/ui/button";
@@ -84,14 +85,9 @@ async function PreviewContent({
               <p className="text-sm font-medium break-words">{email.subject}</p>
             </CardContent>
           </Card>
-          <iframe
-            sandbox=""
-            srcDoc={email.html}
-            title="E-mail preview"
-            className="h-[640px] w-full max-w-[640px] rounded-lg border border-border bg-white"
-          />
+          <EmailFrame html={email.html} />
           <details className="max-w-[640px] rounded-lg border border-border bg-card px-4 py-3">
-            <summary className="min-h-6 cursor-pointer text-sm font-medium text-primary">Plain-text version</summary>
+            <summary className="min-h-11 cursor-pointer py-2.5 text-sm leading-6 font-medium text-primary">Plain-text version</summary>
             <pre className="mt-3 text-sm break-words whitespace-pre-wrap text-foreground">{email.text}</pre>
           </details>
         </>
