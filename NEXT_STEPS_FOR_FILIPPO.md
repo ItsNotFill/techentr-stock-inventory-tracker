@@ -194,3 +194,10 @@ The demo restaurant already holds the worked example from the spec: opening stoc
 - Built: an owner adds a second restaurant under **Settings** → **Locations**; each location has its own ingredients, menu, team and counts. People in more than one location switch between them at the top of the menu.
 - Checked: 250 tests and browser tests (add a location, switch, see only that location's data; staff of one location see no switcher). The reviewer agent returned OK; its small notes are fixed or written down.
 - Good to know: two browser tabs share the chosen location; switch in one and reload the other.
+
+### Stage 7, e-mails (2026-11-21)
+
+- Built: a **weekly summary** for owners every Monday (the week's unexplained usage in euros, the five biggest losses, what is low, waste, what waits for you) and a **low-stock alert** for owners and managers, sent only when the list of low ingredients changes. Owners switch each on or off under **Settings** → **E-mails** and can preview both there.
+- Checked: 264 tests (nothing sent twice, a failed or key-less run is retried, two runs at once send once) and browser tests (switches, previews, a manager cannot open them). The reviewer agent returned OK; its notes are fixed or written down (DECISIONS.md 99).
+- Waiting on you: nothing is sent until you add the Resend key and the cron secret (section 4 above). Until then each run shows "not sent" in Settings.
+- Next for the agents: all four stage 7 items are done. What is left needs you: a pilot restaurant, the phone check, the Claude API key, the e-mail key.
